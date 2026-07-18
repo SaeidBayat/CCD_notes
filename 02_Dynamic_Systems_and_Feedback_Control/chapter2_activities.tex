@@ -1,0 +1,626 @@
+
+\section{Advanced Activities}
+
+The following activities are intended for strong master's or PhD students.
+They emphasize nonlinear modeling, state-space representation, linearization,
+exact dynamic response, stability, feedback, modal behavior, and the way
+physical design decisions change closed-loop system dynamics. MATLAB, Python,
+or an equivalent computational environment may be used where specified.
+
+\subsection*{Problem 1: Nonlinear Pendulum Modeling, Linearization, and Local Feedback}
+
+A torque-actuated pendulum is described by
+\begin{equation}
+ml^2\ddot{\theta}
++
+b\dot{\theta}
++
+mgl\sin\theta
+=
+u,
+\end{equation}
+where $\theta=0$ is the downward equilibrium and $\theta=\pi$ is the upright
+equilibrium. Use
+\begin{equation}
+m=1.2~\mathrm{kg},
+\qquad
+l=0.8~\mathrm{m},
+\qquad
+b=0.12~\mathrm{N\,m\,s},
+\qquad
+g=9.81~\mathrm{m/s^2},
+\end{equation}
+with the actuator limit
+\begin{equation}
+|u(t)|\leq 8~\mathrm{N\,m}.
+\end{equation}
+
+\begin{enumerate}
+    \item Define
+    \begin{equation}
+    x_1=\theta,
+    \qquad
+    x_2=\dot{\theta},
+    \end{equation}
+    and derive the nonlinear state-space model
+    \begin{equation}
+    \dot{\mathbf{x}}
+    =
+    \mathbf{f}(\mathbf{x},u).
+    \end{equation}
+
+    \item Determine all equilibrium pairs $(\mathbf{x}_e,u_e)$ for
+    \begin{equation}
+    -2\pi\leq\theta_e\leq2\pi.
+    \end{equation}
+
+    \item Linearize the system about the downward equilibrium and derive
+    the matrices $A_d$ and $B_d$.
+
+    \item Linearize the system about the upright equilibrium and derive
+    the matrices $A_u$ and $B_u$.
+
+    \item Compute the open-loop eigenvalues of both linearized systems and
+    classify their local stability.
+
+    \item Design the upright state-feedback law
+    \begin{equation}
+    u
+    =
+    -K
+    \begin{bmatrix}
+    \theta-\pi\\
+    \dot{\theta}
+    \end{bmatrix}
+    \end{equation}
+    so that the linearized closed-loop poles are located at
+    \begin{equation}
+    -3\pm4j.
+    \end{equation}
+
+    \item Derive the resulting closed-loop linearized matrix and verify its
+    eigenvalues analytically.
+
+    \item Simulate both the nonlinear and linearized closed-loop systems for
+    \begin{equation}
+    \theta(0)=\pi+\Delta\theta,
+    \qquad
+    \dot{\theta}(0)=0,
+    \end{equation}
+    with
+    \begin{equation}
+    \Delta\theta
+    \in
+    \{0.02,\ 0.10,\ 0.30,\ 0.60\}.
+    \end{equation}
+
+    \item Determine the largest tested perturbation for which the linearized
+    model predicts the nonlinear response with less than $5\%$ normalized
+    root-mean-square error over the first five seconds.
+
+    \item Repeat the nonlinear simulations with actuator saturation and
+    explain why local pole placement does not guarantee large-angle
+    stabilization.
+\end{enumerate}
+
+
+\subsection*{Problem 2: Exact State Transition of a Mass--Spring--Damper System}
+
+Consider
+\begin{equation}
+m\ddot{x}+c\dot{x}+kx=0,
+\end{equation}
+with
+\begin{equation}
+m=2~\mathrm{kg},
+\qquad
+k=18~\mathrm{N/m},
+\qquad
+x(0)=1,
+\qquad
+\dot{x}(0)=0.
+\end{equation}
+
+Use the state vector
+\begin{equation}
+\mathbf{x}
+=
+\begin{bmatrix}
+x\\
+\dot{x}
+\end{bmatrix}.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the state matrix $A(c)$.
+
+    \item Derive the characteristic polynomial and the two eigenvalues as
+    functions of $c$.
+
+    \item Determine the damping values corresponding to:
+    \begin{enumerate}
+        \item underdamped motion,
+        \item critical damping,
+        \item overdamped motion.
+    \end{enumerate}
+
+    \item For the underdamped case, derive a closed-form expression for
+    \begin{equation}
+    e^{At}
+    \end{equation}
+    using the Cayley--Hamilton theorem.
+
+    \item Use the result to derive exact expressions for $x(t)$ and
+    $\dot{x}(t)$.
+
+    \item Repeat the derivation for the critically damped case, taking care
+    of the repeated eigenvalue.
+
+    \item For
+    \begin{equation}
+    c\in\{2,\ 12,\ 20\}~\mathrm{N\,s/m},
+    \end{equation}
+    compute:
+    \begin{equation}
+    \omega_n,
+    \qquad
+    \zeta,
+    \qquad
+    \lambda_1,
+    \qquad
+    \lambda_2.
+    \end{equation}
+
+    \item For each damping value, determine analytically or numerically:
+    \begin{enumerate}
+        \item the first zero-crossing time,
+        \item the time of the first displacement extremum after $t=0$,
+        \item the $2\%$ settling time.
+    \end{enumerate}
+
+    \item Verify the analytical state-transition solution using a
+    high-accuracy numerical ODE solver.
+
+    \item Explain why increasing $c$ beyond critical damping can make the
+    slowest mode slower even though the system contains more damping.
+\end{enumerate}
+
+
+\subsection*{Problem 3: Allocation of Closed-Loop Dynamics between Plant and Feedback}
+
+Consider
+\begin{equation}
+m\ddot{x}+c\dot{x}+kx=u,
+\end{equation}
+with the PD feedback law
+\begin{equation}
+u=-K_px-K_d\dot{x}.
+\end{equation}
+
+Use
+\begin{equation}
+m=2~\mathrm{kg}.
+\end{equation}
+
+The desired closed-loop dynamics are
+\begin{equation}
+s^2
++
+2\zeta_d\omega_d s
++
+\omega_d^2
+=
+0,
+\end{equation}
+where
+\begin{equation}
+\zeta_d=0.7,
+\qquad
+\omega_d=4~\mathrm{rad/s}.
+\end{equation}
+
+\begin{enumerate}
+    \item Show that all plant--controller combinations producing the desired
+    poles must satisfy
+    \begin{equation}
+    k+K_p=m\omega_d^2,
+    \end{equation}
+    and
+    \begin{equation}
+    c+K_d=2m\zeta_d\omega_d.
+    \end{equation}
+
+    \item Consider the allocation cost
+    \begin{equation}
+    C
+    =
+    \alpha_k k^2
+    +
+    \alpha_c c^2
+    +
+    \alpha_p K_p^2
+    +
+    \alpha_d K_d^2,
+    \end{equation}
+    with
+    \begin{equation}
+    \alpha_k=0.04,
+    \qquad
+    \alpha_c=0.08,
+    \qquad
+    \alpha_p=0.01,
+    \qquad
+    \alpha_d=0.02.
+    \end{equation}
+
+    Derive the minimum-cost allocation analytically.
+
+    \item Repeat the derivation subject to the passive-safety requirements
+    \begin{equation}
+    k\geq8~\mathrm{N/m},
+    \qquad
+    c\geq1.5~\mathrm{N\,s/m}.
+    \end{equation}
+
+    \item For the initial condition
+    \begin{equation}
+    x(0)=1,
+    \qquad
+    \dot{x}(0)=0,
+    \end{equation}
+    derive the closed-loop state trajectory.
+
+    \item Derive the control trajectory
+    \begin{equation}
+    u(t)=-K_px(t)-K_d\dot{x}(t)
+    \end{equation}
+    for an arbitrary feasible allocation.
+
+    \item Show that different allocations can produce identical
+    closed-loop poles and identical state trajectories but different
+    control-force histories.
+
+    \item Compute
+    \begin{equation}
+    E_u
+    =
+    \int_0^\infty u(t)^2\,dt
+    \end{equation}
+    for:
+    \begin{enumerate}
+        \item the unconstrained minimum-cost allocation,
+        \item the passive-safety-constrained allocation,
+        \item the fully passive allocation $K_p=K_d=0$.
+    \end{enumerate}
+
+    \item Suppose the actuator fails at $t=1$ and
+    \begin{equation}
+    u(t)=0,
+    \qquad
+    t\geq1.
+    \end{equation}
+    Simulate and compare the three designs.
+
+    \item Explain why matching closed-loop poles alone is insufficient for
+    choosing a plant--controller design.
+\end{enumerate}
+
+
+\subsection*{Problem 4: Full and Reduced Models of a DC Motor}
+
+An armature-controlled DC motor is modeled by
+\begin{align}
+J\dot{\omega}+b\omega
+&=
+K_ti-\tau_L,
+\\
+L\dot{i}+Ri
+&=
+v-K_e\omega.
+\end{align}
+
+Use
+\begin{equation}
+J=0.02~\mathrm{kg\,m^2},
+\qquad
+b=0.08~\mathrm{N\,m\,s},
+\end{equation}
+\begin{equation}
+L=0.015~\mathrm{H},
+\qquad
+R=1.2~\Omega,
+\qquad
+K_t=K_e=0.25.
+\end{equation}
+
+\begin{enumerate}
+    \item Using
+    \begin{equation}
+    \mathbf{x}
+    =
+    \begin{bmatrix}
+    \theta&\omega&i
+    \end{bmatrix}^{T},
+    \end{equation}
+    derive the complete state-space model with voltage $v$ as the control
+    input and load torque $\tau_L$ as the disturbance.
+
+    \item Derive the characteristic polynomial of the unforced state matrix.
+
+    \item Explain why one eigenvalue is located at the origin when shaft
+    position is included as a state.
+
+    \item Remove the position state and derive the two-state speed-current
+    subsystem.
+
+    \item Prove that the speed-current subsystem is asymptotically stable for
+    positive
+    \begin{equation}
+    J,\ b,\ L,\ R,\ K_t,\ K_e.
+    \end{equation}
+
+    \item Set $L\dot{i}\approx0$ and derive the reduced first-order speed
+    model.
+
+    \item Derive the reduced-model pole and compare it with the slow
+    eigenvalue of the full speed-current model.
+
+    \item Simulate the full and reduced models for a $12$-V step input and
+    zero load torque. Compare:
+    \begin{enumerate}
+        \item motor speed,
+        \item current,
+        \item steady-state speed,
+        \item dominant time constant.
+    \end{enumerate}
+
+    \item Repeat the comparison for
+    \begin{equation}
+    L\in\{0.005,\ 0.015,\ 0.08\}~\mathrm{H}.
+    \end{equation}
+
+    \item Define a quantitative criterion for deciding when the reduced model
+    is acceptable.
+
+    \item Explain how changing rotor inertia $J$, inductance $L$, or torque
+    constant $K_t$ changes both plant performance and the control-design
+    problem.
+\end{enumerate}
+
+
+\subsection*{Problem 5: Lyapunov Analysis of a Nonlinear Feedback System}
+
+Consider the nonlinear oscillator
+\begin{equation}
+m\ddot{x}
++
+c\dot{x}
++
+kx
++
+\alpha x^3
+=
+u,
+\end{equation}
+where
+\begin{equation}
+m>0,
+\qquad
+\alpha>0.
+\end{equation}
+
+Apply the PD controller
+\begin{equation}
+u=-K_px-K_d\dot{x}.
+\end{equation}
+
+\begin{enumerate}
+    \item Write the nonlinear closed-loop state-space model using
+    \begin{equation}
+    x_1=x,
+    \qquad
+    x_2=\dot{x}.
+    \end{equation}
+
+    \item Determine all equilibrium points as functions of
+    \begin{equation}
+    k+K_p.
+    \end{equation}
+
+    \item Consider the candidate Lyapunov function
+    \begin{equation}
+    V(x_1,x_2)
+    =
+    \frac{1}{2}mx_2^2
+    +
+    \frac{1}{2}(k+K_p)x_1^2
+    +
+    \frac{1}{4}\alpha x_1^4.
+    \end{equation}
+
+    Derive $\dot{V}$ along closed-loop trajectories.
+
+    \item Prove global asymptotic stability of the origin when
+    \begin{equation}
+    k+K_p>0,
+    \qquad
+    c+K_d>0.
+    \end{equation}
+
+    \item Explain what changes when
+    \begin{equation}
+    k+K_p<0.
+    \end{equation}
+    Determine the additional equilibria and classify them locally.
+
+    \item Replace the ideal controller with
+    \begin{equation}
+    u
+    =
+    \operatorname{sat}
+    \left(
+    -K_px-K_d\dot{x},
+    F_{\max}
+    \right).
+    \end{equation}
+
+    \item Derive the region in the $(x,\dot{x})$ plane in which the actuator
+    remains unsaturated:
+    \begin{equation}
+    |K_px+K_d\dot{x}|
+    \leq F_{\max}.
+    \end{equation}
+
+    \item Find the largest Lyapunov sublevel set
+    \begin{equation}
+    \Omega_\rho
+    =
+    \left\{
+    (x,\dot{x}):
+    V(x,\dot{x})\leq\rho
+    \right\}
+    \end{equation}
+    that is guaranteed to lie inside the unsaturated region.
+
+    \item Verify the analytical stability conclusions numerically for at
+    least four initial conditions inside and outside $\Omega_\rho$.
+
+    \item Explain why local linear eigenvalues cannot establish the global
+    stability properties obtained from the Lyapunov analysis.
+\end{enumerate}
+
+
+\subsection*{Problem 6: Modal Dynamics and Actuator Placement in a Two-Mass System}
+
+Two unit masses are connected by springs as described by
+\begin{equation}
+M\ddot{\mathbf{q}}
++
+C\dot{\mathbf{q}}
++
+K\mathbf{q}
+=
+B_fu,
+\end{equation}
+where
+\begin{equation}
+M=
+\begin{bmatrix}
+1&0\\
+0&1
+\end{bmatrix},
+\qquad
+K=
+k
+\begin{bmatrix}
+2&-1\\
+-1&2
+\end{bmatrix},
+\end{equation}
+and proportional damping is used:
+\begin{equation}
+C=\beta K.
+\end{equation}
+
+Use
+\begin{equation}
+k=20~\mathrm{N/m},
+\qquad
+\beta=0.015~\mathrm{s}.
+\end{equation}
+
+Consider three actuator placements:
+\begin{equation}
+B_f^{(1)}
+=
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix},
+\qquad
+B_f^{(2)}
+=
+\begin{bmatrix}
+0\\
+1
+\end{bmatrix},
+\qquad
+B_f^{(3)}
+=
+\begin{bmatrix}
+1\\
+-1
+\end{bmatrix}.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the four-state model using
+    \begin{equation}
+    \mathbf{x}
+    =
+    \begin{bmatrix}
+    \mathbf{q}\\
+    \dot{\mathbf{q}}
+    \end{bmatrix}.
+    \end{equation}
+
+    \item Solve the generalized eigenvalue problem
+    \begin{equation}
+    K\boldsymbol{\phi}_j
+    =
+    \omega_j^2
+    M\boldsymbol{\phi}_j
+    \end{equation}
+    and compute the natural frequencies and normalized mode shapes.
+
+    \item Transform the mechanical equations to modal coordinates
+    \begin{equation}
+    \mathbf{q}
+    =
+    \Phi\boldsymbol{\eta}.
+    \end{equation}
+
+    \item For each actuator placement, compute the modal input vector
+    \begin{equation}
+    \widetilde{B}_f
+    =
+    \Phi^TB_f.
+    \end{equation}
+
+    \item Identify which modes are weakly actuated or completely unactuated
+    by each placement.
+
+    \item Apply the initial condition
+    \begin{equation}
+    \mathbf{q}(0)
+    =
+    \begin{bmatrix}
+    1\\
+    -1
+    \end{bmatrix},
+    \qquad
+    \dot{\mathbf{q}}(0)=\mathbf{0},
+    \end{equation}
+    and determine which mode is initially excited.
+
+    \item For each actuator placement, design full-state feedback
+    \begin{equation}
+    u=-K_x\mathbf{x}
+    \end{equation}
+    to move the controllable closed-loop poles as far left as possible
+    while satisfying
+    \begin{equation}
+    \|K_x\|_2\leq 25.
+    \end{equation}
+
+    \item Compare the closed-loop responses and control efforts for the three
+    actuator placements.
+
+    \item Repeat the modal analysis after changing the second mass to
+    \begin{equation}
+    m_2=1.4~\mathrm{kg}.
+    \end{equation}
+
+    \item Explain how a physical design change can alter mode shapes,
+    actuator authority, and the controller that performs best.
+\end{enumerate}

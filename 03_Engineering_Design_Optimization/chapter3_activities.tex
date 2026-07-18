@@ -1,0 +1,609 @@
+
+\section{Advanced Activities}
+
+The following activities are intended for strong master's or PhD students.
+They emphasize constrained optimality, nonconvexity, numerical conditioning,
+total derivatives, simulation-based optimization, and multidisciplinary
+design optimization. MATLAB, Python, IPOPT, SNOPT, \texttt{fmincon},
+OpenMDAO, or equivalent tools may be used where specified.
+
+\subsection*{Problem 1: KKT Analysis of a Minimum-Mass Cantilever Beam}
+
+A rectangular cantilever beam has width $b$, height $h$, length $L$,
+elastic modulus $E$, material density $\rho$, and an end load $P$.
+Its mass is
+\begin{equation}
+m(b,h)=\rho Lbh.
+\end{equation}
+
+The maximum bending stress and tip displacement are
+\begin{equation}
+\sigma(b,h)=\frac{6PL}{bh^2},
+\end{equation}
+and
+\begin{equation}
+\delta(b,h)=\frac{4PL^3}{Ebh^3}.
+\end{equation}
+
+The optimization problem is
+\begin{align}
+\min_{b,h}\quad
+& \rho Lbh,
+\\
+\text{subject to}\quad
+& \frac{6PL}{bh^2}-\sigma_{\max}\leq0,
+\\
+& \frac{4PL^3}{Ebh^3}-\delta_{\max}\leq0,
+\\
+& b_{\min}\leq b\leq b_{\max},
+\\
+& h_{\min}\leq h\leq h_{\max}.
+\end{align}
+
+Use
+\begin{equation}
+L=1.2~\mathrm{m},
+\qquad
+P=8~\mathrm{kN},
+\qquad
+E=70~\mathrm{GPa},
+\end{equation}
+\begin{equation}
+\rho=2700~\mathrm{kg/m^3},
+\qquad
+\sigma_{\max}=120~\mathrm{MPa},
+\qquad
+\delta_{\max}=4~\mathrm{mm},
+\end{equation}
+and
+\begin{equation}
+0.01\leq b\leq0.12~\mathrm{m},
+\qquad
+0.02\leq h\leq0.20~\mathrm{m}.
+\end{equation}
+
+\begin{enumerate}
+    \item Write the Lagrangian, including multipliers for the stress,
+    displacement, and bound constraints.
+
+    \item Write all KKT conditions: stationarity, primal feasibility,
+    dual feasibility, and complementary slackness.
+
+    \item Assume initially that the stress and displacement constraints are
+    active and all bounds are inactive. Solve the two active constraints
+    analytically for $b$ and $h$.
+
+    \item Check whether the resulting design satisfies the variable bounds.
+
+    \item Compute the associated Lagrange multipliers and determine whether
+    the assumed active set satisfies dual feasibility.
+
+    \item Enumerate all physically plausible active sets involving:
+    \begin{enumerate}
+        \item stress only,
+        \item displacement only,
+        \item stress and displacement,
+        \item one performance constraint and one variable bound.
+    \end{enumerate}
+
+    \item Determine the globally optimal feasible design by comparing all
+    valid KKT candidates.
+
+    \item Interpret each nonzero multiplier as the local value of relaxing
+    its corresponding engineering requirement.
+\end{enumerate}
+
+
+\subsection*{Problem 2: Local and Global Minima in a Tilted Double-Well Problem}
+
+Consider the nonconvex function
+\begin{equation}
+f(x,y)
+=
+(x^2-1)^2
++
+(y-x)^2
++
+0.15x.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the gradient and Hessian.
+
+    \item Show that every stationary point satisfies
+    \begin{equation}
+    y=x
+    \end{equation}
+    and
+    \begin{equation}
+    4x^3-4x+0.15=0.
+    \end{equation}
+
+    \item Compute all real roots of the cubic equation to at least eight
+    significant digits.
+
+    \item Classify every stationary point using the Hessian eigenvalues.
+
+    \item Identify the local minima, the saddle point, and the global minimum.
+
+    \item Apply gradient descent with an Armijo backtracking line search from
+    the initial points
+    \begin{equation}
+    (-2,2),\quad
+    (-1,0),\quad
+    (0,0),\quad
+    (1,0),\quad
+    (2,-2).
+    \end{equation}
+
+    \item Repeat using Newton's method with line search.
+
+    \item Construct a basin-of-attraction plot on
+    \begin{equation}
+    -2\leq x\leq2,
+    \qquad
+    -2\leq y\leq2.
+    \end{equation}
+
+    \item Explain why convergence from several initial guesses provides
+    evidence about nonconvexity but does not prove global optimality.
+
+    \item Add the constraint
+    \begin{equation}
+    x+y\geq0
+    \end{equation}
+    and determine the constrained global minimum using KKT conditions.
+\end{enumerate}
+
+
+\subsection*{Problem 3: Scaling, Conditioning, and Gradient-Method Convergence}
+
+Consider the quadratic optimization problem
+\begin{equation}
+\min_{\mathbf{x}\in\mathbb{R}^3}
+\quad
+f(\mathbf{x})
+=
+\frac{1}{2}\mathbf{x}^TH\mathbf{x}
+-
+\mathbf{b}^T\mathbf{x},
+\end{equation}
+where
+\begin{equation}
+H=
+\begin{bmatrix}
+10^8&0&0\\
+0&1&0\\
+0&0&10^{-4}
+\end{bmatrix},
+\qquad
+\mathbf{b}=
+\begin{bmatrix}
+10^4\\
+1\\
+10^{-2}
+\end{bmatrix}.
+\end{equation}
+
+\begin{enumerate}
+    \item Compute the exact minimizer
+    \begin{equation}
+    \mathbf{x}^*=H^{-1}\mathbf{b}.
+    \end{equation}
+
+    \item Compute the $2$-norm condition number
+    \begin{equation}
+    \kappa_2(H).
+    \end{equation}
+
+    \item For fixed-step gradient descent,
+    \begin{equation}
+    \mathbf{x}^{(k+1)}
+    =
+    \mathbf{x}^{(k)}
+    -
+    \alpha
+    \nabla f
+    \left(
+    \mathbf{x}^{(k)}
+    \right),
+    \end{equation}
+    derive the largest stable step size.
+
+    \item Derive the optimal fixed step size
+    \begin{equation}
+    \alpha^*
+    =
+    \frac{2}{\lambda_{\max}+\lambda_{\min}},
+    \end{equation}
+    and the corresponding worst-case error contraction factor
+    \begin{equation}
+    q^*
+    =
+    \frac{\kappa_2(H)-1}
+    {\kappa_2(H)+1}.
+    \end{equation}
+
+    \item Estimate the number of iterations required to reduce the error norm
+    by a factor of $10^{-6}$.
+
+    \item Introduce the scaled variables
+    \begin{equation}
+    \mathbf{x}=S\mathbf{z},
+    \qquad
+    S=
+    \begin{bmatrix}
+    10^{-4}&0&0\\
+    0&1&0\\
+    0&0&10^2
+    \end{bmatrix}.
+    \end{equation}
+
+    \item Derive the scaled Hessian
+    \begin{equation}
+    \widetilde{H}=S^THS
+    \end{equation}
+    and compute its condition number.
+
+    \item Compare gradient descent, Newton's method, and BFGS on the original
+    and scaled formulations from
+    \begin{equation}
+    \mathbf{x}^{(0)}=
+    \begin{bmatrix}
+    1\\1\\1
+    \end{bmatrix}.
+    \end{equation}
+
+    \item Explain why variable scaling changes numerical behavior without
+    changing the underlying physical optimum.
+
+    \item Give one example of physical ill-conditioning that cannot be
+    eliminated by simple coordinate scaling.
+\end{enumerate}
+
+
+\subsection*{Problem 4: Total Derivatives through a Coupled Multidisciplinary Model}
+
+Consider two coupled disciplines:
+\begin{align}
+r_1
+&=
+y_1-x_1^2-\frac{1}{2}y_2
+=
+0,
+\\
+r_2
+&=
+y_2-\sin x_2-\frac{1}{4}y_1
+=
+0.
+\end{align}
+
+The objective and constraint are
+\begin{equation}
+f
+=
+(y_1-1)^2
++
+(y_2-0.5)^2
++
+0.1(x_1^2+x_2^2),
+\end{equation}
+and
+\begin{equation}
+g=y_1+y_2-2\leq0.
+\end{equation}
+
+The design bounds are
+\begin{equation}
+-1.5\leq x_1\leq1.5,
+\qquad
+-2\leq x_2\leq2.
+\end{equation}
+
+\begin{enumerate}
+    \item Write the coupled residual system in the compact form
+    \begin{equation}
+    \mathbf{r}
+    \left(
+    \mathbf{x},
+    \mathbf{y}
+    \right)
+    =
+    \mathbf{0}.
+    \end{equation}
+
+    \item Solve the coupled equations analytically for
+    \begin{equation}
+    y_1(\mathbf{x}),
+    \qquad
+    y_2(\mathbf{x}).
+    \end{equation}
+
+    \item Derive the total state sensitivity using the implicit-function
+    theorem:
+    \begin{equation}
+    \frac{d\mathbf{y}}{d\mathbf{x}}
+    =
+    -
+    \left(
+    \frac{\partial\mathbf{r}}{\partial\mathbf{y}}
+    \right)^{-1}
+    \frac{\partial\mathbf{r}}{\partial\mathbf{x}}.
+    \end{equation}
+
+    \item Derive the total derivatives
+    \begin{equation}
+    \frac{df}{d\mathbf{x}},
+    \qquad
+    \frac{dg}{d\mathbf{x}}.
+    \end{equation}
+
+    \item Evaluate the analytical total derivatives at
+    \begin{equation}
+    \mathbf{x}
+    =
+    \begin{bmatrix}
+    0.8\\0.4
+    \end{bmatrix}.
+    \end{equation}
+
+    \item Verify the derivatives using complex-step differentiation.
+
+    \item Show that using only the partial derivative
+    \begin{equation}
+    \frac{\partial f}{\partial\mathbf{x}}
+    \end{equation}
+    while ignoring
+    \begin{equation}
+    \frac{d\mathbf{y}}{d\mathbf{x}}
+    \end{equation}
+    gives an incorrect search direction.
+
+    \item Formulate and solve the problem using a multidisciplinary feasible
+    architecture in which the coupling equations are converged at every
+    design iteration.
+
+    \item Reformulate the same problem using an individual-discipline
+    feasible architecture in which $y_1$ and $y_2$ are optimization
+    variables and the coupling equalities are consistency constraints.
+
+    \item Compare the two formulations in terms of variable count,
+    constraint count, derivative structure, and convergence.
+\end{enumerate}
+
+
+\subsection*{Problem 5: Discrete Adjoint Sensitivities for Simulation-Based Optimization}
+
+Consider the nonlinear time-marching model
+\begin{equation}
+x_{k+1}
+=
+x_k
++
+h
+\left(
+-p_1x_k
+-p_2x_k^3
++u_k
+\right),
+\qquad
+k=0,\ldots,N-1,
+\end{equation}
+with
+\begin{equation}
+x_0=1,
+\qquad
+h=0.05,
+\qquad
+N=100.
+\end{equation}
+
+The design variables are
+\begin{equation}
+\mathbf{z}
+=
+\begin{bmatrix}
+p_1&
+p_2&
+u_0&
+u_1&
+\cdots&
+u_{N-1}
+\end{bmatrix}^{T}.
+\end{equation}
+
+Minimize
+\begin{equation}
+J
+=
+\frac{1}{2}
+\left(
+x_N-x_{\mathrm{target}}
+\right)^2
++
+\frac{h}{2}
+\sum_{k=0}^{N-1}
+\left(
+q x_k^2
++
+r u_k^2
+\right)
++
+\frac{\gamma}{2}
+\left(
+p_1^2+p_2^2
+\right),
+\end{equation}
+where
+\begin{equation}
+x_{\mathrm{target}}=0,
+\qquad
+q=1,
+\qquad
+r=0.02,
+\qquad
+\gamma=0.01.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the direct sensitivity recursion for
+    \begin{equation}
+    \frac{\partial x_k}{\partial z_j}.
+    \end{equation}
+
+    \item Determine the computational complexity of forming the complete
+    gradient using direct sensitivities.
+
+    \item Introduce a discrete adjoint sequence $\lambda_k$ and derive its
+    backward recursion.
+
+    \item Derive
+    \begin{equation}
+    \frac{\partial J}{\partial p_1},
+    \qquad
+    \frac{\partial J}{\partial p_2},
+    \qquad
+    \frac{\partial J}{\partial u_k}.
+    \end{equation}
+
+    \item Implement direct sensitivity, adjoint sensitivity, forward finite
+    difference, central finite difference, and complex-step gradients.
+
+    \item Perform a directional-derivative test using a random normalized
+    direction $\mathbf{v}$:
+    \begin{equation}
+    \frac{
+    J(\mathbf{z}+\epsilon\mathbf{v})
+    -
+    J(\mathbf{z})
+    }{\epsilon}
+    \approx
+    \nabla J(\mathbf{z})^T\mathbf{v}.
+    \end{equation}
+
+    \item Compare gradient errors for
+    \begin{equation}
+    10^{-2}\leq\epsilon\leq10^{-14}.
+    \end{equation}
+
+    \item Compare computational cost as $N$ increases from
+    \begin{equation}
+    100
+    \quad\text{to}\quad
+    10\,000.
+    \end{equation}
+
+    \item Explain why the adjoint method is especially attractive when the
+    number of design variables is large and the number of scalar outputs is
+    small.
+
+    \item Use an optimization solver to minimize $J$ subject to
+    \begin{equation}
+    0.1\leq p_1\leq3,
+    \qquad
+    0\leq p_2\leq2,
+    \qquad
+    -2\leq u_k\leq2.
+    \end{equation}
+\end{enumerate}
+
+
+\subsection*{Problem 6: OpenMDAO Benchmark using the Sellar Coupled Problem}
+
+Consider the classical two-discipline Sellar problem:
+\begin{align}
+y_1
+&=
+z_1^2+z_2+x-0.2y_2,
+\\
+y_2
+&=
+\sqrt{y_1}+z_1+z_2.
+\end{align}
+
+The optimization problem is
+\begin{align}
+\min_{x,z_1,z_2}\quad
+&
+f
+=
+x^2+z_2+y_1+e^{-y_2},
+\\
+\text{subject to}\quad
+&
+3.16-y_1\leq0,
+\\
+&
+y_2-24\leq0,
+\end{align}
+with bounds
+\begin{equation}
+0\leq x\leq10,
+\qquad
+-10\leq z_1\leq10,
+\qquad
+0\leq z_2\leq10.
+\end{equation}
+
+\begin{enumerate}
+    \item Identify:
+    \begin{enumerate}
+        \item local design variables,
+        \item shared design variables,
+        \item discipline outputs,
+        \item coupling variables,
+        \item system-level objective and constraints.
+    \end{enumerate}
+
+    \item Derive the coupled residual equations.
+
+    \item Derive the fixed-point iteration that results from solving the
+    disciplines in Gauss--Seidel order.
+
+    \item Determine the local convergence condition for the coupling
+    iteration from the spectral radius of the iteration Jacobian.
+
+    \item Implement the multidisciplinary feasible formulation in OpenMDAO,
+    using a nonlinear block Gauss--Seidel or Newton solver for the coupled
+    analysis.
+
+    \item Supply exact partial derivatives for both disciplines and use
+    OpenMDAO's total-derivative check.
+
+    \item Solve the optimization using at least three different initial
+    designs.
+
+    \item Reformulate the problem using an individual-discipline feasible
+    architecture by promoting $y_1$ and $y_2$ to design variables and adding
+    consistency constraints.
+
+    \item Compare the two architectures in terms of:
+    \begin{enumerate}
+        \item number of design variables,
+        \item number of constraints,
+        \item coupling-solver iterations,
+        \item optimizer iterations,
+        \item total derivative accuracy,
+        \item final objective value.
+    \end{enumerate}
+
+    \item Perturb the discipline equations by replacing
+    \begin{equation}
+    -0.2y_2
+    \end{equation}
+    with
+    \begin{equation}
+    -\beta y_2,
+    \end{equation}
+    where
+    \begin{equation}
+    0.1\leq\beta\leq0.8.
+    \end{equation}
+    Determine how coupling strength affects fixed-point convergence and
+    optimization performance.
+
+    \item Explain why a converged multidisciplinary analysis does not by
+    itself prove that the optimization result is globally optimal or
+    numerically reliable.
+\end{enumerate}

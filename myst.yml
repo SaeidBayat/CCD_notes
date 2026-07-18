@@ -1,0 +1,132 @@
+version: 1
+project:
+  id: d2c12083-8095-432e-b7b0-07c9d956add7
+  title: Control Co-Design
+  description: Integrated optimization of physical and control systems.
+  plugins:
+    - type: javascript
+      path: ./plugins/activities-toc-headings.mjs
+  toc:
+    - file: index.ipynb
+    - file: advice.md
+    - title: "Chapter 0: Mathematical Prerequisites"
+      children:
+        - file: 00_math_foundations/00-index.ipynb
+        - file: 00_math_foundations/01-notation-and-functions.md
+        - file: 00_math_foundations/02-calculus-and-linear-algebra.md
+        - file: 00_math_foundations/03-differential-equations-and-state-space.md
+        - file: 00_math_foundations/04-optimization-and-discretization.md
+        - file: 00_math_foundations/05-computational-preparation.md
+        - file: 00_math_foundations/06-summary-and-problems.md
+    - title: "Chapter 1: Introduction to Control Co-Design"
+      children:
+        - file: 01_introduction_to_control_co_design/00-index.md
+        - file: 01_introduction_to_control_co_design/01-active-systems.md
+        - file: 01_introduction_to_control_co_design/02-sequential-and-ccd.md
+        - file: 01_introduction_to_control_co_design/03-plant-control-coupling.md
+        - file: 01_introduction_to_control_co_design/04-teaching-example.md
+        - file: 01_introduction_to_control_co_design/05-applications-and-screening.md
+        - file: 01_introduction_to_control_co_design/06-responsible-practice.md
+        - file: 01_introduction_to_control_co_design/07-summary-and-problems.md
+    - title: "Chapter 2: Dynamic Systems and Feedback Control"
+      children:
+        - file: 02_Dynamic_Systems_and_Feedback_Control/00-index.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/01-physical-system-modeling.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/02-states-inputs-outputs-disturbances.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/03-state-space-representation.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/04-open-loop-and-closed-loop.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/05-stability-and-feedback.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/06-plant-design-and-dynamics.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/07-worked-examples.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/08-summary-and-problems.md
+    - title: "Chapter 3: Engineering Design Optimization"
+      children:
+        - file: 03_Engineering_Design_Optimization/00-index.md
+        - file: 03_Engineering_Design_Optimization/01-formulating-design-optimization.md
+        - file: 03_Engineering_Design_Optimization/02-feasible-space-and-optima.md
+        - file: 03_Engineering_Design_Optimization/03-gradient-based-optimization.md
+        - file: 03_Engineering_Design_Optimization/04-constrained-optimization-and-scaling.md
+        - file: 03_Engineering_Design_Optimization/05-multidisciplinary-design-optimization.md
+        - file: 03_Engineering_Design_Optimization/06-dynamic-system-optimization.md
+        - file: 03_Engineering_Design_Optimization/07-practical-workflow.md
+        - file: 03_Engineering_Design_Optimization/08-summary-and-problems.md
+    - title: "Chapter 4: Mathematical Formulation of Control Co-Design"
+      children:
+        - file: 04_Mathematical_Formulation_of_CCD/00-index.md
+        - file: 04_Mathematical_Formulation_of_CCD/01-formulation-and-design-variables.md
+        - file: 04_Mathematical_Formulation_of_CCD/02-trajectories-and-dynamics.md
+        - file: 04_Mathematical_Formulation_of_CCD/03-path-and-boundary-constraints.md
+        - file: 04_Mathematical_Formulation_of_CCD/04-objective-function-forms.md
+        - file: 04_Mathematical_Formulation_of_CCD/05-general-continuous-time-formulation.md
+        - file: 04_Mathematical_Formulation_of_CCD/06-worked-examples.md
+        - file: 04_Mathematical_Formulation_of_CCD/07-numerical-transition-and-mistakes.md
+        - file: 04_Mathematical_Formulation_of_CCD/08-summary-and-problems.md
+    - title: "Chapter 5: Control Co-Design Architectures and Coordination"
+      children:
+        - file: 05_CCD_Architectures_and_Coordination/00-index.md
+        - file: 05_CCD_Architectures_and_Coordination/01-architecture-landscape-and-single-pass.md
+        - file: 05_CCD_Architectures_and_Coordination/02-iterative-sequential-design.md
+        - file: 05_CCD_Architectures_and_Coordination/03-nested-ccd.md
+        - file: 05_CCD_Architectures_and_Coordination/04-simultaneous-ccd.md
+        - file: 05_CCD_Architectures_and_Coordination/05-equivalence-and-computational-tradeoffs.md
+        - file: 05_CCD_Architectures_and_Coordination/06-choosing-an-architecture.md
+        - file: 05_CCD_Architectures_and_Coordination/07-worked-examples-and-comparison.md
+        - file: 05_CCD_Architectures_and_Coordination/08-summary-and-problems.md
+    - title: "Chapter 6: Optimal Control and Closed-Loop Control Co-Design"
+      children:
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/00-index.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/01-open-loop-optimal-control.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/02-trajectories-versus-controller-parameters.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/03-feedback-controller-co-design.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/04-future-information-and-availability.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/05-model-predictive-control.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/06-from-oloc-to-implementable-control.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/07-worked-examples-and-comparison.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/08-summary-and-problems.md
+    - title: "Chapter 7: Numerical Methods for Control Co-Design"
+      children:
+        - file: 07_Numerical_Methods_for_CCD/00-index.md
+        - file: 07_Numerical_Methods_for_CCD/01-discretization-and-method-landscape.md
+        - file: 07_Numerical_Methods_for_CCD/02-shooting-and-multiple-shooting.md
+        - file: 07_Numerical_Methods_for_CCD/03-direct-transcription.md
+        - file: 07_Numerical_Methods_for_CCD/04-collocation-and-defects.md
+        - file: 07_Numerical_Methods_for_CCD/05-quadrature-and-sparse-nlp.md
+        - file: 07_Numerical_Methods_for_CCD/06-derivative-computation.md
+        - file: 07_Numerical_Methods_for_CCD/07-scaling-refinement-and-verification.md
+        - file: 07_Numerical_Methods_for_CCD/08-worked-example-and-workflow.md
+        - file: 07_Numerical_Methods_for_CCD/09-summary-and-problems.md
+    - title: "Chapter 8: Practical CCD Studies and Advanced Topics"
+      children:
+        - file: 08_Practical_CCD_Studies/00-index.md
+        - file: 08_Practical_CCD_Studies/01-active-suspension-model-and-formulation.md
+        - file: 08_Practical_CCD_Studies/02-suspension-architecture-comparison.md
+        - file: 08_Practical_CCD_Studies/03-uncertainty-and-robustness.md
+        - file: 08_Practical_CCD_Studies/04-model-fidelity-and-surrogates.md
+        - file: 08_Practical_CCD_Studies/05-wind-wave-energy-ccd.md
+        - file: 08_Practical_CCD_Studies/06-hardware-implementation.md
+        - file: 08_Practical_CCD_Studies/07-reproducibility-and-validation.md
+        - file: 08_Practical_CCD_Studies/08-practical-workflow-and-examples.md
+        - file: 08_Practical_CCD_Studies/09-summary-and-problems.md
+  # To autogenerate a Table of Contents, run "myst init --write-toc"
+  exports:
+    - format: pdf
+      template: ./templates/plain_latex_palatino
+      output: exports/notes.pdf
+site:
+  template: book-theme
+  options:
+    style: ./custom.css
+    scripts:
+      - ./assets/processing-banner.js
+      - ./assets/lightmode-banner.js
+      - ./assets/activities-toc.js
+    hide_footer_links: false
+    hide_toc: false
+    favicon: ./assets/favicon.ico
+    logo_text: "Control Co-Design"
+    folders: true
+  parts:
+    primary_sidebar_footer: ./assets/activities-toc-loader.md
+  actions:
+    - title: "Download as PDF"
+      url: ./exports/notes.pdf

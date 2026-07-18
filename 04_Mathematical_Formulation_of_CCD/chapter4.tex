@@ -1,0 +1,778 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{bm}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDtan}{RGB}{247,239,225}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+\definecolor{CCDpurple}{RGB}{124,58,237}
+\definecolor{CCDred}{RGB}{178,58,72}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 4: Mathematical Formulation of Control Co-Design},
+  pdfauthor={Saeid Bayat}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 4: Mathematical Formulation of CCD}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\xp}{\vect{x}_p}
+\newcommand{\xc}{\vect{x}_c}
+\newcommand{\xstate}{\vect{x}}
+\newcommand{\uvec}{\vect{u}}
+\newcommand{\yvec}{\vect{y}}
+\newcommand{\dvec}{\vect{d}}
+\newcommand{\R}{\mathbb{R}}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\begin{document}
+
+% Cover
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Physical and Control Systems\par}
+
+\vspace{2.15in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 4\par}
+\vspace{0.18in}
+\noindent\begin{minipage}{0.92\linewidth}
+\raggedright
+{\fontsize{22}{26}\selectfont\bfseries\color{black!85} Mathematical Formulation of Control Co-Design\par}
+\end{minipage}
+\vspace{0.20in}
+\par\noindent{\large\color{CCDgray} Variables, objectives, and\\ constraints for dynamic engineering systems\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large A control co-design problem becomes solvable only after the engineering question is written as an optimization problem with clear variables, objectives, and constraints.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+In the previous chapters, we discussed why control co-design (CCD) is important and reviewed the dynamic-system and feedback ideas needed to understand controlled engineering systems. We are now ready to answer a practical question: \emph{How do we write a CCD problem mathematically?}
+
+This question is more important than it first appears. A weak mathematical formulation can make a good engineering idea impossible to solve numerically. Conversely, a clear formulation often reveals the structure of a problem, the tradeoffs among design decisions, and the right computational approach. In CCD, the formulation must describe not only plant variables and controller variables, but also time-dependent trajectories, system dynamics, and the path and boundary constraints that arise from physics and engineering requirements.
+
+This chapter develops that mathematical language. We define plant and control design variables, explain the role of state trajectories, express the system dynamics as equality constraints, distinguish path constraints from boundary constraints, and present the major objective-function forms used in dynamic optimization: Lagrange, Mayer, and Bolza. We conclude with a general continuous-time CCD formulation that serves as the foundation for the numerical methods developed in later chapters.
+
+\begin{learningobjectives}
+  \item identify plant design variables, control design variables, state trajectories, and control trajectories in a CCD problem;
+  \item express system dynamics as equality constraints;
+  \item distinguish path constraints from boundary constraints and write examples of each;
+  \item explain the difference among Lagrange, Mayer, and Bolza objective functions;
+  \item write a general continuous-time mathematical formulation of a CCD problem;
+  \item interpret how a formulation for dynamic systems differs from a static optimization problem.
+\end{learningobjectives}
+
+\section{Why Mathematical Formulation Matters}
+
+A CCD study begins as an engineering question, not as a set of equations. For example:
+\begin{quote}
+\emph{What tower geometry and pitch-control tuning should we choose to reduce wind-turbine loads while maintaining power quality?}
+\end{quote}
+Or:
+\begin{quote}
+\emph{What suspension parameters and feedback gains should be selected to balance ride comfort, road holding, and actuator effort?}
+\end{quote}
+
+To solve such questions systematically, we must convert them into optimization problems. That conversion requires answers to several formulation questions:
+\begin{itemize}[leftmargin=1.4em]
+  \item What are the \textbf{decision variables}?
+  \item What quantity should be \textbf{minimized or maximized}?
+  \item What \textbf{physical laws} must the design obey?
+  \item What \textbf{engineering limits} must not be violated?
+  \item Over what \textbf{time interval} does the problem apply?
+\end{itemize}
+
+Figure~\ref{fig:ch4-ingredients} summarizes these formulation ingredients.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp4_1.png}
+\caption{Main ingredients of a mathematical control co-design formulation. A CCD problem includes plant and control decisions, time-dependent trajectories, an objective, and several classes of constraints.}
+\label{fig:ch4-ingredients}
+\end{figure}
+
+A formulation is not merely a bookkeeping exercise. It determines what the optimizer is allowed to do. If the variables are poorly defined, the objective does not reflect the true engineering goal, or the constraints omit essential physics, then the result may be numerically polished but physically meaningless.
+
+\section{Plant Design Variables}
+
+\subsection{Meaning of plant variables}
+
+Plant design variables are the physical-system decisions to be optimized. They describe features of the plant, structure, mechanism, or hardware. We denote the vector of plant design variables by
+\begin{equation}
+\xp \in \R^{n_p}.
+\end{equation}
+
+Examples of plant variables include:
+\begin{itemize}[leftmargin=1.4em]
+  \item stiffness and damping coefficients in a suspension,
+  \item structural dimensions of a beam or frame,
+  \item inertia and mass-distribution parameters,
+  \item actuator placement or sensor location,
+  \item geometric parameters of a buoy, rotor, or airfoil,
+  \item power-take-off parameters in a marine energy system.
+\end{itemize}
+
+The important point is that these variables usually enter the dynamic model directly. They may affect the mass matrix, stiffness matrix, damping coefficients, actuator authority, or output equations.
+
+\subsection{Examples}
+
+\textbf{Vehicle suspension.} A quarter-car suspension may include spring stiffness $k_s$, damper coefficient $c_s$, and tire stiffness $k_t$ as plant variables.
+
+\textbf{Robot arm.} Link lengths, gear ratios, motor sizes, and joint stiffness values may all be plant variables.
+
+\textbf{Wind turbine.} Blade structural properties, tower diameter, drivetrain inertia, or control-oriented design settings may be plant variables.
+
+\textbf{Marine energy device.} Buoy radius, draft, PTO characteristics, or mooring stiffness may be plant variables.
+
+\subsection{Bounds on plant variables}
+
+Plant variables are usually subject to bounds,
+\begin{equation}
+\xp^{L} \le \xp \le \xp^{U},
+\end{equation}
+where the lower and upper bounds reflect manufacturability, physical realism, safety, or prior design decisions.
+
+A lower bound might prevent negative masses or stiffnesses. An upper bound might reflect allowable size, cost, or packaging constraints.
+
+\section{Control Design Variables}
+
+\subsection{Meaning of control variables}
+
+Control design variables are the choices that define how the controller behaves. We denote them by
+\begin{equation}
+\xc \in \R^{n_c}.
+\end{equation}
+
+Figure~\ref{fig:ch4-plant-control} compares common plant and control variable types.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp4_2.png}
+\caption{Examples of plant design variables and control design variables in a CCD study. The two classes are different, but they must be chosen together because both affect performance.}
+\label{fig:ch4-plant-control}
+\end{figure}
+
+Typical control variables include:
+\begin{itemize}[leftmargin=1.4em]
+  \item PID or state-feedback gains,
+  \item controller weighting matrices,
+  \item reference-trajectory parameters,
+  \item feedforward coefficients,
+  \item switching thresholds or logic parameters,
+  \item sampling time or prediction-horizon settings,
+  \item coefficients in a control-law parameterization.
+\end{itemize}
+
+Sometimes the control is described by a finite parameter vector $\xc$. In other problems, the control input itself is treated as a time-varying decision variable, such as $u(t)$ or a sampled control sequence.
+
+\subsection{Parameterized control versus free control trajectories}
+
+There are two common ways to represent control decisions:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Parameterized control design.} The control law depends on a finite set of parameters $\xc$. For example,
+  \begin{equation}
+  u(t) = -K(\xc) x(t).
+  \end{equation}
+  Here the optimization chooses the parameters inside the controller.
+
+  \item \textbf{Direct control trajectory optimization.} The control function $u(t)$ is itself a decision variable over time. This is common in optimal control.
+\end{enumerate}
+
+In CCD, either representation may be used. The best choice depends on the problem structure and the solution method.
+
+\section{State Trajectories and Control Trajectories}
+
+\subsection{Time-dependent decisions}
+
+Unlike static optimization, dynamic optimization involves functions of time. The state trajectory
+\begin{equation}
+\xstate(t) \in \R^{n_x}, \qquad t \in [t_0,t_f],
+\end{equation}
+represents the evolution of the system over time. The control trajectory is
+\begin{equation}
+\uvec(t) \in \R^{n_u}, \qquad t \in [t_0,t_f].
+\end{equation}
+
+Figure~\ref{fig:ch4-trajectories} emphasizes that these trajectories are not arbitrary curves; they must be consistent with the system dynamics and constraints.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.84\textwidth]{figures/fig_chp4_3.png}
+\caption{State and control trajectories. In dynamic optimization and CCD, the decision process must account for how states and controls evolve over time.}
+\label{fig:ch4-trajectories}
+\end{figure}
+
+\subsection{Why trajectories matter}
+
+In a dynamic system, performance often depends on what happens over an interval, not only at one instant. For example:
+\begin{itemize}[leftmargin=1.4em]
+  \item comfort depends on acceleration over time,
+  \item energy consumption depends on actuator effort over time,
+  \item tracking quality depends on time-history error,
+  \item stress or load limits may need to hold for the entire maneuver.
+\end{itemize}
+
+Thus, a CCD problem cannot usually be written only in terms of static variables. It must account for trajectories.
+
+\subsection{Initial state and terminal state}
+
+The state at the beginning and end of the interval may be specified or constrained:
+\begin{equation}
+\xstate(t_0) = \xstate_0,
+\qquad
+\xstate(t_f) \in \mathcal{X}_f.
+\end{equation}
+
+In some problems, the final time $t_f$ is fixed. In others, it is also a decision variable.
+
+\section{System Dynamics as Equality Constraints}
+
+\subsection{The core idea}
+
+The dynamics are the heart of a dynamic optimization problem. They enforce the physical laws. In CCD, these laws are usually written as differential equations. The general continuous-time model may be expressed as
+\begin{equation}
+\dot{\xstate}(t)=f\big(\xstate(t),\uvec(t),\xp,\xc,\dvec(t),t\big).
+\label{eq:ch4-dynamics-general}
+\end{equation}
+
+This relation is an \emph{equality constraint}. It is not simply extra information; it restricts the feasible set of trajectories.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp4_4.png}
+\caption{System dynamics expressed as equality constraints. The optimizer must search only among trajectories that satisfy the physical model.}
+\label{fig:ch4-dynamics-equality}
+\end{figure}
+
+\subsection{Residual form}
+
+Optimization problems are often written in residual form:
+\begin{equation}
+\dot{\xstate}(t)-f\big(\xstate(t),\uvec(t),\xp,\xc,\dvec(t),t\big)=0,
+\qquad t\in[t_0,t_f].
+\label{eq:ch4-residual}
+\end{equation}
+
+This emphasizes that the dynamics are constraints to be satisfied at all time.
+
+\subsection{Example: mass-spring-damper dynamics}
+
+Suppose a controlled mass-spring-damper system has plant variables
+\begin{equation}
+\xp = [m, c, k]^T,
+\end{equation}
+and a time-varying control input $u(t)$. With states $x_1=x$ and $x_2=\dot{x}$, the dynamics are
+\begin{align}
+\dot{x}_1 &= x_2, \\
+\dot{x}_2 &= -\frac{k}{m}x_1 - \frac{c}{m}x_2 + \frac{1}{m}u.
+\end{align}
+
+These equations define the feasible state trajectories for the design.
+
+\subsection{Equality constraints beyond differential equations}
+
+CCD problems may also include algebraic equality constraints, such as:
+\begin{itemize}[leftmargin=1.4em]
+  \item kinematic loop-closure conditions,
+  \item geometric compatibility constraints,
+  \item steady-state equations,
+  \item periodicity conditions,
+  \item actuator or sensor calibration relations.
+\end{itemize}
+
+Therefore, the full equality-constraint set may be larger than the state equations alone.
+
+\section{Path and Boundary Constraints}
+
+\subsection{Path constraints}
+
+A path constraint must hold throughout the time interval. In general form,
+\begin{equation}
+ g\big(\xstate(t),\uvec(t),\xp,\xc,\dvec(t),t\big) \le 0,
+ \qquad t\in[t_0,t_f].
+ \label{eq:ch4-path}
+\end{equation}
+
+Path constraints express limits that cannot be violated at any time. Examples include:
+\begin{itemize}[leftmargin=1.4em]
+  \item actuator saturation,
+  \item displacement or angle limits,
+  \item stress or load limits,
+  \item thermal limits,
+  \item speed limits,
+  \item safety envelopes.
+\end{itemize}
+
+\subsection{Boundary constraints}
+
+Boundary constraints involve the start, end, or selected time points of the trajectory. A general form is
+\begin{equation}
+ b\big(\xstate(t_0),\xstate(t_f),\uvec(t_0),\uvec(t_f),\xp,\xc,t_0,t_f\big)=0,
+ \label{eq:ch4-boundary}
+\end{equation}
+or, more generally, inequalities of the same type.
+
+Examples include:
+\begin{itemize}[leftmargin=1.4em]
+  \item fixed initial state,
+  \item desired final position,
+  \item periodicity conditions,
+  \item final-time performance limits,
+  \item endpoint compatibility or mission requirements.
+\end{itemize}
+
+Figure~\ref{fig:ch4-path-boundary} compares path constraints and boundary constraints.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp4_5.png}
+\caption{Path constraints and boundary constraints. Path constraints must hold for every time, whereas boundary constraints apply only at the beginning, end, or other designated points.}
+\label{fig:ch4-path-boundary}
+\end{figure}
+
+\subsection{Simple examples}
+
+\textbf{Actuator limit.} If the actuator force must remain within bounds,
+\begin{equation}
+|u(t)| \le u_{\max}, \qquad \forall t.
+\end{equation}
+This is a path constraint.
+
+\textbf{Terminal position requirement.} If a robot end effector must arrive at a target,
+\begin{equation}
+q(t_f)=q_f.
+\end{equation}
+This is a boundary constraint.
+
+\keyideabox{\textbf{Key idea.} Path constraints protect the design at all times. Boundary constraints enforce what must happen at the beginning or end of the maneuver or operation. The distinction is conceptually simple but practically important because it affects both the modeling and the numerical solution method.}
+
+\section{Objective Functions: Lagrange, Mayer, and Bolza Forms}
+
+\subsection{General role of the objective}
+
+The objective function measures what ``good'' means. Without an objective, the formulation only describes feasible designs, not preferred designs. In CCD, objectives may represent energy use, ride quality, tracking error, absorbed power, structural loads, or combinations of multiple goals.
+
+Three classical objective forms are used in dynamic optimization.
+
+\subsection{Lagrange form}
+
+The \emph{Lagrange form} accumulates a running cost over time:
+\begin{equation}
+J = \int_{t_0}^{t_f} L\big(\xstate(t),\uvec(t),\xp,\xc,t\big)\,dt.
+\label{eq:ch4-lagrange}
+\end{equation}
+
+This is appropriate when performance depends on a time history, such as:
+\begin{itemize}[leftmargin=1.4em]
+  \item total energy use,
+  \item integrated tracking error,
+  \item mean-squared acceleration,
+  \item integrated control effort.
+\end{itemize}
+
+Example:
+\begin{equation}
+J = \int_{t_0}^{t_f} \big(q_1 x(t)^2 + q_2 \dot{x}(t)^2 + r u(t)^2\big)dt.
+\end{equation}
+
+\subsection{Mayer form}
+
+The \emph{Mayer form} depends only on terminal quantities:
+\begin{equation}
+J = \Phi\big(\xstate(t_f),\xp,\xc,t_f\big).
+\label{eq:ch4-mayer}
+\end{equation}
+
+This is appropriate when only the final state or final time matters. Examples include minimizing final error, maximizing final stored energy, or minimizing final-time cost.
+
+Example:
+\begin{equation}
+J = \big(x(t_f)-x_f\big)^2.
+\end{equation}
+
+\subsection{Bolza form}
+
+The \emph{Bolza form} combines both types:
+\begin{equation}
+J = \Phi\big(\xstate(t_f),\xp,\xc,t_f\big) + \int_{t_0}^{t_f} L\big(\xstate(t),\uvec(t),\xp,\xc,t\big)dt.
+\label{eq:ch4-bolza}
+\end{equation}
+
+This is the most general form used in practice because many engineering objectives include both running and terminal terms.
+
+Figure~\ref{fig:ch4-objectives} compares the three forms.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp4_6.png}
+\caption{The Lagrange, Mayer, and Bolza objective forms. The Bolza form combines a terminal contribution and an integral contribution.}
+\label{fig:ch4-objectives}
+\end{figure}
+
+\subsection{Relationships among the forms}
+
+These forms are closely related. In many settings, a Mayer problem can be converted into a Bolza problem, a Lagrange problem can be converted into a Bolza problem, and a Bolza problem can be rewritten as a Mayer problem by introducing an auxiliary state. However, keeping the conceptual distinction is useful for formulating engineering problems clearly.
+
+\section{A General Continuous-Time CCD Formulation}
+
+We now combine the pieces. A broad continuous-time CCD problem can be written as:
+\begin{align}
+\min_{\xp,\xc,\xstate(\cdot),\uvec(\cdot)} \quad & J = \Phi\big(\xstate(t_f),\xp,\xc,t_f\big) + \int_{t_0}^{t_f} L\big(\xstate(t),\uvec(t),\xp,\xc,t\big)dt 
+\label{eq:ch4-general-obj}\\[0.2em]
+\text{subject to} \quad & \dot{\xstate}(t)=f\big(\xstate(t),\uvec(t),\xp,\xc,\dvec(t),t\big), \qquad t\in[t_0,t_f],
+\label{eq:ch4-general-dyn}\\
+& g\big(\xstate(t),\uvec(t),\xp,\xc,\dvec(t),t\big) \le 0, \qquad t\in[t_0,t_f],
+\label{eq:ch4-general-path}\\
+& b\big(\xstate(t_0),\xstate(t_f),\uvec(t_0),\uvec(t_f),\xp,\xc,t_0,t_f\big)=0,
+\label{eq:ch4-general-bdry}\\
+& \xp^{L} \le \xp \le \xp^{U},
+\qquad
+\xc^{L} \le \xc \le \xc^{U}.
+\label{eq:ch4-general-bounds}
+\end{align}
+
+This formulation appears abstract, but it is powerful because many dynamic-system design problems fit inside it.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp4_7.png}
+\caption{A general control co-design formulation. The decision variables, objective, dynamic equations, and constraint sets together define the problem.}
+\label{fig:ch4-general-form}
+\end{figure}
+
+\subsection{Interpretation of each component}
+
+Equation~\eqref{eq:ch4-general-obj} defines the performance measure. Equations~\eqref{eq:ch4-general-dyn}--\eqref{eq:ch4-general-path} encode the laws of motion and the time-dependent engineering limits. Equation~\eqref{eq:ch4-general-bdry} enforces endpoint conditions. Equation~\eqref{eq:ch4-general-bounds} restricts the finite-dimensional design variables.
+
+\subsection{Continuous-time formulation versus numerical formulation}
+
+The problem above is an infinite-dimensional optimization problem because the unknown trajectories are functions of time. To solve it numerically, we later approximate the trajectories with finite parameters or samples. That step is called discretization, transcription, or parameterization.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{figures/fig_chp4_8.png}
+\caption{Where formulation fits in the overall dynamic-optimization workflow. This chapter focuses on the mathematical problem statement that precedes numerical transcription and solution.}
+\label{fig:ch4-workflow}
+\end{figure}
+
+\section{Worked Examples}
+
+\subsection{Worked Example 4.1: a simple CCD formulation for a mass-spring-damper system}
+
+Suppose we wish to choose a spring stiffness $k$ and a proportional-derivative control law
+\begin{equation}
+ u(t) = -K_p x(t) - K_d \dot{x}(t)
+\end{equation}
+to reduce motion and control effort for a mass-spring-damper system with fixed mass $m$ and damping coefficient $c$.
+
+\textbf{Step 1: identify decision variables.}
+Let
+\begin{equation}
+\xp = [k], \qquad \xc = [K_p, K_d].
+\end{equation}
+
+\textbf{Step 2: define states.}
+Choose
+\begin{equation}
+ x_1=x, \qquad x_2=\dot{x}.
+\end{equation}
+
+\textbf{Step 3: write the dynamics.}
+\begin{align}
+\dot{x}_1 &= x_2, \\
+\dot{x}_2 &= -\frac{k}{m}x_1 - \frac{c}{m}x_2 + \frac{1}{m}u.
+\end{align}
+Substitute the control law to obtain a closed-loop model in terms of $k$, $K_p$, and $K_d$.
+
+\textbf{Step 4: define the objective.}
+A natural Bolza objective is
+\begin{equation}
+J = \int_{t_0}^{t_f} \big(q_x x_1(t)^2 + q_v x_2(t)^2 + r u(t)^2\big)dt.
+\end{equation}
+
+\textbf{Step 5: define bounds and constraints.}
+We may require
+\begin{equation}
+0 < k_{\min} \le k \le k_{\max},
+\qquad
+0 \le K_p \le K_{p,\max},
+\qquad
+0 \le K_d \le K_{d,\max},
+\end{equation}
+and perhaps a path constraint
+\begin{equation}
+|u(t)| \le u_{\max}.
+\end{equation}
+
+This is a complete CCD formulation, even though it is simple.
+
+\subsection{Worked Example 4.2: active suspension formulation}
+
+Consider a quarter-car active suspension with plant variables
+\begin{equation}
+\xp = [k_s, c_s]^T,
+\end{equation}
+and control gains
+\begin{equation}
+\xc = [K_1, K_2, K_3, K_4]^T.
+\end{equation}
+
+A possible objective is
+\begin{equation}
+J = \int_{t_0}^{t_f} \Big(w_1 a_b(t)^2 + w_2 z_s(t)^2 + w_3 u(t)^2\Big)dt,
+\end{equation}
+where $a_b$ is body acceleration and $z_s$ is suspension deflection. Possible path constraints include suspension travel limits, tire-load limits, and actuator saturation. The dynamics arise from the quarter-car equations of motion.
+
+This example shows the typical pattern of CCD for dynamic systems: plant variables and controller variables are optimized together while the state trajectories obey the model.
+
+\subsection{Worked Example 4.3: classifying terms in a formulation}
+
+Suppose a wind-energy problem uses the objective
+\begin{equation}
+J = -P(t_f) + \int_{t_0}^{t_f} \big(0.02\,\theta_p(t)^2 + 0.1\,M_t(t)^2\big)dt,
+\end{equation}
+where $P(t_f)$ is final stored or delivered energy, $\theta_p$ is blade pitch angle, and $M_t$ is tower-base moment.
+
+The term $-P(t_f)$ is a \textbf{Mayer term}. The integral is a \textbf{Lagrange term}. Together they define a \textbf{Bolza objective}.
+
+\section{Common Formulation Mistakes}
+
+The most common CCD formulation mistakes are conceptual, not computational.
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Leaving out important physics.} If the formulation ignores critical dynamics, the result may not transfer to the real system.
+  \item \textbf{Confusing variables and parameters.} A quantity should be a decision variable only if the optimizer is allowed to change it.
+  \item \textbf{Using an objective that does not match the engineering goal.} For example, minimizing control effort alone may produce poor tracking.
+  \item \textbf{Treating path constraints as endpoint constraints.} This can allow dangerous violations during the time interval.
+  \item \textbf{Over-constraining the problem.} Excessively tight constraints may eliminate all feasible designs.
+  \item \textbf{Forgetting bounds.} Without variable bounds, the optimizer may search unrealistic regions.
+  \item \textbf{Mixing open-loop and closed-loop ideas inconsistently.} If the control is parameterized as feedback, the formulation should reflect that structure.
+\end{enumerate}
+
+\section{From Continuous-Time Formulation to Numerical Optimization}
+
+A continuous-time CCD formulation is conceptually complete, but a computer cannot directly optimize over arbitrary functions. The next step is to convert the problem into a finite-dimensional nonlinear program (NLP). This can be done by:
+\begin{itemize}[leftmargin=1.4em]
+  \item parameterizing states and controls,
+  \item sampling the trajectories at finite points,
+  \item enforcing dynamic constraints through simulation or defect equations,
+  \item approximating the integral objective numerically.
+\end{itemize}
+
+For example, a Lagrange term may be approximated by quadrature:
+\begin{equation}
+\int_{t_0}^{t_f} L(t)dt \approx \sum_{i=1}^{N} w_i L(t_i).
+\end{equation}
+
+The details of that transcription process are the subject of later chapters. For now, the important point is that good numerical methods begin with a good mathematical formulation.
+
+\keyideabox{\textbf{CCD viewpoint.} In a static design problem, the variables are usually just numbers. In a dynamic CCD problem, the variables include both finite-dimensional design parameters and time-dependent trajectories. The formulation must therefore combine design optimization and dynamic-system modeling in a unified way.}
+
+\section{Chapter Summary}
+
+This chapter introduced the mathematical formulation of control co-design. We defined plant variables $\xp$ and control variables $\xc$, emphasized the role of state and control trajectories, and showed how system dynamics enter as equality constraints. We then distinguished path constraints from boundary constraints and reviewed the Lagrange, Mayer, and Bolza objective forms. Finally, we assembled a general continuous-time CCD problem statement.
+
+The main lesson is that formulation is the bridge between engineering intuition and numerical computation. A CCD problem is not just ``optimize the plant and controller together.'' It is a precise mathematical statement of \emph{what can change}, \emph{what should be optimized}, and \emph{what must always remain true}. Once that formulation is correct, numerical solution methods can be applied confidently.
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item plant design variables
+  \item control design variables
+  \item state trajectory
+  \item control trajectory
+  \item equality constraint
+  \item path constraint
+  \item boundary constraint
+  \item running cost
+  \item terminal cost
+  \item Lagrange objective
+  \item Mayer objective
+  \item Bolza objective
+  \item feasible trajectory
+  \item bounds
+  \item formulation
+  \item dynamic optimization
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Conceptual problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item In your own words, explain why a CCD problem needs a mathematical formulation before numerical solution is possible.
+  \item Give three examples of plant design variables and three examples of control design variables for a robot manipulator.
+  \item Explain the difference between a control parameter vector $\xc$ and a control trajectory $u(t)$.
+  \item Why are state trajectories necessary in dynamic optimization but not in simple static optimization?
+  \item Describe one engineering situation in which a path constraint is more appropriate than a boundary constraint.
+\end{enumerate}
+
+\subsection*{Formulation problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Consider a mass-spring-damper system in which spring stiffness $k$ and proportional gain $K_p$ are decision variables. Write a CCD problem statement with one suitable objective and one suitable path constraint.
+  \item For a cruise-control problem with state $v(t)$ and control force $F_t(t)$, write one example each of (a) an equality constraint, (b) a path constraint, and (c) a boundary constraint.
+  \item A manipulator must move from an initial joint angle vector $q_0$ to a final vector $q_f$ in a fixed time $t_f$. Write a general boundary constraint for this task.
+  \item Write a Lagrange objective that penalizes tracking error $e(t)$ and control effort $u(t)$.
+  \item Write a Mayer objective that minimizes the final value of a state variable $x_3(t_f)$.
+\end{enumerate}
+
+\subsection*{Classification problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Classify each of the following as a plant variable, a control variable, a state variable, or a disturbance: actuator torque limit, rotor speed, pitch-control gain, wave elevation, buoy radius.
+  \item For each of the following, state whether it is best represented as a path constraint or a boundary constraint: maximum motor temperature, desired final position, maximum suspension travel, periodic orbit condition, minimum battery energy at final time.
+  \item Identify the Lagrange and Mayer parts of the Bolza objective
+  \begin{equation*}
+  J = 5x_1(t_f)^2 + \int_{0}^{10}\left(x_2(t)^2 + 0.3u(t)^2\right)dt.
+  \end{equation*}
+  \item A formulation includes the condition $x(0)=x_0$. Is this a dynamic equation, a path constraint, or a boundary constraint? Explain.
+  \item A formulation includes the limit $|u(t)|\le 2$ for all $t$. Explain why this is not a simple bound on $\xc$ unless the control has already been parameterized.
+\end{enumerate}
+
+\subsection*{Modeling and writing problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Write a generic continuous-time CCD formulation for an active suspension problem with plant variables $\xp$, controller variables $\xc$, state trajectory $x(t)$, and control input $u(t)$.
+  \item Write a possible Bolza objective for a wind-turbine design problem that values high generated power but penalizes tower-base loading and control activity.
+  \item A marine energy device has a PTO force limit, a maximum pitch-angle limit, and a required final stored-energy level. Write these as mathematical constraints.
+  \item Give one example of an algebraic equality constraint that could appear in a CCD formulation.
+  \item For a system with fixed initial state and free final state, write a general boundary-condition statement.
+\end{enumerate}
+
+\subsection*{Analytical problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Show how the Bolza objective can reduce to a Lagrange objective in a special case.
+  \item Show how the Bolza objective can reduce to a Mayer objective in a special case.
+  \item Why is the general continuous-time CCD problem infinite-dimensional? Give a concise explanation.
+  \item Explain qualitatively how introducing plant variables into the dynamic model can change the feasible trajectory set.
+  \item A student says, ``The dynamics do not need to be constraints because the simulator already knows them.'' Explain why this is incorrect from an optimization viewpoint.
+\end{enumerate}
+
+\subsection*{Mini-project and computational problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Choose an engineering system of your interest and list: (a) plant variables, (b) control variables, (c) state variables, (d) disturbances, (e) one objective, (f) one path constraint, and (g) one boundary constraint.
+  \item Write a one-page formulation memo for a CCD problem from your own research area or technical interest. Your memo should include the decision variables, objective, constraints, and a paragraph explaining the engineering meaning of each part.
+  \item Use MATLAB or Python to simulate a simple dynamic system and numerically approximate the Lagrange objective
+  \begin{equation*}
+  J=\int_{0}^{T}\big(x(t)^2+u(t)^2\big)dt
+  \end{equation*}
+  with a time grid. Report how the approximate value changes as the grid is refined.
+  \item For a parameterized control law $u(t)=Kx(t)$, explain how the variable set of the optimization problem differs from that of a formulation where $u(t)$ is optimized directly as a trajectory.
+  \item Mini-project: formulate a complete CCD problem for a suspension, robot, wind turbine, or marine energy device. Your formulation should include a clear description of plant variables, control variables, states, objectives, and constraints, together with a short justification for each modeling choice.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable figure files are supplied separately as SVG files:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp4\_1.svg}
+  \item \texttt{fig\_chp4\_2.svg}
+  \item \texttt{fig\_chp4\_3.svg}
+  \item \texttt{fig\_chp4\_4.svg}
+  \item \texttt{fig\_chp4\_5.svg}
+  \item \texttt{fig\_chp4\_6.svg}
+  \item \texttt{fig\_chp4\_7.svg}
+  \item \texttt{fig\_chp4\_8.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{allison2014aiaa}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\bibitem{allison2014jmd}
+J. T. Allison, T. Guo, and Z. Han, ``Co-design of an active suspension using simultaneous dynamic optimization,'' \emph{Journal of Mechanical Design}, vol. 136, no. 8, 081003, 2014.
+
+\bibitem{herber2019}
+D. R. Herber and J. T. Allison, ``Nested and simultaneous solution strategies for general combined plant and control design problems,'' \emph{Journal of Mechanical Design}, vol. 141, no. 1, 011402, 2019.
+
+\bibitem{garciasanz2019}
+M. Garcia-Sanz, ``Control co-design: An engineering game changer,'' \emph{Advanced Control for Applications}, vol. 1, no. 1, 2019.
+
+\bibitem{martinsning}
+J. R. R. A. Martins and A. Ning, \emph{Engineering Design Optimization}. Cambridge University Press, 2021.
+
+\bibitem{brysonho}
+A. E. Bryson and Y.-C. Ho, \emph{Applied Optimal Control}. Taylor \& Francis, 1975.
+
+\bibitem{betts}
+J. T. Betts, \emph{Practical Methods for Optimal Control and Estimation Using Nonlinear Programming}. 2nd ed., SIAM, 2010.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 4
+\end{center}
+
+\end{document}

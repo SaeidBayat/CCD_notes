@@ -1,0 +1,1022 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDtan}{RGB}{247,239,225}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 3: Engineering Design Optimization},
+  pdfauthor={Saeid Bayat}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 3: Engineering Design Optimization}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\des}{\vect{x}}
+\newcommand{\statev}{\vect{z}}
+\newcommand{\ctrlu}{\vect{u}}
+\newcommand{\outy}{\vect{y}}
+\newcommand{\distv}{\vect{d}}
+\newcommand{\R}{\mathbb{R}}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\color{black}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\newcommand{\checkpointbox}[1]{%
+\begin{center}
+\fcolorbox{CCDaccent}{white}{\begin{minipage}{0.92\linewidth}\small\textbf{Checkpoint.} #1\end{minipage}}
+\end{center}}
+
+\begin{document}
+
+% Cover page
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Physical and Control Systems\par}
+
+\vspace{2.2in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 3\par}
+\vspace{0.18in}
+{\fontsize{26}{31}\selectfont\bfseries\color{black!85} Engineering Design Optimization\par}
+\vspace{0.20in}
+{\Large\color{CCDgray} Formulation, search, numerical reliability, and multidisciplinary coupling\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large Optimization does not replace engineering judgment. It organizes engineering judgment into a precise search over decisions, performance measures, models, and constraints.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+Control co-design requires more than knowing how dynamic systems behave. It also requires a disciplined method for choosing among many possible plant and controller designs. Engineering design optimization provides that method. An optimization problem defines what decisions may change, how designs are compared, which designs are physically or operationally acceptable, and how a numerical algorithm searches for an improved solution.
+
+This chapter introduces the optimization concepts needed throughout the rest of the course. We first construct a mathematical optimization problem using design variables, objectives, and constraints. We then study the feasible design space and the distinction between local and global optima. Next, we introduce gradient-based optimization, constrained optimality, scaling, and numerical conditioning. We then explain multidisciplinary design optimization (MDO), which is especially important because CCD can be viewed as a coupled design problem involving at least the plant and control disciplines. The final sections show how ordinary engineering optimization extends to dynamic systems whose performance and constraints depend on time histories.
+
+The treatment is intentionally practical. It does not attempt to replace a full numerical optimization course. Instead, it develops enough depth for students to formulate, solve, diagnose, and interpret optimization problems used later in CCD. The chapter follows the practical formulation and numerical emphasis common to engineering optimization texts \cite{martinsning,allisonbook}.
+
+\begin{learningobjectives}
+  \item identify design variables, objectives, equality constraints, inequality constraints, and bounds;
+  \item write an engineering design problem in standard mathematical form;
+  \item interpret feasible, infeasible, active, and inactive constraints geometrically;
+  \item distinguish local and global optima and explain why initialization matters;
+  \item describe the main ideas behind gradient descent, line search, Newton, and quasi-Newton methods;
+  \item explain why scaling and numerical conditioning influence optimization reliability;
+  \item describe the need for multidisciplinary design optimization and identify coupling variables;
+  \item formulate optimization problems whose objectives and constraints depend on dynamic simulations.
+\end{learningobjectives}
+
+\section{What Is Engineering Design Optimization?}
+
+Engineering design optimization is the systematic selection of design decisions to improve a quantitative measure of performance while satisfying requirements. The word \emph{systematic} matters. Conventional design often proceeds through repeated manual iteration:
+\begin{equation*}
+\text{propose design} \rightarrow \text{analyze design} \rightarrow \text{judge result} \rightarrow \text{modify design}.
+\end{equation*}
+Optimization retains this loop but automates the search step. The engineer still decides what can change, what performance means, which models are credible, and which constraints are essential. The optimization algorithm then proposes design updates based on numerical information.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp3_1.png}
+\caption{The major elements of an engineering design optimization problem. The optimizer repeatedly updates design variables, calls an analysis model, and evaluates objectives and constraints.}
+\label{fig:optimization-anatomy}
+\end{figure}
+
+Figure~\ref{fig:optimization-anatomy} emphasizes four distinct elements:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Design variables} describe the choices available to the designer.
+  \item An \textbf{analysis model} predicts how a candidate design behaves.
+  \item An \textbf{objective} assigns a scalar measure of desirability to the design.
+  \item \textbf{Constraints} determine whether the design is acceptable.
+\end{enumerate}
+
+The optimization algorithm is not the problem itself. It is only the numerical method used to search the problem defined by the engineer.
+
+\subsection{Optimization versus analysis}
+
+An engineering analysis answers:
+\begin{quote}
+What happens for this design?
+\end{quote}
+An optimization study answers:
+\begin{quote}
+Which design should be selected from the allowed set?
+\end{quote}
+
+A simulation model may compute stress, temperature, power, displacement, or cost for one design. Optimization wraps that model inside an iterative search that evaluates many designs. This distinction is critical because a model suitable for one accurate analysis may be too slow, noisy, discontinuous, or fragile for thousands of optimization evaluations.
+
+\subsection{Optimization does not guarantee a good engineering problem}
+
+A numerical optimizer can solve the problem it is given, but it cannot determine whether that problem represents the real design mission. Poorly chosen objectives or missing constraints can produce a mathematically optimal but physically unacceptable design. For example:
+\begin{itemize}[leftmargin=1.4em]
+  \item minimizing mass without a stiffness constraint may produce excessive deflection;
+  \item maximizing absorbed energy without a force limit may demand an unrealizable actuator;
+  \item minimizing operating cost without a reliability requirement may produce a fragile system;
+  \item optimizing nominal performance without disturbance scenarios may produce poor closed-loop behavior.
+\end{itemize}
+
+\keyideabox{\textbf{Key idea.} The most important optimization decision is often not which algorithm to use. It is how to formulate the problem so that the mathematical optimum corresponds to an engineering design worth building.}
+
+\section{Design Variables, Objectives, and Constraints}
+
+\subsection{General mathematical form}
+
+A common continuous optimization problem is written as
+\begin{align}
+\underset{\des \in \R^n}{\text{minimize}} \quad & f(\des), \\
+\text{subject to} \quad & g_i(\des) \leq 0, \qquad i=1,\ldots,m, \\
+& h_j(\des) = 0, \qquad j=1,\ldots,p, \\
+& \des_L \leq \des \leq \des_U.
+\label{eq:standard-problem}
+\end{align}
+Here, $\des$ is the vector of design variables, $f$ is the objective function, $g_i$ are inequality constraints, $h_j$ are equality constraints, and $\des_L,\des_U$ are lower and upper bounds.
+
+Most optimization software uses minimization as the standard form. A maximization problem can be converted to minimization by changing the sign:
+\begin{equation}
+\max_{\des} P(\des)
+\quad \Longleftrightarrow \quad
+\min_{\des} -P(\des).
+\end{equation}
+
+\subsection{Design variables}
+
+Design variables are the quantities the optimizer is allowed to change. Good design variables should correspond to real decisions. Examples include:
+\begin{itemize}[leftmargin=1.4em]
+  \item geometric dimensions, such as thickness, length, radius, and angle;
+  \item material properties or material selections;
+  \item masses, stiffnesses, damping coefficients, and inertias;
+  \item controller gains and filter parameters;
+  \item actuator sizes, sensor locations, and sampling times;
+  \item topology, architecture, or component-count decisions.
+\end{itemize}
+
+Variables may be:
+\begin{description}[leftmargin=1.6em,style=nextline]
+  \item[Continuous] Any real value within a range, such as $0.01 \leq t \leq 0.05$ m.
+  \item[Integer] Whole-number values, such as number of blades or number of battery modules.
+  \item[Binary] Two choices, such as whether a component exists.
+  \item[Categorical or discrete] One choice from a list, such as material type or gearbox architecture.
+  \item[Functional] A function of time or space, such as a control trajectory $u(t)$ or thickness distribution $t(s)$.
+\end{description}
+
+This chapter focuses mainly on continuous variables because gradient-based methods are central to large CCD problems. Discrete and architecture variables require additional methods.
+
+\subsection{Objectives}
+
+The objective is the numerical measure used to compare designs. A useful objective should:
+\begin{itemize}[leftmargin=1.4em]
+  \item reflect the actual mission of the system;
+  \item vary meaningfully when design decisions change;
+  \item be computable reliably from the analysis model;
+  \item avoid hidden preferences that should instead be expressed as constraints.
+\end{itemize}
+
+Common objectives include mass, cost, energy use, tracking error, fatigue damage, risk, or negative profit. In dynamic systems, objectives often integrate performance over time:
+\begin{equation}
+J = \Phi(\statev(t_f)) + \int_{t_0}^{t_f} L(\statev(t),\ctrlu(t),\des,t)\,dt.
+\end{equation}
+
+A weighted objective can combine several performance measures:
+\begin{equation}
+J = w_1 J_1 + w_2 J_2 + \cdots + w_q J_q.
+\end{equation}
+This is convenient but requires care because weights encode value judgments and are sensitive to units and scaling.
+
+\subsection{Constraints}
+
+Constraints express nonnegotiable requirements. Typical engineering constraints include:
+\begin{itemize}[leftmargin=1.4em]
+  \item stress below allowable stress;
+  \item temperature below a thermal limit;
+  \item actuator force, speed, or power limits;
+  \item displacement, stroke, or clearance limits;
+  \item stability or damping requirements;
+  \item geometry and manufacturability restrictions;
+  \item conservation laws and model equations;
+  \item minimum performance or reliability requirements.
+\end{itemize}
+
+An inequality constraint is often normalized as
+\begin{equation}
+g_i(\des) \leq 0.
+\end{equation}
+For example, if stress must satisfy $\sigma(\des) \leq \sigma_{\max}$, define
+\begin{equation}
+g_{\sigma}(\des)=\frac{\sigma(\des)}{\sigma_{\max}}-1 \leq 0.
+\end{equation}
+This dimensionless form is often numerically helpful.
+
+Equality constraints are more restrictive because the design must lie exactly on a surface:
+\begin{equation}
+h_j(\des)=0.
+\end{equation}
+They may represent conservation equations, geometric compatibility, or coupled analysis residuals.
+
+\subsection{Bounds}
+
+Bounds are simple constraints on individual variables:
+\begin{equation}
+x_{L,k} \leq x_k \leq x_{U,k}.
+\end{equation}
+Bounds should be physically defensible. Extremely wide bounds may let the optimizer explore meaningless regions where the model fails. Extremely narrow bounds may hide better designs.
+
+\subsection{Worked Example 3.1: a cylindrical pressure vessel}
+
+Consider a simplified cylindrical vessel with radius $r$, wall thickness $t$, and fixed length $L$. Suppose the design objective is minimum material volume:
+\begin{equation}
+f(r,t)=2\pi rLt.
+\end{equation}
+The vessel must contain a required internal volume $V_{\min}$ and satisfy a thin-wall stress constraint under pressure $p$:
+\begin{align}
+\pi r^2 L &\geq V_{\min}, \\
+\frac{pr}{t} &\leq \sigma_{\max}.
+\end{align}
+A standard-form problem is
+\begin{align}
+\underset{r,t}{\text{minimize}} \quad & 2\pi rLt, \\
+\text{subject to} \quad & 1-\frac{\pi r^2L}{V_{\min}} \leq 0, \\
+& \frac{pr}{\sigma_{\max}t}-1 \leq 0, \\
+& r_L \leq r \leq r_U, \\
+& t_L \leq t \leq t_U.
+\end{align}
+
+This example illustrates an important modeling distinction: $r$ and $t$ are decisions, while stress and volume are predicted quantities. The stress equation belongs in the analysis model; the stress limit belongs in the constraint set.
+
+\checkpointbox{Choose a system you know. List three quantities that are true design decisions, two quantities that are predicted outputs, one objective, and three nonnegotiable constraints.}
+
+\section{The Feasible Design Space}
+
+\subsection{Feasible and infeasible designs}
+
+A design is \emph{feasible} if it satisfies every constraint. The feasible set is
+\begin{equation}
+\mathcal{F} = \left\{\des:\; \vect{g}(\des)\leq \vect{0},\; \vect{h}(\des)=\vect{0},\; \des_L\leq \des\leq\des_U \right\}.
+\end{equation}
+A design outside $\mathcal{F}$ is infeasible.
+
+In engineering problems, the unconstrained best design is often infeasible. Constraints determine how far the optimizer may move toward improved performance.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.76\textwidth]{figures/fig_chp3_2.png}
+\caption{A two-variable feasible design space. Objective contours are shown in blue, constraints define the green feasible region, and the orange point is the best feasible design.}
+\label{fig:feasible-space}
+\end{figure}
+
+Figure~\ref{fig:feasible-space} shows three ideas:
+\begin{enumerate}[leftmargin=1.5em]
+  \item objective contours connect designs with equal objective value;
+  \item constraints carve out the feasible region;
+  \item the optimum often occurs on the boundary of one or more constraints.
+\end{enumerate}
+
+\subsection{Active and inactive constraints}
+
+At a candidate design $\des^*$, an inequality constraint is:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{active} if $g_i(\des^*)=0$;
+  \item \textbf{inactive} if $g_i(\des^*)<0$;
+  \item \textbf{violated} if $g_i(\des^*)>0$.
+\end{itemize}
+
+Active constraints often reveal the design drivers. If a mass-minimized structure is limited simultaneously by stress and deflection, those active constraints explain why the optimum cannot become lighter. An inactive constraint has margin and is not directly limiting the optimum.
+
+\subsection{Constraint margin}
+
+A normalized constraint margin can be defined as
+\begin{equation}
+M_i = -g_i(\des).
+\end{equation}
+Then $M_i>0$ indicates margin, $M_i=0$ indicates activity, and $M_i<0$ indicates violation. Reporting margins is much more informative than reporting only the objective.
+
+\subsection{Empty or disconnected feasible sets}
+
+A formulation may have no feasible design because the requirements are mutually incompatible. It may also have several disconnected feasible regions. Both situations are common in nonlinear engineering problems.
+
+When no feasible design is found, possible explanations include:
+\begin{itemize}[leftmargin=1.4em]
+  \item requirements are genuinely impossible;
+  \item bounds are too restrictive;
+  \item equations or units are wrong;
+  \item the numerical solver cannot reach a feasible region;
+  \item poor scaling makes constraint satisfaction difficult.
+\end{itemize}
+
+The correct response is diagnosis, not automatically loosening constraints.
+
+\section{Local and Global Optima}
+
+\subsection{Definitions}
+
+A feasible design $\des^*$ is a \emph{local minimum} if it has no better feasible neighbor within some small region. It is a \emph{global minimum} if no feasible design anywhere has a lower objective:
+\begin{equation}
+f(\des^*) \leq f(\des), \qquad \forall \des \in \mathcal{F}.
+\end{equation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp3_3.png}
+\caption{A nonconvex objective can contain several local optima. A local algorithm may converge to different solutions depending on its starting point.}
+\label{fig:local-global}
+\end{figure}
+
+\subsection{Why engineering problems are often nonconvex}
+
+Nonconvexity can arise from:
+\begin{itemize}[leftmargin=1.4em]
+  \item nonlinear physics;
+  \item resonance and bifurcation;
+  \item contact, switching, or saturation;
+  \item discrete architecture choices;
+  \item nonlinear geometric constraints;
+  \item coupled multidisciplinary interactions;
+  \item time-dependent dynamics and control.
+\end{itemize}
+
+The existence of local optima means that a successful solver run is not proof of global optimality.
+
+\subsection{Convexity as a special favorable case}
+
+A problem is convex when the objective and feasible set satisfy specific geometric conditions. For a convex minimization problem, every local optimum is global. Convex problems are therefore unusually well behaved and can often be solved reliably \cite{boyd}.
+
+Many practical CCD problems are not convex. Nevertheless, convexity remains a useful reference because local quadratic models and convex subproblems are used inside algorithms such as sequential quadratic programming.
+
+\subsection{Practical strategies for nonconvex problems}
+
+Common approaches include:
+\begin{itemize}[leftmargin=1.4em]
+  \item run the local solver from multiple initial guesses;
+  \item use engineering intuition to select diverse starting designs;
+  \item solve a low-fidelity or relaxed problem first;
+  \item use continuation or homotopy to gradually introduce difficulty;
+  \item combine a global or population-based search with local refinement;
+  \item inspect objective and constraint landscapes in low-dimensional subspaces.
+\end{itemize}
+
+Global optimization methods can improve exploration but usually require many more function evaluations and still may not guarantee a global optimum for difficult black-box problems.
+
+\section{Gradient-Based Optimization}
+
+\subsection{The gradient}
+
+For a scalar objective $f(\des)$, the gradient is
+\begin{equation}
+\nabla f(\des)=
+\begin{bmatrix}
+\dfrac{\partial f}{\partial x_1} &
+\dfrac{\partial f}{\partial x_2} &
+\cdots &
+\dfrac{\partial f}{\partial x_n}
+\end{bmatrix}^{T}.
+\end{equation}
+The gradient points in the direction of steepest local increase. Therefore, $-\nabla f$ is the steepest local decrease direction in Euclidean coordinates.
+
+\subsection{Gradient descent}
+
+The basic gradient-descent update is
+\begin{equation}
+\des_{k+1}=\des_k-\alpha_k\nabla f(\des_k),
+\label{eq:gradient-descent}
+\end{equation}
+where $\alpha_k>0$ is the step length.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\textwidth]{figures/fig_chp3_4.png}
+\caption{A gradient-based search on a two-variable objective. Each update uses local slope information to move toward a nearby minimum.}
+\label{fig:gradient-search}
+\end{figure}
+
+A step that is too small produces slow progress. A step that is too large may overshoot or diverge. Practical algorithms therefore use a \emph{line search} or a \emph{trust region} to determine an acceptable step.
+
+\subsection{Line search}
+
+A line-search method chooses a search direction $\vect{p}_k$ and then solves or approximates the one-dimensional problem
+\begin{equation}
+\underset{\alpha>0}{\text{minimize}} \quad f(\des_k+\alpha\vect{p}_k).
+\end{equation}
+The direction may be steepest descent, Newton, quasi-Newton, or another descent direction.
+
+A practical line search usually does not find the exact best step. Instead, it seeks a step that reduces the objective sufficiently while remaining numerically stable.
+
+\subsection{Newton's method}
+
+A second-order Taylor approximation near $\des_k$ is
+\begin{equation}
+f(\des_k+\vect{p}) \approx f(\des_k)+\nabla f(\des_k)^T\vect{p}+\frac{1}{2}\vect{p}^T H(\des_k)\vect{p},
+\end{equation}
+where $H$ is the Hessian matrix of second derivatives. Minimizing this quadratic model gives the Newton step
+\begin{equation}
+H(\des_k)\vect{p}_k=-\nabla f(\des_k).
+\end{equation}
+Newton's method can converge very rapidly near a well-behaved optimum, but exact Hessians may be expensive and the step may fail when the Hessian is indefinite or poorly conditioned.
+
+\subsection{Quasi-Newton methods}
+
+Quasi-Newton methods estimate Hessian or inverse-Hessian information from changes in gradients. The BFGS method is widely used because it often gives strong performance without requiring exact second derivatives \cite{nocedal}.
+
+\subsection{Derivative computation}
+
+Gradients may be computed by:
+\begin{itemize}[leftmargin=1.4em]
+  \item analytical differentiation;
+  \item finite differences;
+  \item complex-step differentiation;
+  \item algorithmic or automatic differentiation;
+  \item direct and adjoint sensitivity methods for implicit or coupled models.
+\end{itemize}
+
+Finite differences are easy to implement but can suffer from truncation and roundoff error. Algorithmic differentiation and analytic sensitivity methods are often preferable for large, high-accuracy problems.
+
+\subsection{Worked Example 3.2: quadratic minimization}
+
+Consider
+\begin{equation}
+f(x_1,x_2)=2x_1^2+x_1x_2+x_2^2-6x_1-5x_2.
+\end{equation}
+The gradient is
+\begin{equation}
+\nabla f=
+\begin{bmatrix}
+4x_1+x_2-6 \\
+x_1+2x_2-5
+\end{bmatrix}.
+\end{equation}
+At an unconstrained optimum, $\nabla f=0$, so
+\begin{align}
+4x_1+x_2 &= 6, \\
+x_1+2x_2 &= 5.
+\end{align}
+Solving gives
+\begin{equation}
+x_1^*=1, \qquad x_2^*=2.
+\end{equation}
+The Hessian is
+\begin{equation}
+H=\begin{bmatrix}4&1\\1&2\end{bmatrix},
+\end{equation}
+which is positive definite. Therefore, the stationary point is the unique global minimum of this convex quadratic.
+
+\section{Constrained Gradient-Based Optimization}
+
+\subsection{Why the unconstrained gradient condition is insufficient}
+
+For an unconstrained differentiable optimum, a necessary condition is
+\begin{equation}
+\nabla f(\des^*)=0.
+\end{equation}
+At a constrained optimum, the gradient need not vanish because the design cannot move freely in every direction. Instead, objective improvement is blocked by active constraints.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.74\textwidth]{figures/fig_chp3_5.png}
+\caption{Geometric interpretation of a constrained optimum. At the active boundary, the objective gradient is balanced by the active constraint gradient.}
+\label{fig:constrained-optimum}
+\end{figure}
+
+\subsection{Lagrangian and KKT conditions}
+
+For inequality and equality constraints, define the Lagrangian
+\begin{equation}
+\mathcal{L}(\des,\vect{\lambda},\vect{\nu})
+=f(\des)+\sum_{i=1}^{m}\lambda_i g_i(\des)+\sum_{j=1}^{p}\nu_j h_j(\des).
+\end{equation}
+Under appropriate regularity conditions, a local optimum satisfies the Karush-Kuhn-Tucker (KKT) conditions:
+\begin{align}
+\nabla_{\des}\mathcal{L} &= 0, \\
+g_i(\des) &\leq 0, \\
+h_j(\des) &= 0, \\
+\lambda_i &\geq 0, \\
+\lambda_i g_i(\des) &= 0.
+\end{align}
+
+The last condition is complementary slackness. It states that either an inequality is inactive and its multiplier is zero, or it is active and may exert influence on the optimum.
+
+\subsection{Interpreting multipliers}
+
+A Lagrange multiplier measures the local value of relaxing a constraint. A large multiplier means that a small relaxation could significantly improve the objective. Therefore, multipliers can support engineering decisions about which requirement is most expensive.
+
+\subsection{Major constrained algorithms}
+
+Three important classes are:
+\begin{description}[leftmargin=1.6em,style=nextline]
+  \item[Penalty and augmented-Lagrangian methods] Add constraint violations to the objective.
+  \item[Sequential quadratic programming (SQP)] Solve a sequence of quadratic approximations to the constrained problem.
+  \item[Interior-point methods] Approach the solution from inside the feasible region using barrier terms.
+\end{description}
+
+Modern general-purpose nonlinear programming solvers often use SQP or interior-point methods. Students do not need to implement these methods from scratch for CCD, but they should understand the information the solver requires and the diagnostics it returns.
+
+\section{Scaling and Numerical Conditioning}
+
+\subsection{Why scaling matters}
+
+Two mathematically equivalent formulations can behave very differently numerically. Suppose one variable is measured near $10^{-6}$ and another near $10^{6}$. A solver using a single step tolerance may treat them very unevenly. Similar problems arise when objective and constraint values differ by many orders of magnitude.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp3_6.png}
+\caption{Poor scaling produces elongated contours and inefficient search steps. Scaling the variables produces a numerically more balanced landscape.}
+\label{fig:scaling}
+\end{figure}
+
+\subsection{Variable scaling}
+
+A physical variable $x_i$ can be mapped to a scaled variable $\tilde{x}_i$:
+\begin{equation}
+x_i = x_{i,\mathrm{ref}} + s_i\tilde{x}_i,
+\end{equation}
+where $s_i$ is a characteristic scale. A useful goal is for typical scaled variables to be order one.
+
+Bound-based scaling is common:
+\begin{equation}
+\tilde{x}_i = \frac{x_i-x_{L,i}}{x_{U,i}-x_{L,i}}.
+\end{equation}
+This maps the bounded variable to $[0,1]$.
+
+\subsection{Objective and constraint scaling}
+
+If the objective is approximately $10^8$ while normalized constraints are approximately $1$, numerical decisions may be dominated by the objective scale. Define
+\begin{equation}
+\tilde{f}=\frac{f}{f_{\mathrm{ref}}}, \qquad
+\tilde{g}_i=\frac{g_i}{g_{i,\mathrm{ref}}}.
+\end{equation}
+Reference values should be physically meaningful and nonzero.
+
+\subsection{Conditioning}
+
+Conditioning describes how sensitive the solution of a mathematical problem is to small changes in data. A poorly conditioned optimization problem may exhibit:
+\begin{itemize}[leftmargin=1.4em]
+  \item slow convergence;
+  \item large changes in design for small numerical errors;
+  \item strong sensitivity to tolerances;
+  \item inaccurate finite-difference derivatives;
+  \item failure of linear algebra operations.
+\end{itemize}
+
+Scaling can improve algorithm behavior but cannot remove true physical ill-conditioning. If two design variables have almost identical effects, the problem may be fundamentally poorly identifiable.
+
+\subsection{Scaling and tolerances}
+
+Solver tolerances are interpreted in the coordinates given to the solver. A constraint tolerance of $10^{-6}$ means something very different for a normalized constraint than for a dimensional force residual measured in newtons. Therefore, scale the problem before selecting final tolerances.
+
+\subsection{Worked Example 3.3: a poorly scaled quadratic}
+
+Consider
+\begin{equation}
+f(x_1,x_2)=10^6x_1^2+x_2^2.
+\end{equation}
+The curvature in the $x_1$ direction is one million times larger than in the $x_2$ direction. Gradient descent must use a very small step to remain stable in $x_1$, which causes slow progress in $x_2$.
+
+Define
+\begin{equation}
+\tilde{x}_1=1000x_1, \qquad \tilde{x}_2=x_2.
+\end{equation}
+Then
+\begin{equation}
+f=\tilde{x}_1^2+\tilde{x}_2^2,
+\end{equation}
+which is balanced in scaled coordinates.
+
+\keyideabox{\textbf{Key idea.} Scaling does not change the physical design problem when performed consistently. It changes how the numerical algorithm sees the problem, often turning an unreliable search into a robust one.}
+
+\section{Multidisciplinary Design Optimization}
+
+\subsection{Why MDO is needed}
+
+Large engineering systems involve interacting disciplines. For example, a wind turbine involves structures, aerodynamics, dynamics, controls, electrical systems, economics, and manufacturing. Improving one discipline in isolation may worsen another.
+
+Multidisciplinary design optimization coordinates decisions across coupled disciplines \cite{martinsning,allisonherber}. CCD is a specialized dynamic-system MDO problem in which plant and control design are dominant interacting disciplines.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp3_7.png}
+\caption{A conceptual MDO problem. The system-level optimizer coordinates discipline analyses, while coupling variables communicate interactions between disciplines.}
+\label{fig:mdo}
+\end{figure}
+
+\subsection{Coupling variables}
+
+A coupling variable is an output from one discipline that becomes an input to another. Examples include:
+\begin{itemize}[leftmargin=1.4em]
+  \item structural deflection affecting aerodynamic loads;
+  \item aerodynamic loads affecting structural stress;
+  \item plant dynamics affecting controller performance;
+  \item control forces affecting fatigue and actuator sizing;
+  \item thermal behavior affecting electrical efficiency.
+\end{itemize}
+
+Coupling produces implicit dependencies. A change in one design variable may influence many disciplines through several paths.
+
+\subsection{Coupled analysis equations}
+
+A two-discipline coupled model can be written as
+\begin{align}
+\vect{y}_1 &= \vect{F}_1(\des,\vect{y}_2), \\
+\vect{y}_2 &= \vect{F}_2(\des,\vect{y}_1).
+\end{align}
+A consistent multidisciplinary state satisfies both equations simultaneously. This consistency may be enforced by an inner coupled solver or directly inside the optimization formulation.
+
+\subsection{Monolithic and distributed architectures}
+
+At a high level, MDO strategies differ in where consistency is enforced and how variables are shared. A monolithic architecture places most decisions and constraints in one optimization problem. Distributed architectures assign subproblems to disciplines and coordinate them through additional variables or penalties.
+
+For this course, the most important lesson is not memorizing architecture names. It is recognizing when multiple analyses depend on one another and ensuring those dependencies are represented consistently.
+
+\subsection{CCD as MDO}
+
+In CCD, changing a plant variable may change:
+\begin{itemize}[leftmargin=1.4em]
+  \item state-space matrices;
+  \item natural frequencies and damping;
+  \item actuator authority;
+  \item required control effort;
+  \item closed-loop stability and performance.
+\end{itemize}
+Changing controller design may change:
+\begin{itemize}[leftmargin=1.4em]
+  \item achievable dynamic performance;
+  \item plant load histories;
+  \item required actuator size and power;
+  \item the value of passive stiffness, damping, or mass.
+\end{itemize}
+These reciprocal effects are precisely the design coupling discussed in Chapter 1.
+
+\section{Optimization Formulation for Dynamic Systems}
+
+\subsection{Why dynamic optimization is different}
+
+In static optimization, the model returns quantities for one design condition. In dynamic optimization, the model generates trajectories over time. Objectives and constraints may depend on the entire trajectory rather than on a single scalar state.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp3_8.png}
+\caption{Optimization of a dynamic system. Plant and control decisions enter a dynamic model, which generates time histories used to evaluate integral objectives and trajectory constraints.}
+\label{fig:dynamic-optimization}
+\end{figure}
+
+\subsection{General dynamic-system formulation}
+
+A general dynamic optimization problem can be written as
+\begin{align}
+\underset{\des,\ctrlu(\cdot),\statev(\cdot)}{\text{minimize}} \quad &
+\Phi(\statev(t_f),\des)+\int_{t_0}^{t_f}L(\statev(t),\ctrlu(t),\des,t)\,dt, \\
+\text{subject to} \quad &
+\dot{\statev}(t)=\vect{f}(\statev(t),\ctrlu(t),\des,\distv(t),t), \\
+& \vect{c}(\statev(t),\ctrlu(t),\des,t)\leq \vect{0}, \\
+& \vect{b}(\statev(t_0),\statev(t_f),\des)=\vect{0}, \\
+& \des_L\leq\des\leq\des_U.
+\label{eq:dynamic-opt}
+\end{align}
+
+The objective has two parts:
+\begin{itemize}[leftmargin=1.4em]
+  \item a terminal term $\Phi$, such as final error or terminal energy;
+  \item an integral term $L$, such as accumulated tracking error, fatigue, energy, or control effort.
+\end{itemize}
+
+\subsection{Path constraints}
+
+Path constraints must hold throughout time:
+\begin{equation}
+\vect{c}(\statev(t),\ctrlu(t),\des,t)\leq \vect{0}, \qquad t\in[t_0,t_f].
+\end{equation}
+Examples include:
+\begin{itemize}[leftmargin=1.4em]
+  \item $|u(t)|\leq u_{\max}$;
+  \item $|x(t)|\leq x_{\max}$;
+  \item temperature below a limit at all times;
+  \item contact force remaining nonnegative;
+  \item power or stress remaining within allowable limits.
+\end{itemize}
+
+Path constraints are more difficult than static constraints because a violation may occur between sampled times. Numerical discretization must be sufficiently fine to detect it.
+
+\subsection{Boundary constraints}
+
+Boundary constraints apply at the initial or final time. Examples include:
+\begin{equation}
+\statev(t_0)=\statev_0, \qquad
+\statev(t_f)=\statev_f,
+\end{equation}
+or a terminal tolerance
+\begin{equation}
+\|\statev(t_f)-\statev_{\mathrm{target}}\|\leq \varepsilon.
+\end{equation}
+
+\subsection{Simulation-based optimization}
+
+A common approach is:
+\begin{enumerate}[leftmargin=1.5em]
+  \item choose design variables;
+  \item simulate the dynamic model;
+  \item compute objective and constraints from time histories;
+  \item return results to the optimizer.
+\end{enumerate}
+This is straightforward when control is parameterized by a small number of variables. When the control trajectory itself is optimized, specialized optimal-control transcription methods are needed. Those methods are introduced later in the course.
+
+\subsection{Dynamic-system design example}
+
+Consider the mass-spring-damper system
+\begin{equation}
+m\ddot{q}+c\dot{q}+kq=u(t)+d(t).
+\end{equation}
+Suppose $m$ is fixed while $c$, $k$, and feedback gains $K_p,K_d$ are design variables. A possible objective is
+\begin{equation}
+J=\int_0^{T}\left(w_q q(t)^2+w_v\dot{q}(t)^2+w_u u(t)^2\right)dt+w_c c+w_k k.
+\end{equation}
+Possible constraints include
+\begin{align}
+|q(t)| &\leq q_{\max}, \\
+|u(t)| &\leq u_{\max}, \\
+c_L \leq c &\leq c_U, \\
+k_L \leq k &\leq k_U, \\
+K_{p,L}\leq K_p &\leq K_{p,U}, \\
+K_{d,L}\leq K_d &\leq K_{d,U}.
+\end{align}
+The controller law might be
+\begin{equation}
+u(t)=-K_pq(t)-K_d\dot{q}(t).
+\end{equation}
+This is already a small CCD problem because plant and controller variables are optimized together.
+
+\section{A Practical Optimization Workflow}
+
+A reliable engineering optimization study should include the following steps.
+
+\subsection{Step 1: define the mission and requirements}
+
+State what the system must accomplish, under which operating conditions, and how success will be measured. Avoid beginning with the solver.
+
+\subsection{Step 2: choose the design representation}
+
+Identify design variables and bounds. Confirm that each variable corresponds to a realizable decision and that the representation is not unnecessarily redundant.
+
+\subsection{Step 3: build and verify the analysis model}
+
+Check equations, units, baseline behavior, and sensitivity to variables. An optimizer will exploit every model defect it can find.
+
+\subsection{Step 4: define objective and constraints}
+
+Separate preferences from requirements. Normalize quantities where appropriate. Include limits that prevent physically meaningless exploitation.
+
+\subsection{Step 5: explore the problem before optimizing}
+
+Use parameter sweeps, plots, and hand calculations to understand trends. Check whether objectives and constraints change smoothly. Inspect likely active constraints.
+
+\subsection{Step 6: scale variables and functions}
+
+Bring typical values near order one. Select solver tolerances only after scaling.
+
+\subsection{Step 7: solve from more than one initial design}
+
+For nonlinear problems, use multiple initial guesses and compare results. Preserve the initial design and solver settings for reproducibility.
+
+\subsection{Step 8: verify the solution}
+
+A trustworthy optimum should pass several checks:
+\begin{itemize}[leftmargin=1.4em]
+  \item the reported design satisfies all constraints;
+  \item the optimizer termination message is understood;
+  \item gradients or optimality residuals are acceptably small;
+  \item small perturbations do not reveal an obvious better nearby design;
+  \item active constraints are physically interpretable;
+  \item an independent simulation reproduces the reported objective;
+  \item higher-fidelity analysis does not invalidate the design.
+\end{itemize}
+
+\subsection{Step 9: interpret, do not merely report}
+
+The final engineering questions are:
+\begin{itemize}[leftmargin=1.4em]
+  \item Which variables moved and why?
+  \item Which constraints became active?
+  \item What tradeoffs does the optimum reveal?
+  \item How sensitive is the design to uncertainty and implementation error?
+  \item Is the optimum manufacturable, controllable, maintainable, and safe?
+\end{itemize}
+
+\checkpointbox{Take any optimization result you have seen. List the active constraints, solver termination condition, initial guess, scaling choices, and evidence that the result is not a numerical artifact. If those items are unavailable, the result is not yet fully auditable.}
+
+\section{Common Formulation and Solver Mistakes}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Choosing variables that are not independent.} Redundant variables create singularity and poor conditioning.
+  \item \textbf{Using an objective that does not reflect the mission.} The optimizer may improve the number while degrading the actual design.
+  \item \textbf{Omitting essential constraints.} This produces unrealistic optima.
+  \item \textbf{Using dimensional constraints with wildly different magnitudes.} Scaling problems follow.
+  \item \textbf{Trusting one initial guess in a nonconvex problem.} A local solution may be mistaken for the best solution.
+  \item \textbf{Ignoring derivative quality.} Noisy or inaccurate gradients can cause false convergence.
+  \item \textbf{Using a simulation that occasionally fails without handling the failure.} The optimizer may enter unstable regions and stop unpredictably.
+  \item \textbf{Reporting only the objective value.} The design, margins, active constraints, trajectories, and solver diagnostics are also essential.
+  \item \textbf{Assuming convergence means correctness.} A solver can converge to an infeasible, poorly scaled, or incorrectly modeled solution.
+\end{enumerate}
+
+\section{Chapter Summary}
+
+Engineering design optimization formalizes a design search using variables, an objective, a predictive model, and constraints. The feasible design space contains all acceptable designs, and active constraints often explain the structure of the optimum. Nonlinear engineering problems may contain many local optima, so initialization and global exploration matter. Gradient-based algorithms use derivative information to search efficiently, while constrained methods balance objective improvement against active requirements. Scaling and conditioning strongly influence numerical reliability. MDO extends optimization to coupled disciplines, and dynamic-system optimization introduces time histories, integral objectives, and path constraints. These ideas form the optimization foundation for the CCD formulations developed in later chapters.
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item design variable
+  \item objective function
+  \item equality constraint
+  \item inequality constraint
+  \item bound
+  \item feasible design
+  \item infeasible design
+  \item active constraint
+  \item local optimum
+  \item global optimum
+  \item convexity
+  \item gradient
+  \item Hessian
+  \item line search
+  \item Newton method
+  \item quasi-Newton method
+  \item KKT conditions
+  \item Lagrange multiplier
+  \item scaling
+  \item conditioning
+  \item multidisciplinary design optimization
+  \item coupling variable
+  \item path constraint
+  \item boundary constraint
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Conceptual problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item Explain the difference between engineering analysis and engineering design optimization.
+  \item Why is the optimization algorithm not the most important part of every optimization study?
+  \item Give three examples each of continuous, integer, binary, and functional design variables.
+  \item Explain the difference between a preference and a requirement. Which should normally appear in the objective and which in constraints?
+  \item Why does a converged optimization run not prove that the global optimum has been found?
+\end{enumerate}
+
+\subsection*{Formulation problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Formulate a minimum-mass cantilever beam problem with width and height as design variables, a tip-deflection limit, a stress limit, and geometric bounds.
+  \item Formulate a battery-pack design problem that minimizes mass while meeting energy, power, voltage, and temperature requirements.
+  \item Formulate a wind-turbine blade problem that maximizes annual energy production subject to stress, deflection, fatigue, and manufacturability limits.
+  \item Rewrite the maximization problem $\max P(\des)$ in minimization form.
+  \item Convert the constraint $\sigma(\des)\leq 250$ MPa to a dimensionless $g(\des)\leq0$ form.
+\end{enumerate}
+
+\subsection*{Feasible-space and optimality problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item For $x_1+x_2\leq4$, $x_1\geq0$, and $x_2\geq0$, sketch the feasible region.
+  \item For the design point $(x_1,x_2)=(1,2)$, evaluate the activity of the constraints $x_1+x_2-3\leq0$ and $x_1^2+x_2^2-10\leq0$.
+  \item Explain why a minimum-mass design often has one or more active strength or stiffness constraints.
+  \item Give an example in which the feasible set is disconnected.
+  \item Describe how Lagrange multipliers can help prioritize which requirement to relax.
+\end{enumerate}
+
+\subsection*{Gradient and algorithm problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Compute the gradient and Hessian of $f(x_1,x_2)=3x_1^2+2x_1x_2+4x_2^2$.
+  \item Starting from $(2,1)$, perform two gradient-descent iterations for the function in Problem 16 using $\alpha=0.1$.
+  \item Find the stationary point of $f(x_1,x_2)=x_1^2+2x_2^2-4x_1-8x_2$.
+  \item Explain the difference between a line-search method and a trust-region method.
+  \item Compare analytical derivatives, finite differences, complex step, and algorithmic differentiation.
+\end{enumerate}
+
+\subsection*{Scaling problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item A problem contains thickness $t\approx0.005$ m and cost $C\approx2\times10^6$ dollars. Propose scaled variables and a scaled objective.
+  \item Map a variable with bounds $20\leq x\leq120$ to the interval $[0,1]$.
+  \item Explain why an absolute constraint tolerance of $10^{-6}$ may be inappropriate for a force-balance equation measured in newtons.
+  \item For $f=10^8x_1^2+x_2^2$, propose a coordinate scaling that produces balanced curvature.
+  \item Give one example of physical ill-conditioning that scaling cannot eliminate.
+\end{enumerate}
+
+\subsection*{MDO and dynamic optimization problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Identify at least three disciplines and four coupling variables in the design of an electric aircraft.
+  \item Explain why plant design and control design form a multidisciplinary coupled problem.
+  \item Write a dynamic optimization objective that balances tracking error and control effort.
+  \item Give four examples of path constraints and two examples of boundary constraints.
+  \item For the mass-spring-damper CCD example in this chapter, identify plant variables, controller variables, state variables, disturbances, objective terms, and constraints.
+\end{enumerate}
+
+\subsection*{Computational and mini-project problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Use MATLAB or Python to solve the quadratic problem in Worked Example 3.2 from at least four starting points. Compare convergence histories.
+  \item Implement gradient descent for a poorly scaled quadratic before and after variable scaling. Compare iteration counts.
+  \item Use a nonlinear programming solver to solve the pressure-vessel formulation with reasonable numerical values. Report the optimum and active constraints.
+  \item Choose a two-variable constrained problem and produce a contour plot showing the feasible region, initial design, final design, and active constraints.
+  \item Mini-project: formulate and solve a small engineering optimization problem. Submit a 5--7 page report containing the mission, design variables, model, objective, constraints, scaling, solver, initial guesses, convergence evidence, active constraints, and engineering interpretation.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable SVG files are supplied separately:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp3\_1.svg}
+  \item \texttt{fig\_chp3\_2.svg}
+  \item \texttt{fig\_chp3\_3.svg}
+  \item \texttt{fig\_chp3\_4.svg}
+  \item \texttt{fig\_chp3\_5.svg}
+  \item \texttt{fig\_chp3\_6.svg}
+  \item \texttt{fig\_chp3\_7.svg}
+  \item \texttt{fig\_chp3\_8.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{martinsning}
+J. R. R. A. Martins and A. Ning, \emph{Engineering Design Optimization}. Cambridge University Press, 2021.
+
+\bibitem{allisonbook}
+J. T. Allison, \emph{Engineering Design Optimization: Application to Physical Systems}, preliminary draft, 2026.
+
+\bibitem{nocedal}
+J. Nocedal and S. J. Wright, \emph{Numerical Optimization}, 2nd ed. Springer, 2006.
+
+\bibitem{boyd}
+S. Boyd and L. Vandenberghe, \emph{Convex Optimization}. Cambridge University Press, 2004.
+
+\bibitem{allisonherber}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\bibitem{herber2019}
+D. R. Herber and J. T. Allison, ``Nested and simultaneous solution strategies for general combined plant and control design problems,'' \emph{Journal of Mechanical Design}, vol. 141, no. 1, 011402, 2019.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 3
+\end{center}
+
+\end{document}

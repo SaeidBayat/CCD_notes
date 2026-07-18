@@ -1,0 +1,860 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDtan}{RGB}{247,239,225}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 2: Dynamic Systems and Feedback Control},
+  pdfauthor={Saeid Bayat}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 2: Dynamic Systems and Feedback Control}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\state}{\vect{x}}
+\newcommand{\ctrlu}{\vect{u}}
+\newcommand{\outy}{\vect{y}}
+\newcommand{\dist}{\vect{d}}
+\newcommand{\R}{\mathbb{R}}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\color{black}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\begin{document}
+
+% Cover page
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Physical and Control Systems\par}
+
+\vspace{2.2in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 2\par}
+\vspace{0.18in}
+\noindent\begin{minipage}{0.92\linewidth}\raggedright{\fontsize{22}{26}\selectfont\bfseries\color{black!85} Dynamic Systems and Feedback Control\par}\end{minipage}
+\vspace{0.20in}
+{\Large\color{CCDgray} Modeling, analysis, and feedback ideas needed for control co-design\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large A controller can only improve a system through the dynamics of the plant it acts on. To do control co-design well, we must understand those dynamics clearly.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+Control co-design (CCD) is fundamentally about \emph{dynamic systems}. A plant is not just a static object with dimensions and mass. It moves, stores energy, dissipates energy, responds to disturbances, and interacts with sensors and actuators over time. Controllers also act over time: they measure, decide, and command. Because both the plant and controller affect time-domain behavior, CCD requires fluency in dynamic-system modeling and feedback ideas.
+
+This chapter develops that foundation. We begin with physical system modeling and the language of states, inputs, outputs, and disturbances. We then introduce state-space representation, which is one of the most important mathematical forms used in modern control and CCD. After that, we discuss open-loop and closed-loop systems, explain the basic meaning of stability, and show how feedback modifies system behavior. The chapter closes by connecting these ideas back to plant design: changing stiffness, mass, damping, geometry, inertia, or actuator placement changes the system dynamics, which in turn changes what controller is best.
+
+\begin{learningobjectives}
+  \item explain why dynamic-system models are needed in control co-design;
+  \item identify states, inputs, outputs, and disturbances for a physical system;
+  \item derive a state-space model from a differential equation model;
+  \item distinguish open-loop and closed-loop systems;
+  \item explain equilibrium, stability, and asymptotic stability for linear systems;
+  \item show how feedback changes closed-loop dynamics;
+  \item explain how plant design choices modify the dynamic model and therefore influence control design.
+\end{learningobjectives}
+
+\section{Physical System Modeling}
+
+\subsection{Why modeling matters}
+
+Every control problem begins with a model, whether that model is explicit or implicit. Even when a controller is tuned experimentally, the engineer still carries an internal mental model of what the system does. In CCD, however, the model plays an even larger role: the model is the bridge between plant design variables and control design variables.
+
+A good model should be:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{physically meaningful}, so that design-variable changes have understandable effects;
+  \item \textbf{simple enough to analyze and optimize}, especially in early design stages;
+  \item \textbf{rich enough to capture the dominant dynamics} that matter for control and performance;
+  \item \textbf{well matched to the decisions being made}. A conceptual design study does not need the same fidelity as a certification-grade simulation.
+\end{itemize}
+
+There is no such thing as a perfect model. There are only models that are more or less useful for a given decision. The art of dynamic modeling lies in retaining the right physics while excluding details that do not materially affect the design question.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp2_1.png}
+\caption{A typical modeling workflow for dynamic systems used in CCD and control analysis. The process begins with the physical system and ends with a dynamic model that can be analyzed, simulated, and used for design.}
+\label{fig:modeling-workflow}
+\end{figure}
+
+Figure~\ref{fig:modeling-workflow} shows a common modeling pipeline. We begin with a physical system and its governing physics. We then make assumptions: rigid body or flexible body? linear or nonlinear? lumped parameters or distributed parameters? small motions or large motions? These assumptions lead to differential equations. Finally, we define states, inputs, outputs, and disturbances, and then express the model in a convenient form such as state space.
+
+\subsection{Modeling choices in engineering practice}
+
+Dynamic models are often built at different levels of fidelity:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Conceptual models} capture the dominant energy-storage and dissipation mechanisms. These models are excellent for teaching, intuition, and early optimization.
+  \item \textbf{Intermediate models} add more realism, such as actuator dynamics, sensor dynamics, multiple degrees of freedom, or saturations.
+  \item \textbf{High-fidelity models} incorporate flexible modes, nonlinearities, hydrodynamic or aerodynamic effects, contact, constraints, and implementation details.
+\end{enumerate}
+
+In a semester course, students should become comfortable with conceptual and intermediate models. High-fidelity models are important in practice, but they are only useful if you first understand the lower-level models well.
+
+\subsection{A first modeling example: mass-spring-damper system}
+
+The mass-spring-damper system is one of the most useful examples in dynamic systems because it contains nearly every idea we need: inertia, restoring force, damping, actuation, disturbance response, and measurable output.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.86\textwidth]{figures/fig_chp2_2.png}
+\caption{A single-degree-of-freedom mass-spring-damper system with a control input and a disturbance. This simple model is a foundational teaching example in control and CCD.}
+\label{fig:msd-setup}
+\end{figure}
+
+Applying Newton's second law gives
+\begin{equation}
+m\ddot{x}(t)+c\dot{x}(t)+kx(t)=u(t)+d(t),
+\label{eq:msd-second-order}
+\end{equation}
+where:
+\begin{itemize}[leftmargin=1.4em]
+  \item $m$ is the mass,
+  \item $c$ is the damping coefficient,
+  \item $k$ is the spring stiffness,
+  \item $x(t)$ is displacement,
+  \item $u(t)$ is the control input force,
+  \item $d(t)$ is an external disturbance force.
+\end{itemize}
+
+The important CCD lesson is immediate: if we change $m$, $c$, or $k$, then the dynamic behavior changes. Since a controller acts through the dynamics, the best controller also changes. This is the essence of plant--control interaction.
+
+\section{States, Inputs, Outputs, and Disturbances}
+
+\subsection{States}
+
+A \emph{state} is the minimum information needed at time $t$ so that, together with future inputs, we can predict future behavior. For many mechanical systems, positions and velocities are natural states. For electrical systems, currents and voltages across energy-storing elements are common states. For thermal systems, temperatures may be states.
+
+The state concept is central because dynamic systems have memory. A static algebraic equation does not remember the past. A dynamic system does.
+
+For the mass-spring-damper example, a convenient state choice is
+\begin{equation}
+ x_1(t)=x(t), \qquad x_2(t)=\dot{x}(t).
+\end{equation}
+These two variables are sufficient to predict future motion when future inputs are known.
+
+\subsection{Inputs}
+
+An \emph{input} is a signal that can influence the system. In control problems, we usually distinguish between:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{control inputs}, which are commanded by the controller; and
+  \item \textbf{exogenous inputs}, such as disturbances or reference signals.
+\end{itemize}
+
+For the mass-spring-damper system, $u(t)$ is the control input and $d(t)$ is a disturbance. For a vehicle, steering angle or brake torque may be control inputs, while road irregularities and wind gusts are disturbances.
+
+\subsection{Outputs}
+
+An \emph{output} is a quantity we care to measure, estimate, regulate, track, or report. Outputs do not need to equal states. Sometimes an output is a state, such as position. Sometimes it is a combination of states, such as acceleration or strain.
+
+For example, a suspension designer may care about body acceleration, tire deflection, and suspension travel. A wind-turbine designer may care about rotor speed, generated power, and tower-base bending moment. These are outputs because they are related to performance and constraints.
+
+\subsection{Disturbances}
+
+A \emph{disturbance} is an external influence that affects the dynamics but is not under direct control. Disturbances may be measurable, partially measurable, or unmeasurable. Typical disturbances include road bumps, wave excitation, wind variations, payload changes, and unmodeled loads.
+
+In feedback control, disturbance rejection is one of the main reasons feedback is valuable. If disturbances were absent and the model were exact, open-loop control would often be enough. Real systems, however, are not that kind.
+
+\subsection{Examples from engineering systems}
+
+Table~\ref{tab:signals} shows the state/input/output/disturbance language for several systems relevant to CCD.
+
+\begin{table}[H]
+\centering
+\caption{Examples of states, inputs, outputs, and disturbances in engineering systems.}
+\label{tab:signals}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{p{0.17\linewidth}p{0.22\linewidth}p{0.18\linewidth}p{0.20\linewidth}p{0.17\linewidth}}
+\toprule
+\textbf{System} & \textbf{Possible states} & \textbf{Control inputs} & \textbf{Outputs of interest} & \textbf{Disturbances} \\
+\midrule
+Mass-spring-damper & displacement, velocity & force $u$ & displacement, velocity, acceleration & external force \\
+Active suspension & body and wheel positions/velocities & actuator force & ride comfort, road holding, suspension travel & road profile \\
+Robot arm & joint angles, joint rates & motor torques & end-effector position, tracking error & payload changes, contact forces \\
+Wind turbine & rotor speed, structural states, actuator states & pitch angle, generator torque & power, loads, speed regulation & wind speed and turbulence \\
+Marine energy device & heave/pitch states, PTO states & PTO force or damping command & absorbed power, motions, loads & wave excitation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\keyideabox{\textbf{Key idea.} States describe the system's internal memory. Inputs are what can influence the system. Outputs are what we monitor or care about. Disturbances are external influences that degrade or alter behavior. CCD depends on identifying these quantities clearly because both plant and control decisions can change them.}
+
+\section{State-Space Representation}
+
+\subsection{Why state space?}
+
+Many introductory engineering courses begin with single differential equations or transfer functions. Those tools are useful, but state-space representation is more general and more natural for CCD. State space handles:
+\begin{itemize}[leftmargin=1.4em]
+  \item multi-input and multi-output systems,
+  \item systems with many states,
+  \item nonlinear dynamics,
+  \item time-varying parameters,
+  \item state constraints and controller design methods,
+  \item optimization formulations used in modern control and CCD.
+\end{itemize}
+
+The general nonlinear continuous-time state-space model is
+\begin{equation}
+\dot{\state}(t)=\vect{f}(\state(t),\ctrlu(t),\dist(t),t),
+\qquad
+\outy(t)=\vect{h}(\state(t),\ctrlu(t),\dist(t),t).
+\label{eq:general-ss}
+\end{equation}
+
+For linear time-invariant (LTI) systems, this becomes
+\begin{equation}
+\dot{\state}(t)=A\state(t)+B\ctrlu(t)+E\dist(t),
+\qquad
+\outy(t)=C\state(t)+D\ctrlu(t)+F\dist(t).
+\label{eq:lti-ss}
+\end{equation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp2_3.png}
+\caption{The state-space viewpoint separates internal dynamic variables from control inputs, disturbances, and measured outputs.}
+\label{fig:ss-idea}
+\end{figure}
+
+\subsection{Converting the mass-spring-damper model to state space}
+
+Start from Eq.~\eqref{eq:msd-second-order} and define
+\begin{equation}
+ x_1=x, \qquad x_2=\dot{x}.
+\end{equation}
+Then
+\begin{equation}
+\dot{x}_1=x_2,
+\end{equation}
+and, by rearranging Eq.~\eqref{eq:msd-second-order},
+\begin{equation}
+\dot{x}_2=-\frac{k}{m}x_1-\frac{c}{m}x_2+\frac{1}{m}u+\frac{1}{m}d.
+\end{equation}
+Therefore,
+\begin{equation}
+\begin{bmatrix}
+\dot{x}_1 \\
+\dot{x}_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+0 & 1 \\
+-\dfrac{k}{m} & -\dfrac{c}{m}
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\
+ x_2
+\end{bmatrix}
++
+\begin{bmatrix}
+0 \\
+\dfrac{1}{m}
+\end{bmatrix}u
++
+\begin{bmatrix}
+0 \\
+\dfrac{1}{m}
+\end{bmatrix}d.
+\label{eq:msd-ss}
+\end{equation}
+
+If the output is displacement only, then
+\begin{equation}
+ y = \begin{bmatrix}1 & 0\end{bmatrix}
+ \begin{bmatrix}x_1\\x_2\end{bmatrix}.
+\end{equation}
+If the output includes both displacement and velocity, then
+\begin{equation}
+ \outy = \begin{bmatrix}x_1\\x_2\end{bmatrix},
+ \qquad C=I.
+\end{equation}
+
+Notice that the plant design variables $m$, $c$, and $k$ appear directly in the system matrix $A$ and input matrices. This is exactly why state-space models are so useful for CCD: changing design variables changes the matrices.
+
+\subsection{Worked example: a DC motor}
+
+Consider a simple armature-controlled DC motor. Let $\theta$ be shaft angle, $\omega=\dot{\theta}$ shaft speed, and $i$ armature current. A basic model is
+\begin{align}
+J\dot{\omega} + b\omega &= K_t i - \tau_L, \\
+L\dot{i} + R i &= v - K_e \omega,
+\end{align}
+where $J$ is inertia, $b$ is viscous friction, $L$ is inductance, $R$ is resistance, $K_t$ and $K_e$ are motor constants, $v$ is applied voltage, and $\tau_L$ is load torque.
+
+A natural state choice is
+\begin{equation}
+\state = \begin{bmatrix}\theta & \omega & i\end{bmatrix}^T.
+\end{equation}
+Then the state-space model becomes
+\begin{equation}
+\dot{\state}=
+\begin{bmatrix}
+0 & 1 & 0 \\
+0 & -\dfrac{b}{J} & \dfrac{K_t}{J} \\
+0 & -\dfrac{K_e}{L} & -\dfrac{R}{L}
+\end{bmatrix}\state
++
+\begin{bmatrix}
+0 \\
+0 \\
+\dfrac{1}{L}
+\end{bmatrix}v
++
+\begin{bmatrix}
+0 \\
+-\dfrac{1}{J} \\
+0
+\end{bmatrix}\tau_L.
+\end{equation}
+
+This example is useful because it shows that state-space models naturally combine different physical domains---mechanical and electrical in this case.
+
+\subsection{Linearization}
+
+Many real systems are nonlinear. State-space modeling still applies, but sometimes control design is performed around an operating point using a linearized model. If
+\begin{equation}
+\dot{\state}=\vect{f}(\state,\ctrlu),
+\end{equation}
+and $(\state_0,\ctrlu_0)$ is an equilibrium or operating point, then a first-order Taylor expansion gives
+\begin{equation}
+\delta \dot{\state}=A\,\delta\state+B\,\delta\ctrlu,
+\end{equation}
+where
+\begin{equation}
+A=\left.\frac{\partial \vect{f}}{\partial \state}\right|_{(\state_0,\ctrlu_0)},
+\qquad
+B=\left.\frac{\partial \vect{f}}{\partial \ctrlu}\right|_{(\state_0,\ctrlu_0)}.
+\end{equation}
+
+Linearization is important in CCD because design variables can change the operating point and the linearized dynamics.
+
+\section{Open-Loop and Closed-Loop Systems}
+
+\subsection{Open-loop operation}
+
+An \emph{open-loop} controller generates a command without using measurements to correct its action during operation. It may still use a model or a planned trajectory, but it does not adapt to actual measured output in real time.
+
+Open-loop control can work well when:
+\begin{itemize}[leftmargin=1.4em]
+  \item the model is accurate,
+  \item disturbances are negligible,
+  \item repeatability is high,
+  \item performance requirements are modest.
+\end{itemize}
+
+Examples include timed traffic lights, simple washing-machine cycles, or a precomputed motion profile for a robot moving in a highly predictable setting.
+
+\subsection{Closed-loop operation}
+
+A \emph{closed-loop} controller uses measurements to compare what is happening with what should happen, and then adjusts the input accordingly. This feedback action is one of the main ideas in all of control engineering.
+
+Closed-loop control is usually preferred because it can:
+\begin{itemize}[leftmargin=1.4em]
+  \item reject disturbances,
+  \item reduce sensitivity to modeling error,
+  \item stabilize unstable or weakly damped plants,
+  \item improve tracking and regulation.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp2_4.png}
+\caption{Open-loop and closed-loop system structures. Closed-loop control feeds measured output back to the controller so that commands can be corrected in real time.}
+\label{fig:open-closed}
+\end{figure}
+
+\subsection{Error-driven feedback}
+
+A standard feedback idea is to compute an error
+\begin{equation}
+ e(t)=r(t)-y(t),
+\end{equation}
+where $r(t)$ is a reference and $y(t)$ is the measured output. The controller then uses $e(t)$ or the measured state to choose the command. In its simplest form, this may be proportional control:
+\begin{equation}
+ u(t)=K_p e(t).
+\end{equation}
+
+In more advanced systems, the controller may be proportional-integral-derivative (PID), state feedback, observer-based feedback, model predictive control, or another architecture.
+
+\subsection{Why open-loop control often fails in practice}
+
+Suppose a mass-spring-damper system is given an open-loop command designed using nominal parameters. If the actual mass is slightly larger, or the disturbance is different than expected, then the resulting motion may deviate from the intended motion. A feedback controller corrects based on what actually happens, not only on what was predicted to happen.
+
+This is one reason CCD studies often need to include closed-loop control and not only open-loop trajectories: the plant that looks best under open-loop assumptions may not be best when feedback implementation realities are considered.
+
+\section{Stability and Feedback}
+
+\subsection{Equilibrium points}
+
+An \emph{equilibrium point} is a state at which the system can remain indefinitely if the input is held appropriately and no perturbation moves it away. For
+\begin{equation}
+\dot{\state}=\vect{f}(\state,\ctrlu),
+\end{equation}
+a pair $(\state_e,\ctrlu_e)$ is an equilibrium if
+\begin{equation}
+\vect{f}(\state_e,\ctrlu_e)=\vect{0}.
+\end{equation}
+
+For the uncontrolled mass-spring-damper system with no disturbance, the origin $(x,\dot{x})=(0,0)$ is an equilibrium.
+
+\subsection{Informal meaning of stability}
+
+Engineers often explain stability informally as follows:
+\begin{itemize}[leftmargin=1.4em]
+  \item if the system is perturbed slightly, does it remain near the equilibrium? \hfill (stability)
+  \item if it is perturbed slightly, does it return to the equilibrium? \hfill (asymptotic stability)
+  \item if it diverges away, the equilibrium is unstable.\hfill (instability)
+\end{itemize}
+
+For LTI systems, these questions reduce to the location of eigenvalues of the matrix $A$.
+
+\subsection{Linear stability test}
+
+For
+\begin{equation}
+\dot{\state}=A\state,
+\end{equation}
+the equilibrium at the origin is:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{asymptotically stable} if all eigenvalues of $A$ have strictly negative real part;
+  \item \textbf{unstable} if any eigenvalue has positive real part;
+  \item \textbf{marginally stable or inconclusive under this simple test} in some special cases when eigenvalues lie on the imaginary axis.
+\end{itemize}
+
+For the mass-spring-damper state matrix
+\begin{equation}
+A=
+\begin{bmatrix}
+0 & 1 \\
+-\dfrac{k}{m} & -\dfrac{c}{m}
+\end{bmatrix},
+\end{equation}
+the characteristic equation is
+\begin{equation}
+\lambda^2+\frac{c}{m}\lambda+\frac{k}{m}=0.
+\end{equation}
+If $m>0$, $c>0$, and $k>0$, then the eigenvalues have negative real part and the equilibrium is asymptotically stable.
+
+\subsection{Natural frequency and damping ratio}
+
+For a second-order system, it is often useful to define
+\begin{equation}
+\omega_n = \sqrt{\frac{k}{m}},
+\qquad
+\zeta = \frac{c}{2\sqrt{km}}.
+\end{equation}
+These parameters summarize how the system moves:
+\begin{itemize}[leftmargin=1.4em]
+  \item $\omega_n$ measures the speed of the undamped oscillatory dynamics;
+  \item $\zeta$ measures damping relative to critical damping.
+\end{itemize}
+
+A larger stiffness generally increases natural frequency. A larger damping coefficient generally increases damping ratio. A larger mass tends to slow the system by decreasing natural frequency.
+
+\subsection{Geometric view of stability}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp2_5.png}
+\caption{Two phase-plane examples illustrating asymptotic stability and instability. In the stable case, nearby trajectories approach the equilibrium; in the unstable case, some trajectories move away from it.}
+\label{fig:phase-stability}
+\end{figure}
+
+Figure~\ref{fig:phase-stability} shows that stability is ultimately about trajectories, not just formulas. The eigenvalue condition is powerful because it predicts how trajectories behave, but students should remember the geometric meaning as well.
+
+\subsection{How feedback changes dynamics}
+
+Consider the LTI system
+\begin{equation}
+\dot{\state}=A\state+B\ctrlu.
+\end{equation}
+If we apply state feedback
+\begin{equation}
+\ctrlu = -K\state,
+\label{eq:statefeedback}
+\end{equation}
+then the closed-loop system becomes
+\begin{equation}
+\dot{\state}=(A-BK)\state.
+\label{eq:closed-loop-A}
+\end{equation}
+
+This equation is fundamental. It shows that feedback does not act by magic. It changes the system matrix from $A$ to $A-BK$. In other words, the controller reshapes the effective dynamics.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.62\textwidth]{figures/fig_chp2_7.png}
+\caption{A conceptual pole map showing how increasing feedback can shift the closed-loop poles. Pole movement changes speed of response, oscillation, and stability margin.}
+\label{fig:feedback-poles}
+\end{figure}
+
+This is extremely important in CCD. If the plant design changes $A$ or $B$, then the same feedback matrix $K$ will no longer produce the same closed-loop dynamics. Conversely, if the controller design changes $K$, the value of a given plant design may change.
+
+\subsection{A simple proportional-derivative example}
+
+Return to the mass-spring-damper system. Suppose we choose a proportional-derivative (PD) feedback law
+\begin{equation}
+ u(t)=-K_p x(t)-K_d \dot{x}(t).
+\label{eq:pd-law}
+\end{equation}
+Substituting into Eq.~\eqref{eq:msd-second-order} gives
+\begin{equation}
+ m\ddot{x}(t) + \big(c+K_d\big)\dot{x}(t) + \big(k+K_p\big)x(t)=d(t).
+\label{eq:effective-pd}
+\end{equation}
+This shows directly that feedback behaves like added stiffness and added damping. The controller can improve performance, but only through the plant it is attached to.
+
+\section{How Plant Design Changes System Dynamics}
+
+\subsection{Design variables appear in the model}
+
+In CCD, plant design variables may include masses, inertias, stiffnesses, damping coefficients, link lengths, actuator placement, structural dimensions, sensor placement, and many other quantities. These variables appear inside the dynamic model, for example:
+\begin{itemize}[leftmargin=1.4em]
+  \item in the mass matrix,
+  \item in stiffness and damping terms,
+  \item in aerodynamic or hydrodynamic coefficients,
+  \item in actuator leverage or authority,
+  \item in sensor output equations.
+\end{itemize}
+
+Thus, plant design changes the dynamic equations, the state-space matrices, and the input/output relationships.
+
+\subsection{Mass, stiffness, and damping}
+
+In the mass-spring-damper system:
+\begin{itemize}[leftmargin=1.4em]
+  \item increasing $m$ lowers natural frequency and usually slows response;
+  \item increasing $k$ raises natural frequency and can make the system faster but more oscillatory if damping is not increased appropriately;
+  \item increasing $c$ increases damping and reduces oscillation, but too much damping may slow the response and increase energy dissipation.
+\end{itemize}
+
+These are not just abstract observations. They are design tradeoffs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp2_6.png}
+\caption{Changing plant parameters changes dynamic behavior and shifts the pole locations. Even before feedback is added, plant design choices alter the response speed, overshoot, damping, and frequency content.}
+\label{fig:plant-dynamics-change}
+\end{figure}
+
+Figure~\ref{fig:plant-dynamics-change} compares two plant designs. The same unit-step forcing produces very different responses because the plant parameters differ. The corresponding poles also change. This is exactly the kind of effect CCD exploits.
+
+\subsection{Examples from CCD application areas}
+
+\subsubsection{Vehicles}
+
+In a suspension system, spring and damper selection strongly affect ride comfort and road holding. An active controller can improve performance, but the amount of improvement depends on the passive suspension design. A very soft suspension may improve isolation but require aggressive actuation. A stiff suspension may reduce large motions but worsen comfort. Therefore plant and control choices are coupled.
+
+\subsubsection{Robots}
+
+In robotic manipulators, link lengths, structural stiffness, inertia distribution, and actuator placement affect natural frequencies, control bandwidth, and energy use. A heavier arm may require stronger actuators and lead to slower response. A more compliant structure may need more advanced feedback to suppress vibration.
+
+\subsubsection{Wind turbines}
+
+For wind turbines, tower flexibility, blade mass distribution, and drivetrain inertia influence rotor-speed dynamics and structural loading. Control design choices such as blade-pitch control and torque control must be matched to those dynamics. If a plant redesign changes dominant modes, the controller tuning must also change.
+
+\subsubsection{Marine energy systems}
+
+In marine energy devices, buoy geometry, PTO characteristics, and mooring properties influence heave, pitch, resonance, and absorbed power. Since waves are dynamic disturbances, the plant design fundamentally shapes what kind of control strategy is possible or beneficial.
+
+\keyideabox{\textbf{CCD viewpoint.} Plant design is not just about static mass or cost. Plant design changes the dynamic pathways through which feedback acts. This is why physical design variables belong inside the same design study as control variables.}
+
+\section{Worked Examples}
+
+\subsection{Worked Example 2.1: derive and analyze a state-space model}
+
+Consider a mass-spring-damper system with $m=2$ kg, $c=3$ N\,s/m, and $k=8$ N/m. Let the control input be force $u$ and let the measured output be displacement $y=x$.
+
+\textbf{Step 1: write the dynamic equation.}
+\begin{equation}
+2\ddot{x}+3\dot{x}+8x=u.
+\end{equation}
+
+\textbf{Step 2: define states.}
+\begin{equation}
+ x_1=x, \qquad x_2=\dot{x}.
+\end{equation}
+
+\textbf{Step 3: write the first-order model.}
+\begin{align}
+\dot{x}_1 &= x_2, \\
+\dot{x}_2 &= -4x_1-1.5x_2+0.5u.
+\end{align}
+
+So
+\begin{equation}
+\dot{\state}=
+\begin{bmatrix}
+0 & 1\\
+-4 & -1.5
+\end{bmatrix}\state
++
+\begin{bmatrix}
+0\\0.5
+\end{bmatrix}u,
+\qquad
+y=\begin{bmatrix}1 & 0\end{bmatrix}\state.
+\end{equation}
+
+\textbf{Step 4: analyze stability.}
+The eigenvalues of $A$ are the roots of
+\begin{equation}
+\lambda^2+1.5\lambda+4=0,
+\end{equation}
+which are
+\begin{equation}
+\lambda=-0.75\pm j1.854.
+\end{equation}
+The real parts are negative, so the open-loop equilibrium is asymptotically stable.
+
+\textbf{Step 5: interpret the result.}
+The system oscillates, but the oscillations decay. If the designer increases stiffness to $k=18$ without changing damping, the oscillation frequency increases and the optimal feedback tuning may change.
+
+\subsection{Worked Example 2.2: effect of PD feedback}
+
+Suppose the system in Worked Example 2.1 uses the feedback law
+\begin{equation}
+ u=-6x-4\dot{x}.
+\end{equation}
+Then
+\begin{equation}
+2\ddot{x} + (3+4)\dot{x} + (8+6)x = 0,
+\end{equation}
+so the closed-loop characteristic equation is
+\begin{equation}
+2\lambda^2 + 7\lambda + 14 = 0.
+\end{equation}
+The corresponding poles are farther into the left half-plane than the open-loop poles, which indicates increased damping and faster decay. Feedback has improved the response by altering the effective dynamics.
+
+\subsection{Worked Example 2.3: identifying states, inputs, outputs, and disturbances}
+
+Consider a simple cruise-control model for a vehicle moving along a straight road:
+\begin{equation}
+ m\dot{v}=F_t - c_r v - mg\sin\theta,
+\end{equation}
+where $v$ is vehicle speed, $F_t$ is traction force, $c_r$ is a drag or rolling-resistance coefficient, and $\theta$ is road slope.
+
+A sensible modeling description is:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{state:} $v$,
+  \item \textbf{control input:} traction force $F_t$ or throttle command,
+  \item \textbf{output:} vehicle speed $v$,
+  \item \textbf{disturbance:} road slope $\theta$.
+\end{itemize}
+
+This example is useful because it reminds us that states need not always be numerous. For a first-order model, the state may be a single variable.
+
+\section{Common Modeling Mistakes}
+
+Students often struggle not because the mathematics is too hard, but because they commit simple conceptual mistakes. Here are several to watch for:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Treating outputs as states without justification.} Outputs may equal states, but they do not have to.
+  \item \textbf{Ignoring disturbances.} This usually leads to unrealistic conclusions about controller performance.
+  \item \textbf{Using too many states.} More states are not always better; the state set should be minimal and meaningful.
+  \item \textbf{Forgetting units.} Dynamic equations must be dimensionally consistent.
+  \item \textbf{Assuming plant design only changes constraints or cost.} In CCD, plant design often changes the differential equations themselves.
+  \item \textbf{Confusing stability with performance.} A stable system is not necessarily fast, efficient, comfortable, or optimal.
+\end{enumerate}
+
+\section{Chapter Summary}
+
+This chapter introduced the dynamic-system ideas needed for CCD. We discussed how physical modeling leads to differential equations, how those equations are rewritten in state-space form, and how the language of states, inputs, outputs, and disturbances helps organize engineering models. We distinguished open-loop and closed-loop systems and showed why feedback is so valuable in real systems. We then introduced stability and explained how feedback modifies the closed-loop system matrix. Finally, we emphasized the CCD connection: plant design variables change dynamic behavior, and therefore they change what controller is best.
+
+If you remember only one message from this chapter, remember this: \emph{controllers do not act on abstract equations; they act on physical systems with specific dynamics. When the plant changes, the control problem changes too.}
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item dynamic system
+  \item state
+  \item control input
+  \item output
+  \item disturbance
+  \item differential equation
+  \item state-space representation
+  \item linearization
+  \item open-loop system
+  \item closed-loop system
+  \item feedback
+  \item equilibrium
+  \item stability
+  \item asymptotic stability
+  \item eigenvalue
+  \item natural frequency
+  \item damping ratio
+  \item closed-loop poles
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Conceptual problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item Explain, in your own words, why dynamic-system models are especially important in control co-design.
+  \item Give one example of a state, input, output, and disturbance for each of the following systems: (a) active suspension, (b) robot arm, (c) wind turbine.
+  \item A student says, ``If a system is stable, then it is well designed.'' Explain why this statement is incomplete.
+  \item Describe one situation in which open-loop control may be acceptable and one situation in which closed-loop control is essential.
+  \item Why is it often dangerous to optimize a plant assuming a fixed controller that will later be replaced?
+\end{enumerate}
+
+\subsection*{Modeling and derivation problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item For the mass-spring-damper system, derive a state-space model when the output is acceleration instead of displacement.
+  \item A rotational inertia $J$ is connected to a torsional spring $k_t$ and damper $c_t$, and a torque input $\tau$ acts on the shaft. Derive the state-space model using angular displacement and angular velocity as states.
+  \item Derive the state-space model of the cruise-control system
+  \begin{equation*}
+  m\dot{v}=F_t-c_r v-mg\sin\theta
+  \end{equation*}
+  using $v$ as the state, $F_t$ as the control input, and $\theta$ as the disturbance.
+  \item For the DC motor model in this chapter, choose the output as shaft speed only. Write the corresponding $C$ and $D$ matrices.
+  \item Consider the nonlinear pendulum equation
+  \begin{equation*}
+  ml^2\ddot{\theta}+b\dot{\theta}+mgl\sin\theta=\tau.
+  \end{equation*}
+  Define states and write the nonlinear state-space model.
+\end{enumerate}
+
+\subsection*{Analysis problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item For the system
+  \begin{equation*}
+  \dot{\state}=\begin{bmatrix}0 & 1\\-5 & -2\end{bmatrix}\state,
+  \end{equation*}
+  compute the eigenvalues and determine whether the origin is asymptotically stable.
+  \item For the same system as Problem 11, compute the natural frequency and damping ratio if you interpret it as a second-order mechanical model.
+  \item Show that the closed-loop matrix under state feedback $u=-Kx$ is $A-BK$. Why is this result central to feedback control?
+  \item For the mass-spring-damper model with $m=1$, $c=0.6$, and $k=2.5$, compute the open-loop poles.
+  \item Suppose $m$ is doubled while $c$ and $k$ remain unchanged. How do the natural frequency and damping ratio change?
+\end{enumerate}
+
+\subsection*{Control and design interaction problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Consider the PD control law in Eq.~\eqref{eq:pd-law}. Explain physically what $K_p$ and $K_d$ do to the effective stiffness and damping.
+  \item For the controlled mass-spring-damper system, identify a possible tradeoff between making the plant stiffer and making the controller more aggressive.
+  \item Describe how a change in actuator placement on a flexible structure could alter both the plant model and the effectiveness of feedback.
+  \item A marine energy device is redesigned to have a larger buoy. List at least four ways this might alter the dynamic model relevant to control design.
+  \item A robot joint is made lighter but less stiff. Explain qualitatively how that might affect bandwidth, vibration, and controller tuning.
+\end{enumerate}
+
+\subsection*{Computational and mini-project problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Use MATLAB or Python to simulate the mass-spring-damper response for at least three different values of damping $c$ while holding $m$ and $k$ fixed. Plot the responses and explain the trends.
+  \item Plot the poles of the mass-spring-damper system as stiffness $k$ varies over a wide range. What trend do you observe?
+  \item Choose an engineering system of your interest and identify at least three plant design variables and three control design variables. Then write one paragraph explaining why the system is a good candidate for CCD.
+  \item Build a first-order or second-order state-space model of a physical system from your own research area or engineering interest. Clearly define states, inputs, outputs, and disturbances.
+  \item Mini-project: select an actively controlled system and prepare a 3--4 page modeling memo containing (a) a diagram of the system, (b) a list of assumptions, (c) the differential equations, (d) the state-space representation, (e) a discussion of stability, and (f) an explanation of how plant design could change the model and the control problem.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable figure files are supplied separately as SVG files:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp2\_1.svg}
+  \item \texttt{fig\_chp2\_2.svg}
+  \item \texttt{fig\_chp2\_3.svg}
+  \item \texttt{fig\_chp2\_4.svg}
+  \item \texttt{fig\_chp2\_5.svg}
+  \item \texttt{fig\_chp2\_6.svg}
+  \item \texttt{fig\_chp2\_7.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{allison2014aiaa}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\bibitem{allison2014jmd}
+J. T. Allison, T. Guo, and Z. Han, ``Co-design of an active suspension using simultaneous dynamic optimization,'' \emph{Journal of Mechanical Design}, vol. 136, no. 8, 081003, 2014.
+
+\bibitem{garciasanz2019}
+M. Garcia-Sanz, ``Control co-design: An engineering game changer,'' \emph{Advanced Control for Applications}, vol. 1, no. 1, 2019.
+
+\bibitem{herber2019}
+D. R. Herber and J. T. Allison, ``Nested and simultaneous solution strategies for general combined plant and control design problems,'' \emph{Journal of Mechanical Design}, vol. 141, no. 1, 011402, 2019.
+
+\bibitem{martinsning}
+J. R. R. A. Martins and A. Ning, \emph{Engineering Design Optimization}. Cambridge University Press, 2021.
+
+\bibitem{franklin}
+G. F. Franklin, J. D. Powell, and A. Emami-Naeini, \emph{Feedback Control of Dynamic Systems}. 8th ed., Pearson, 2019.
+
+\bibitem{allisonbook}
+J. T. Allison, \emph{Engineering Design Optimization: Application to Physical Systems}, draft textbook, 2026.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 2
+\end{center}
+
+\end{document}

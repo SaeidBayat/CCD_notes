@@ -1,0 +1,727 @@
+
+\section{Advanced Activities}
+
+The following activities are intended for strong master's or PhD students.
+Students may use GPOPS-II, Dymos, or an equivalent optimal-control and
+direct-collocation package where specified.
+
+\subsection*{Problem 1: Perfect-Information OLOC versus Causal Feedback}
+
+Consider
+\begin{equation}
+\dot{x}(t)=-0.8x(t)+u(t)+w(t),
+\qquad
+x(0)=1,
+\qquad
+0\leq t\leq 6,
+\end{equation}
+with
+\begin{equation}
+-3\leq u(t)\leq 3.
+\end{equation}
+
+The nominal disturbance is
+\begin{equation}
+w_0(t)=0.4\sin(1.5t)+0.2\sin(4t).
+\end{equation}
+
+Minimize
+\begin{equation}
+J=
+\frac{1}{2}x(6)^2
++
+\frac{1}{2}
+\int_0^6
+\left[
+x(t)^2+0.05u(t)^2
+\right]dt.
+\end{equation}
+
+\begin{enumerate}
+    \item Write the Hamiltonian and derive the costate equation.
+
+    \item Show that the unconstrained optimal control is
+    \begin{equation}
+    u^*(t)=-\frac{\lambda(t)}{0.05},
+    \end{equation}
+    and write the corresponding saturated optimal-control law.
+
+    \item State the terminal condition for the costate.
+
+    \item Solve the two-point boundary-value problem using GPOPS-II, Dymos,
+    or a shooting method.
+
+    \item Design a finite-horizon causal LQR controller
+    \begin{equation}
+    u(t)=-K(t)x(t)
+    \end{equation}
+    by solving the Riccati equation backward in time.
+
+    \item Apply both controllers to the perturbed disturbance
+    \begin{equation}
+    w(t)=w_0(t)+0.15\sin(2.3t+\phi),
+    \end{equation}
+    for
+    \begin{equation}
+    \phi\in
+    \left\{
+    0,\frac{\pi}{2},\pi,\frac{3\pi}{2}
+    \right\}.
+    \end{equation}
+
+    \item Compare the nominal and perturbed costs. Quantify the performance
+    advantage caused by perfect future disturbance information.
+\end{enumerate}
+
+
+\subsection*{Problem 2: Open-Loop versus Feedback Control Co-Design}
+
+Consider
+\begin{equation}
+\dot{x}_1=x_2,
+\end{equation}
+\begin{equation}
+\dot{x}_2=-kx_1-cx_2+u+d(t),
+\end{equation}
+where the mass is normalized to one.
+
+The plant variables are
+\begin{equation}
+0.5\leq k\leq 8,
+\qquad
+0.1\leq c\leq 3,
+\end{equation}
+and the actuator-capacity variable is
+\begin{equation}
+0.5\leq F_{\max}\leq 5.
+\end{equation}
+
+Use the feedback law
+\begin{equation}
+u(t)=
+\operatorname{sat}
+\left(
+-K_px_1(t)-K_dx_2(t),
+F_{\max}
+\right),
+\end{equation}
+with
+\begin{equation}
+0\leq K_p\leq 10,
+\qquad
+0\leq K_d\leq 8.
+\end{equation}
+
+Minimize
+\begin{align}
+J=&
+\frac{1}{N_s}
+\sum_{s=1}^{N_s}
+\int_0^8
+\left[
+x_{1,s}^2
++0.1x_{2,s}^2
++0.02u_s^2
+\right]dt
+\nonumber\\
+&+
+0.01k^2
++
+0.02c^2
++
+0.04F_{\max}^2.
+\end{align}
+
+Use the scenarios
+\begin{equation}
+\mathbf{x}_0^{(1)}=
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix},
+\qquad
+\mathbf{x}_0^{(2)}=
+\begin{bmatrix}
+0.5\\
+1
+\end{bmatrix},
+\qquad
+\mathbf{x}_0^{(3)}=
+\begin{bmatrix}
+-1\\
+0.5
+\end{bmatrix},
+\end{equation}
+with
+\begin{equation}
+d_1(t)=0,
+\qquad
+d_2(t)=0.4\sin(2t),
+\qquad
+d_3(t)=0.3\sin(3t).
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the unsaturated closed-loop dynamics.
+
+    \item Derive the conditions on $k$, $c$, $K_p$, and $K_d$ for
+    asymptotic stability.
+
+    \item Add the passive-safety constraint
+    \begin{equation}
+    \zeta_{\mathrm{passive}}
+    =
+    \frac{c}{2\sqrt{k}}
+    \geq 0.15.
+    \end{equation}
+
+    \item Optimize
+    \begin{equation}
+    k,\quad c,\quad F_{\max},\quad K_p,\quad K_d
+    \end{equation}
+    simultaneously.
+
+    \item For the optimized plant, solve a separate OLOC problem in
+    GPOPS-II or Dymos for each disturbance scenario.
+
+    \item Compute the relative implementation gap
+    \begin{equation}
+    G=
+    \frac{J_{\mathrm{feedback}}-J_{\mathrm{OLOC}}}
+    {J_{\mathrm{OLOC}}}.
+    \end{equation}
+
+    \item Explain why the plant optimized with unrestricted OLOC may differ
+    from the plant optimized with the parameterized feedback controller.
+\end{enumerate}
+
+
+\subsection*{Problem 3: Disturbance Preview and Information Availability}
+
+Consider the discrete-time system
+\begin{equation}
+\mathbf{x}_{k+1}
+=
+A\mathbf{x}_k
++
+Bu_k
++
+Ew_k,
+\end{equation}
+where
+\begin{equation}
+A=
+\begin{bmatrix}
+1 & h\\
+0 & 1
+\end{bmatrix},
+\qquad
+B=E=
+\begin{bmatrix}
+h^2/2\\
+h
+\end{bmatrix},
+\qquad
+h=0.1.
+\end{equation}
+
+Use the horizon
+\begin{equation}
+N=60
+\end{equation}
+and the objective
+\begin{equation}
+J=
+\mathbf{x}_N^TQ_f\mathbf{x}_N
++
+\sum_{k=0}^{N-1}
+\left(
+\mathbf{x}_k^TQ\mathbf{x}_k
++
+Ru_k^2
+\right),
+\end{equation}
+with
+\begin{equation}
+Q=
+\begin{bmatrix}
+10&0\\
+0&1
+\end{bmatrix},
+\qquad
+Q_f=10Q,
+\qquad
+R=0.1.
+\end{equation}
+
+The disturbance is
+\begin{equation}
+w_k=
+0.8\sin(0.25k)
++
+0.3\sin(0.9k).
+\end{equation}
+
+Assume that at time $k$, the controller knows only the next $L$
+disturbance values.
+
+\begin{enumerate}
+    \item Assume the value function has the affine-quadratic form
+    \begin{equation}
+    V_k(\mathbf{x})
+    =
+    \mathbf{x}^TP_k\mathbf{x}
+    +
+    2\mathbf{s}_k^T\mathbf{x}
+    +
+    c_k.
+    \end{equation}
+    Derive the dynamic-programming recursion for $P_k$, $\mathbf{s}_k$,
+    and $c_k$.
+
+    \item Show that the optimal control has the form
+    \begin{equation}
+    u_k
+    =
+    -K_k\mathbf{x}_k
+    -
+    u_{k,\mathrm{ff}},
+    \end{equation}
+    where the feedforward term depends on the available disturbance preview.
+
+    \item Implement controllers for
+    \begin{equation}
+    L=0,\ 2,\ 5,\ 10,\ 20,\ 60.
+    \end{equation}
+
+    \item Plot the optimal cost as a function of preview length.
+
+    \item Compute the marginal value of preview:
+    \begin{equation}
+    \Delta J_L=J_L-J_{L+1}.
+    \end{equation}
+
+    \item Determine the preview length beyond which additional information
+    provides less than a $1\%$ improvement.
+
+    \item Explain how the optimal physical design of a suspension or energy
+    converter could change as $L$ changes.
+\end{enumerate}
+
+
+\subsection*{Problem 4: Sensor and Output-Feedback Co-Design}
+
+Consider the stochastic plant
+\begin{equation}
+\dot{\mathbf{x}}
+=
+A(p)\mathbf{x}
++
+Bu
++
+\mathbf{w},
+\end{equation}
+where
+\begin{equation}
+A(p)=
+\begin{bmatrix}
+0&1\\
+-p&-0.4
+\end{bmatrix},
+\qquad
+B=
+\begin{bmatrix}
+0\\
+1
+\end{bmatrix},
+\end{equation}
+and
+\begin{equation}
+1\leq p\leq4
+\end{equation}
+is a plant-design variable.
+
+The process-noise covariance is
+\begin{equation}
+W=
+\begin{bmatrix}
+0&0\\
+0&0.04
+\end{bmatrix}.
+\end{equation}
+
+Three sensor architectures are available:
+\begin{equation}
+C_1=
+\begin{bmatrix}
+1&0
+\end{bmatrix},
+\qquad
+V_1=0.01,
+\qquad
+C_{\mathrm{sensor},1}=0.20,
+\end{equation}
+\begin{equation}
+C_2=
+\begin{bmatrix}
+0&1
+\end{bmatrix},
+\qquad
+V_2=0.04,
+\qquad
+C_{\mathrm{sensor},2}=0.10,
+\end{equation}
+and
+\begin{equation}
+C_3=I,
+\qquad
+V_3=
+\begin{bmatrix}
+0.01&0\\
+0&0.04
+\end{bmatrix},
+\qquad
+C_{\mathrm{sensor},3}=0.35.
+\end{equation}
+
+Use the control-performance weights
+\begin{equation}
+Q=
+\begin{bmatrix}
+10&0\\
+0&1
+\end{bmatrix},
+\qquad
+R=0.2.
+\end{equation}
+
+\begin{enumerate}
+    \item Compute the observability matrix for each sensor architecture and
+    determine whether the system is observable for all feasible $p$.
+
+    \item For each value of $p$, solve the LQR algebraic Riccati equation and
+    compute the state-feedback gain $K(p)$.
+
+    \item For each sensor architecture, solve the Kalman-filter Riccati equation
+    \begin{equation}
+    A\Sigma+\Sigma A^T
+    -
+    \Sigma C^TV^{-1}C\Sigma
+    +
+    W=0
+    \end{equation}
+    and compute
+    \begin{equation}
+    L=\Sigma C^TV^{-1}.
+    \end{equation}
+
+    \item Construct the LQG controller
+    \begin{equation}
+    u=-K\hat{\mathbf{x}}.
+    \end{equation}
+
+    \item For each sensor architecture, optimize $p$ using
+    \begin{equation}
+    J_{\mathrm{total}}
+    =
+    \mathbb{E}
+    \left[
+    \int_0^{20}
+    \left(
+    \mathbf{x}^TQ\mathbf{x}
+    +
+    Ru^2
+    \right)dt
+    \right]
+    +
+    0.03p^2
+    +
+    C_{\mathrm{sensor}}.
+    \end{equation}
+
+    \item Estimate the expected cost using at least 200 Monte Carlo
+    noise realizations.
+
+    \item Identify the optimal plant--sensor--controller combination.
+
+    \item Explain why the separation principle does not imply that sensor
+    selection and plant design can be performed independently.
+\end{enumerate}
+
+
+\subsection*{Problem 5: Nested Plant--MPC Co-Design}
+
+Consider the sampled system
+\begin{equation}
+\mathbf{x}_{k+1}
+=
+A(k_s)\mathbf{x}_k
++
+Bu_k
++
+Ew_k,
+\end{equation}
+where
+\begin{equation}
+A(k_s)=
+\begin{bmatrix}
+1&h\\
+-k_sh&1-0.4h
+\end{bmatrix},
+\end{equation}
+\begin{equation}
+B=E=
+\begin{bmatrix}
+0\\
+h
+\end{bmatrix},
+\qquad
+h=0.1.
+\end{equation}
+
+The plant variables are
+\begin{equation}
+0.5\leq k_s\leq5,
+\qquad
+0.5\leq F_{\max}\leq3.
+\end{equation}
+
+At every time step, use MPC to solve
+\begin{equation}
+\min_{\{u_i\}}
+\sum_{i=0}^{N_p-1}
+\left(
+\mathbf{x}_i^TQ\mathbf{x}_i
++
+Ru_i^2
+\right)
++
+\mathbf{x}_{N_p}^TP\mathbf{x}_{N_p},
+\end{equation}
+subject to
+\begin{equation}
+\mathbf{x}_{i+1}=A(k_s)\mathbf{x}_i+Bu_i,
+\end{equation}
+\begin{equation}
+|u_i|\leq F_{\max},
+\qquad
+|x_{1,i}|\leq1.
+\end{equation}
+
+Use
+\begin{equation}
+Q=
+\begin{bmatrix}
+10&0\\
+0&1
+\end{bmatrix},
+\qquad
+R=0.05.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the condensed prediction equation
+    \begin{equation}
+    \mathbf{X}
+    =
+    \mathcal{A}\mathbf{x}_k
+    +
+    \mathcal{B}\mathbf{U}.
+    \end{equation}
+
+    \item Write the MPC problem as a quadratic program
+    \begin{equation}
+    \min_{\mathbf{U}}
+    \frac{1}{2}\mathbf{U}^TH\mathbf{U}
+    +
+    \mathbf{f}^T\mathbf{U}.
+    \end{equation}
+
+    \item Implement a nested CCD architecture in which the outer optimization
+    chooses $k_s$ and $F_{\max}$, while the inner problem performs
+    closed-loop MPC simulation.
+
+    \item Use prediction horizons
+    \begin{equation}
+    N_p=5,\ 10,\ 20,\ 40.
+    \end{equation}
+
+    \item Minimize
+    \begin{equation}
+    J_{\mathrm{CCD}}
+    =
+    \sum_{k=0}^{100}
+    \left(
+    \mathbf{x}_k^TQ\mathbf{x}_k
+    +
+    Ru_k^2
+    \right)
+    +
+    0.02k_s^2
+    +
+    0.05F_{\max}^2.
+    \end{equation}
+
+    \item Compare the optimal plant for each prediction horizon.
+
+    \item Compare the MPC result with a full-horizon OLOC solution obtained
+    using GPOPS-II or Dymos.
+
+    \item Introduce a $20\%$ stiffness-model error and determine whether
+    recursive feasibility is maintained.
+
+    \item Explain why prediction horizon should be regarded as a
+    control-design variable in CCD.
+\end{enumerate}
+
+
+\subsection*{Problem 6: Converting an OLOC Trajectory into TVLQR Feedback}
+
+Consider a torque-controlled pendulum. Let $\theta=0$ denote the upright
+position and $\theta=\pi$ the downward position.
+
+The dynamics are
+\begin{equation}
+\dot{\theta}=\omega,
+\end{equation}
+\begin{equation}
+\dot{\omega}
+=
+\frac{g}{l}\sin\theta
+-
+\frac{b}{ml^2}\omega
++
+\frac{1}{ml^2}u.
+\end{equation}
+
+Use
+\begin{equation}
+m=1\ {\rm kg},
+\qquad
+l=1\ {\rm m},
+\qquad
+b=0.05\ {\rm N\,m\,s},
+\end{equation}
+\begin{equation}
+g=9.81\ {\rm m/s^2},
+\qquad
+|u(t)|\leq8\ {\rm N\,m}.
+\end{equation}
+
+The boundary conditions are
+\begin{equation}
+\mathbf{x}(0)=
+\begin{bmatrix}
+\pi\\
+0
+\end{bmatrix},
+\qquad
+\mathbf{x}(4)=
+\begin{bmatrix}
+0\\
+0
+\end{bmatrix}.
+\end{equation}
+
+Minimize
+\begin{equation}
+J=
+\int_0^4
+\left(
+0.001\omega(t)^2
++
+0.01u(t)^2
+\right)dt.
+\end{equation}
+
+\begin{enumerate}
+    \item Solve the swing-up OLOC problem using GPOPS-II or Dymos.
+
+    \item Denote the optimal trajectory by
+    \begin{equation}
+    \mathbf{x}^*(t),
+    \qquad
+    u^*(t).
+    \end{equation}
+    Linearize the dynamics along the optimal trajectory and show that
+    \begin{equation}
+    A(t)=
+    \begin{bmatrix}
+    0&1\\
+    \dfrac{g}{l}\cos\theta^*(t)&-\dfrac{b}{ml^2}
+    \end{bmatrix},
+    \qquad
+    B(t)=
+    \begin{bmatrix}
+    0\\
+    \dfrac{1}{ml^2}
+    \end{bmatrix}.
+    \end{equation}
+
+    \item Solve the time-varying Riccati equation
+    \begin{equation}
+    -\dot{S}
+    =
+    A^TS+SA
+    -
+    SBR^{-1}B^TS
+    +
+    Q,
+    \end{equation}
+    with terminal condition
+    \begin{equation}
+    S(4)=Q_f.
+    \end{equation}
+
+    \item Implement the trajectory-tracking controller
+    \begin{equation}
+    u(t)
+    =
+    \operatorname{sat}
+    \left[
+    u^*(t)
+    -
+    R^{-1}B(t)^TS(t)
+    \left(
+    \mathbf{x}(t)-\mathbf{x}^*(t)
+    \right)
+    \right].
+    \end{equation}
+
+    \item Compare pure open-loop implementation and TVLQR feedback for
+    the perturbed initial conditions
+    \begin{equation}
+    \theta(0)=\pi+\Delta\theta,
+    \qquad
+    \Delta\theta\in
+    \{-0.15,-0.10,0.10,0.15\}.
+    \end{equation}
+
+    \item Repeat with
+    \begin{equation}
+    10\% \text{ error in }m,
+    \qquad
+    10\% \text{ error in }l,
+    \end{equation}
+    and additive measurement noise.
+
+    \item Report
+    \begin{equation}
+    \|\mathbf{x}(4)\|_2,
+    \qquad
+    \max_t|u(t)|,
+    \qquad
+    J.
+    \end{equation}
+
+    \item Determine the largest initial perturbation for which the TVLQR
+    controller successfully reaches the upright neighborhood
+    \begin{equation}
+    |\theta(4)|\leq0.05,
+    \qquad
+    |\omega(4)|\leq0.1.
+    \end{equation}
+
+    \item Explain why the OLOC trajectory remains valuable even though it is
+    not robust enough for direct implementation.
+\end{enumerate}

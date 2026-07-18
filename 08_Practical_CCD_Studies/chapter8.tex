@@ -1,0 +1,1006 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.86in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{bm}
+\usepackage{listings}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDtan}{RGB}{247,239,225}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+\definecolor{CCDpurple}{RGB}{124,58,237}
+\definecolor{CCDred}{RGB}{178,58,72}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 8: Practical CCD Studies and Advanced Topics},
+  pdfauthor={Saeid Bayat}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 8: Practical CCD Studies and Advanced Topics}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\xp}{\vect{x}_p}
+\newcommand{\xc}{\vect{x}_c}
+\newcommand{\xstate}{\vect{x}}
+\newcommand{\uvec}{\vect{u}}
+\newcommand{\zvec}{\vect{z}}
+\newcommand{\thetavec}{\boldsymbol{\theta}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\newcommand{\warningbox}[1]{%
+\begin{center}
+\fcolorbox{CCDred}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  rulecolor=\color{CCDgray},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false
+}
+
+\begin{document}
+
+% Cover
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Physical and Control Systems\par}
+
+\vspace{2.15in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 8\par}
+\vspace{0.18in}
+\noindent\begin{minipage}{0.92\linewidth}
+\raggedright
+{\fontsize{22}{26}\selectfont\bfseries\color{black!85} Practical CCD Studies and Advanced Topics\par}
+\end{minipage}
+\vspace{0.20in}
+\par\noindent{\large\color{CCDgray} Applications, robustness, model fidelity, implementation, reproducibility, and validation\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large A practical CCD study must connect mathematical optimization to engineering evidence. The final design should remain credible when the model, environment, solver, and hardware are all examined critically.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+The previous chapters developed the theory and computational tools of control co-design (CCD). We introduced dynamic systems and feedback, engineering optimization, a general CCD formulation, coordination architectures, open-loop and closed-loop control, and numerical methods for dynamic optimization. This final chapter integrates those ideas through practical studies.
+
+The main tutorial is an active vehicle suspension. It is simple enough to understand completely, yet rich enough to demonstrate plant--control coupling, trajectory-dependent objectives, path constraints, alternative CCD architectures, uncertainty, and implementation limits. A larger wind--wave energy application then shows how the same ideas scale to multiphysics systems with expensive models, many operating conditions, and multiple control layers.
+
+The chapter also addresses topics that often separate a convincing engineering study from an incomplete optimization exercise: robustness to uncertainty, model fidelity, surrogate modeling, hardware implementation, reproducibility, and validation. These topics should not be viewed as additions after optimization. They should influence the CCD formulation from the beginning.
+
+\begin{learningobjectives}
+  \item formulate and interpret a complete active-suspension CCD study;
+  \item compare sequential, nested, and simultaneous results fairly;
+  \item extend CCD formulations to multiple scenarios and uncertain quantities;
+  \item choose appropriate model fidelity for different design stages;
+  \item explain how surrogate and multi-fidelity models can accelerate CCD;
+  \item identify the implementation constraints that connect optimized designs to hardware;
+  \item construct a reproducible numerical and experimental validation plan;
+  \item organize a complete practical CCD workflow from problem definition to validated design.
+\end{learningobjectives}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp8_1.png}
+\caption{Chapter 8 integrates the main ideas developed throughout the course. A credible result requires more than an optimizer termination message.}
+\label{fig:course-integration}
+\end{figure}
+
+\section{What Makes a CCD Study Practical?}
+
+A mathematically correct CCD formulation is necessary, but it is not sufficient. A practical study must establish a defensible chain of evidence:
+\begin{enumerate}[leftmargin=1.5em]
+  \item the design question is meaningful;
+  \item the model represents the important physics and information flow;
+  \item the objective and constraints reflect engineering priorities;
+  \item the selected CCD architecture is solved reliably;
+  \item the numerical result is converged and reproducible;
+  \item the design is robust to realistic uncertainty;
+  \item higher-fidelity models and experiments support the conclusion;
+  \item the controller and hardware can be implemented safely.
+\end{enumerate}
+
+A failure at any stage can invalidate the final result. For example, a simultaneous CCD solution may achieve an extremely low objective by using actuator bandwidth that does not exist. A robust optimization may be meaningless if the uncertainty distribution is unrealistic. A surrogate-assisted design may fail when checked with the original model. A controller may perform well in simulation but violate sampling-time or sensor-noise limits in hardware.
+
+\keyideabox{\textbf{Practical definition of success.} A successful CCD study identifies a coordinated plant--control design and provides enough numerical, physical, and experimental evidence that another engineer can understand, reproduce, challenge, and continue the design.}
+
+\section{Main Tutorial: Active Vehicle Suspension}
+
+\subsection{Engineering purpose}
+
+A vehicle suspension must isolate the vehicle body from road disturbances while maintaining tire contact and acceptable suspension travel. Passive components such as springs and dampers provide inherent behavior. An active actuator can apply force to improve comfort and handling, but it consumes power and introduces sensing, control, cost, and reliability requirements.
+
+This combination makes suspension design a natural CCD example. Plant choices change the dynamics and therefore change the best control action. Control action changes motion, tire load, suspension travel, and the value of different plant designs.
+
+\subsection{Quarter-car model}
+
+Figure~\ref{fig:quarter-car} shows a standard active quarter-car representation. The sprung mass $m_s$ represents one-quarter of the vehicle body. The unsprung mass $m_u$ represents the wheel and associated components. The road displacement is $z_r(t)$. The suspension contains spring stiffness $k_s$, damping coefficient $c_s$, and active force $F(t)$. Tire stiffness is $k_t$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.83\textwidth]{figures/fig_chp8_2.png}
+\caption{Active quarter-car suspension used as the main tutorial. Plant variables determine passive and hardware behavior, while controller variables determine the active force.}
+\label{fig:quarter-car}
+\end{figure}
+
+Using upward displacement as positive, the equations of motion are
+\begin{align}
+ m_s\ddot z_s &= -k_s(z_s-z_u)-c_s(\dot z_s-\dot z_u)+F, \\
+ m_u\ddot z_u &= k_s(z_s-z_u)+c_s(\dot z_s-\dot z_u)-F-k_t(z_u-z_r).
+\label{eq:quarter-car}
+\end{align}
+
+A convenient state vector is
+\begin{equation}
+\xstate = [z_s,\dot z_s,z_u,\dot z_u]^T.
+\end{equation}
+
+The output quantities of interest typically include:
+\begin{itemize}[leftmargin=1.4em]
+  \item body acceleration $\ddot z_s$, a comfort measure;
+  \item tire deflection $z_u-z_r$, a road-holding measure;
+  \item suspension travel $z_s-z_u$;
+  \item actuator force, power, and energy;
+  \item component mass, cost, and packaging measures.
+\end{itemize}
+
+\subsection{Plant and control decisions}
+
+At a low level of fidelity, the plant design vector may be
+\begin{equation}
+\xp=[k_s,c_s,F_{\max}]^T.
+\end{equation}
+At a more realistic level, $k_s$ and $c_s$ may be dependent quantities computed from physical spring and damper geometry. Then the plant variables may include wire diameter, coil diameter, active coil count, damper piston diameter, orifice area, and actuator rating.
+
+The control design depends on the controller representation:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{open-loop control:} sampled force values $F_0,\ldots,F_N$;
+  \item \textbf{state feedback:} gains in $F=-K\xstate$;
+  \item \textbf{output feedback:} gains using measurable signals;
+  \item \textbf{MPC:} cost weights, prediction horizon, sampling time, and estimator parameters.
+\end{itemize}
+
+Figure~\ref{fig:suspension-formulation-map} summarizes the formulation elements.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp8_3.png}
+\caption{Elements of an active-suspension CCD formulation. The same system-level requirements must be applied consistently to plant and controller decisions.}
+\label{fig:suspension-formulation-map}
+\end{figure}
+
+\subsection{System-level objective}
+
+A representative finite-horizon objective is
+\begin{align}
+J(\xp,\xc) = \int_{t_0}^{t_f} \Big[ &w_h(z_u-z_r)^2
++w_c\ddot z_s^2+w_uF^2 
++w_r(z_s-z_u)^2\Big]dt \\
+&+w_m M(\xp)+w_C C(\xp),
+\label{eq:suspension-objective}
+\end{align}
+where the terms represent handling, comfort, control effort, suspension travel, plant mass, and plant cost.
+
+Not every desired quantity needs to appear in the objective. A rattlespace or suspension-travel requirement is often more naturally written as a path constraint:
+\begin{equation}
+-r_{\max}\le z_s(t)-z_u(t)\le r_{\max}, \qquad t\in[t_0,t_f].
+\label{eq:rattlespace}
+\end{equation}
+Likewise,
+\begin{equation}
+|F(t)|\le F_{\max}, \qquad |\dot F(t)|\le \dot F_{\max}
+\end{equation}
+represent actuator force and rate limits.
+
+\subsection{Plant feasibility constraints}
+
+A realistic suspension design cannot select arbitrary $k_s$ and $c_s$. A helical compression spring may require constraints on:
+\begin{itemize}[leftmargin=1.4em]
+  \item spring index and manufacturability;
+  \item buckling;
+  \item free length and solid height;
+  \item coil and wire stress;
+  \item fatigue life;
+  \item packaging diameter and clearance around the damper.
+\end{itemize}
+
+Similarly, an actuator model should include force, stroke, velocity, power, thermal, and bandwidth limits. A common mistake is to include only the force limit and thereby allow physically impossible high-frequency force changes.
+
+\section{Sequential, Nested, and Simultaneous Suspension Studies}
+
+\subsection{Fair comparison requirements}
+
+A fair comparison among architectures requires the same:
+\begin{itemize}[leftmargin=1.4em]
+  \item physical model and operating scenarios;
+  \item system-level objective and weights;
+  \item plant and control bounds;
+  \item path and boundary constraints;
+  \item discretization accuracy and convergence requirements;
+  \item initialization effort and solver tolerances, as far as practical.
+\end{itemize}
+
+If one method uses a passive objective during plant design while another uses the complete active objective, differences may come from formulation rather than coordination. Such a comparison can still be useful, but it must be described honestly.
+
+\subsection{Sequential formulation}
+
+A common passive-first sequential study is
+\begin{align}
+\xp^{\mathrm{seq}} &= \arg\min_{\xp} J(\xp,\xc=0), \\
+\xc^{\mathrm{seq}} &= \arg\min_{\xc} J(\xp^{\mathrm{seq}},\xc).
+\end{align}
+
+This baseline answers an important practical question: how much value is lost by selecting the physical suspension before considering active control?
+
+\subsection{Nested formulation}
+
+The nested formulation is
+\begin{align}
+\min_{\xp} \quad & \psi(\xp), \\
+\psi(\xp) &= \min_{\xc,\xstate(\cdot),\uvec(\cdot)} J(\xp,\xc),
+\end{align}
+subject to the control and dynamic constraints in the inner problem and plant constraints in the outer problem.
+
+Each plant is evaluated under its best achievable controller. This is conceptually attractive but can be expensive when the inner problem must be solved many times.
+
+\subsection{Simultaneous formulation}
+
+The simultaneous problem is
+\begin{align}
+\min_{\xp,\xc,\xstate(\cdot),\uvec(\cdot)} \quad & J(\xp,\xc) \\
+\text{subject to} \quad & \text{dynamics, plant constraints, path constraints, and controller relations.}
+\end{align}
+
+After direct transcription, plant variables, controller variables, state samples, and control samples appear in one nonlinear program. This formulation exposes coupling directly and can exploit sparse derivative structure.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp8_4.png}
+\caption{Sequential, nested, and simultaneous organizations for the suspension tutorial. They may target similar engineering goals, but they follow different computational paths.}
+\label{fig:suspension-architectures}
+\end{figure}
+
+\subsection{Representative result pattern}
+
+Figure~\ref{fig:suspension-results} shows a representative normalized pattern. The numbers are instructional rather than a reproduction of one exact dataset. The sequential design is normalized to 100. Nested and simultaneous methods approach the coupled optimum and are shown near 80. Under ideal conditions, nested and simultaneous methods can target the same solution; small differences may arise from inner-solve accuracy, local minima, controller restrictions, or numerical tolerances.
+
+Published simultaneous suspension CCD studies have reported objective reductions of approximately 20\% relative to passive-first sequential baselines, illustrating that coordination can materially change the selected plant and final system performance.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth]{figures/fig_chp8_5.png}
+\caption{Representative normalized result pattern for the suspension tutorial. Lower objective values correspond to better system-level performance.}
+\label{fig:suspension-results}
+\end{figure}
+
+\subsection{How to interpret the result}
+
+A lower objective value does not by itself explain why CCD helps. The engineer should inspect:
+\begin{itemize}[leftmargin=1.4em]
+  \item whether the coordinated plant is softer or stiffer;
+  \item whether passive damping increases or decreases;
+  \item how actuator force, rate, and energy change;
+  \item which constraints become active;
+  \item whether improvement comes mainly from comfort, handling, or reduced control effort;
+  \item whether the design remains effective on road profiles not used in optimization.
+\end{itemize}
+
+A common physical trend is that active control allows a different allocation between passive and active functionality. The optimizer may select passive elements that would appear unattractive without control but perform well as part of the closed-loop system.
+
+\warningbox{\textbf{Do not report only the aggregate objective.} A weighted objective can hide unacceptable tradeoffs. Always report the individual objective terms, active constraints, trajectories, and physical design values.}
+
+\section{Uncertainty and Robustness}
+
+\subsection{Why nominal optimality is not enough}
+
+A nominal CCD problem assumes a fixed model and a fixed operating condition. Real systems encounter uncertainty in:
+\begin{itemize}[leftmargin=1.4em]
+  \item environmental inputs, such as road roughness, wind, and waves;
+  \item payload and operating conditions;
+  \item component properties and manufacturing tolerances;
+  \item sensor noise, delay, and failure;
+  \item model parameters and neglected dynamics;
+  \item actuator efficiency, bandwidth, and saturation.
+\end{itemize}
+
+A nominal optimum may lie near a constraint boundary and perform poorly when these quantities change.
+
+\subsection{Scenario formulation}
+
+Let $\thetavec_s$ represent scenario $s$, with weight $p_s$. A scenario-based CCD objective is
+\begin{equation}
+\min_{\xp,\xc} \quad \sum_{s=1}^{N_s} p_s J(\xp,\xc;\thetavec_s),
+\label{eq:scenario-mean}
+\end{equation}
+subject to constraints for every required scenario:
+\begin{equation}
+g(\xp,\xc;\thetavec_s)\le 0, \qquad s=1,\ldots,N_s.
+\end{equation}
+
+For the suspension tutorial, scenarios may include:
+\begin{itemize}[leftmargin=1.4em]
+  \item bump, rough-road, pothole, and sinusoidal inputs;
+  \item nominal, light, and heavy payload;
+  \item dry and reduced tire stiffness;
+  \item sensor delay and actuator power derating.
+\end{itemize}
+
+\subsection{Worst-case and risk-aware objectives}
+
+A worst-case formulation is
+\begin{equation}
+\min_{\xp,\xc}\; \max_{\thetavec\in\Theta} J(\xp,\xc;\thetavec).
+\end{equation}
+It protects against the most damaging scenario in the set, but may be conservative.
+
+A mean--variance formulation is
+\begin{equation}
+\min_{\xp,\xc}\; \E[J]+\lambda\,\mathrm{Var}(J).
+\end{equation}
+
+Chance constraints require a probability of satisfaction:
+\begin{equation}
+\Prob\big(g(\xp,\xc;\thetavec)\le 0\big)\ge 1-\epsilon.
+\end{equation}
+
+Conditional value at risk (CVaR) can penalize the upper tail of poor outcomes and is often more informative than mean performance alone.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp8_6.png}
+\caption{Common uncertainty-aware CCD strategies. The appropriate method depends on available data, risk tolerance, and computational budget.}
+\label{fig:robust-ccd}
+\end{figure}
+
+\subsection{Robustness verification}
+
+Even when the optimization itself is nominal, the final design should be tested with Monte Carlo simulation or a structured validation set. Report at least:
+\begin{itemize}[leftmargin=1.4em]
+  \item mean and worst observed objective values;
+  \item constraint violation probability;
+  \item percentile values for key outputs;
+  \item sensitivity to parameter and scenario changes;
+  \item failure modes and the scenarios that cause them.
+\end{itemize}
+
+\section{Model Fidelity and Surrogate Models}
+
+\subsection{The fidelity decision}
+
+A model should be detailed enough to support the current decision, but no more expensive than necessary. Model fidelity affects both solution accuracy and the number of design evaluations that can be performed.
+
+A useful staged strategy is:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{low fidelity:} concept screening, sensitivity analysis, and initial optimization;
+  \item \textbf{medium fidelity:} system-level loads, controller behavior, and multi-scenario evaluation;
+  \item \textbf{high fidelity:} final verification, detailed stress analysis, nonlinear effects, and certification evidence.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.94\textwidth]{figures/fig_chp8_7.png}
+\caption{Model-fidelity ladder and a surrogate-assisted optimization loop. A surrogate accelerates the search but does not replace high-fidelity verification.}
+\label{fig:fidelity-surrogate}
+\end{figure}
+
+\subsection{Sources of model discrepancy}
+
+Increasing fidelity is not simply adding more states. Relevant fidelity dimensions include:
+\begin{itemize}[leftmargin=1.4em]
+  \item nonlinear versus linear dynamics;
+  \item lumped versus distributed structural models;
+  \item steady versus unsteady aerodynamics or hydrodynamics;
+  \item rigid versus flexible components;
+  \item ideal versus detailed actuator and sensor models;
+  \item deterministic versus stochastic environments;
+  \item continuous-time versus sampled digital control.
+\end{itemize}
+
+The right fidelity is the one that represents the phenomena that could change the design decision.
+
+\subsection{Surrogate-based CCD}
+
+Suppose the original model returns quantities $\vect{q}=\mathcal{M}(\xp,\xc,\thetavec)$ but is too expensive for direct optimization. A surrogate $\widehat{\mathcal{M}}$ can be trained from sampled model evaluations.
+
+A reliable process is:
+\begin{enumerate}[leftmargin=1.5em]
+  \item define the input domain and operating scenarios;
+  \item generate a space-filling initial sample;
+  \item evaluate the expensive model;
+  \item fit one or more candidate surrogate models;
+  \item validate on withheld data and physically important cases;
+  \item optimize the surrogate;
+  \item evaluate the predicted optimum with the original model;
+  \item add infill points and repeat if necessary.
+\end{enumerate}
+
+The surrogate does not need to be globally perfect. It must be sufficiently accurate near the design regions that influence the optimizer. However, global errors can still cause the optimizer to move toward a false optimum, so exploration and high-fidelity checks remain essential.
+
+\subsection{Dynamic surrogates}
+
+CCD often requires trajectories, not only scalar metrics. A dynamic surrogate may predict:
+\begin{itemize}[leftmargin=1.4em]
+  \item state derivatives as a function of states and controls;
+  \item reduced-order state-space dynamics;
+  \item output time histories from input time histories;
+  \item frequency-domain hydrodynamic or aerodynamic coefficients;
+  \item performance metrics for a prescribed load case.
+\end{itemize}
+
+A derivative-function surrogate is especially useful when the numerical method requires a state derivative function for simulation or direct transcription. A metric-only surrogate may be sufficient for outer-loop plant optimization but may hide dynamic behavior needed for controller design.
+
+\section{Larger Application: Wind and Wave Energy CCD}
+
+\subsection{Why this problem is larger}
+
+Floating wind and wave-energy systems combine aerodynamics, hydrodynamics, structural dynamics, mooring behavior, power electronics, and multiple controllers. The operating environment is stochastic, and important outputs include annual energy, extreme loads, fatigue, platform motion, power quality, and reliability.
+
+Figure~\ref{fig:wind-wave-map} summarizes the coupling.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp8_8.png}
+\caption{System-level map for a hybrid offshore wind--wave CCD application. Plant, control, environment, and system outputs are tightly coupled.}
+\label{fig:wind-wave-map}
+\end{figure}
+
+\subsection{Plant decisions}
+
+Candidate plant variables include:
+\begin{itemize}[leftmargin=1.4em]
+  \item rotor and blade properties;
+  \item tower diameter and thickness distribution;
+  \item floating-platform dimensions and mass distribution;
+  \item mooring layout and stiffness;
+  \item wave-energy-converter geometry and placement;
+  \item PTO force, stroke, and power rating;
+  \item energy storage or electrical conversion capacity.
+\end{itemize}
+
+\subsection{Control decisions}
+
+Control variables may include:
+\begin{itemize}[leftmargin=1.4em]
+  \item generator torque and blade-pitch gains;
+  \item platform-motion or structural-load feedback;
+  \item WEC PTO damping, stiffness, or optimal-force parameters;
+  \item MPC horizons and weights;
+  \item supervisory power-sharing and energy-management rules;
+  \item shutdown and fault-handling thresholds.
+\end{itemize}
+
+\subsection{A multi-scenario objective}
+
+A representative objective may combine energy, loads, motion, and cost:
+\begin{align}
+\min_{\xp,\xc}\quad
+J = &-w_E E_{\mathrm{ann}}(\xp,\xc)
++w_L D_{\mathrm{fat}}(\xp,\xc)
++w_M M_{\mathrm{motion}}(\xp,\xc) \\
+&+w_P P_{\mathrm{var}}(\xp,\xc)
++w_C C_{\mathrm{cap}}(\xp).
+\label{eq:wind-wave-objective}
+\end{align}
+
+The annual objective is usually approximated using representative wind--wave bins, turbulent seeds, or weighted operating scenarios. Constraints may involve:
+\begin{itemize}[leftmargin=1.4em]
+  \item blade, tower, and mooring loads;
+  \item platform pitch, heave, and surge limits;
+  \item WEC angle, stroke, and PTO force;
+  \item generator, converter, and storage power;
+  \item closed-loop stability and control bandwidth;
+  \item clearance, survivability, and fault conditions.
+\end{itemize}
+
+\subsection{Why multi-fidelity methods are valuable}
+
+A full aero-hydro-servo-elastic simulation may be too expensive for thousands of optimizer evaluations. A practical hierarchy may use:
+\begin{enumerate}[leftmargin=1.5em]
+  \item frequency-domain or linear models for screening;
+  \item reduced-order or identified dynamic models for controller optimization;
+  \item engineering-level time-domain simulation for detailed design;
+  \item CFD, high-order structural analysis, or experiments for selected verification cases.
+\end{enumerate}
+
+The optimal design from a low-fidelity model should be treated as a candidate hypothesis. It becomes credible only after cross-fidelity validation.
+
+\subsection{Sequential versus integrated outcomes}
+
+A sequential wind--wave design may first optimize the floating platform for stability, then add WECs, then tune controllers. CCD may reveal a different allocation:
+\begin{itemize}[leftmargin=1.4em]
+  \item a platform that moves more but enables greater wave-energy capture;
+  \item WEC placement that also reduces wind-turbine platform motion;
+  \item a PTO rating that balances energy capture with structural load mitigation;
+  \item supervisory control that coordinates wind, wave, and storage subsystems.
+\end{itemize}
+
+The system-level result may therefore be qualitatively different from the collection of individually optimized subsystems.
+
+\section{From Optimization Results to Implementable Hardware}
+
+\subsection{The implementation gap}
+
+A numerical optimum is usually an idealized mathematical object. To implement it, the design must be translated into:
+\begin{itemize}[leftmargin=1.4em]
+  \item physical dimensions and component selections;
+  \item a digital control algorithm;
+  \item sensor, estimator, and actuator specifications;
+  \item real-time software and communication timing;
+  \item safe operating, saturation, and fault behavior.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp8_9.png}
+\caption{A staged path from optimization to hardware. Implementation constraints should influence the formulation before the final design is selected.}
+\label{fig:hardware-path}
+\end{figure}
+
+\subsection{Implementation constraints to model}
+
+At minimum, a closed-loop CCD model should consider:
+\begin{itemize}[leftmargin=1.4em]
+  \item actuator saturation, rate, stroke, bandwidth, and efficiency;
+  \item sampling time and computational delay;
+  \item sensor bandwidth, resolution, bias, and noise;
+  \item state-estimation dynamics;
+  \item anti-windup and saturation logic;
+  \item electrical power and thermal limits;
+  \item safe behavior when control is disabled;
+  \item quantization and communication limitations where relevant.
+\end{itemize}
+
+A useful design principle is \textbf{passive safety}: when sensing, computation, or actuation fails, the passive plant should remain stable and avoid catastrophic behavior. This may add constraints that reduce nominal performance but improve deployability.
+
+\subsection{Controller realization}
+
+An open-loop optimal trajectory can inform a realizable controller, but it should not normally be implemented directly unless the future input is known accurately. Transition options include:
+\begin{itemize}[leftmargin=1.4em]
+  \item fitting a low-order feedback law to optimal trajectories;
+  \item deriving gain schedules across operating conditions;
+  \item embedding the optimal-control problem in MPC;
+  \item identifying switching rules or feedforward patterns;
+  \item retraining or simplifying a learned policy under safety constraints.
+\end{itemize}
+
+\subsection{Validation stages}
+
+A common sequence is:
+\begin{enumerate}[leftmargin=1.5em]
+  \item software-in-the-loop simulation;
+  \item Monte Carlo uncertainty testing;
+  \item processor-in-the-loop or real-time execution testing;
+  \item hardware-in-the-loop (HIL) testing;
+  \item component bench testing;
+  \item scaled or full prototype testing;
+  \item field validation.
+\end{enumerate}
+
+Each stage should target a specific modeling or implementation risk.
+
+\section{Reproducibility and Validation}
+
+\subsection{Why reproducibility matters}
+
+CCD studies contain many interacting numerical choices: model versions, mesh size, derivative methods, solver tolerances, initial guesses, scaling, random seeds, and data-processing rules. If these choices are not recorded, another researcher may be unable to reproduce the design or determine why results differ.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.89\textwidth]{figures/fig_chp8_10.png}
+\caption{Reproducibility and validation ladder. Evidence should progress from a clear problem statement to numerical, cross-fidelity, and experimental validation.}
+\label{fig:validation-ladder}
+\end{figure}
+
+\subsection{Minimum reproducibility package}
+
+A complete package should contain:
+\begin{itemize}[leftmargin=1.4em]
+  \item governing equations and assumptions;
+  \item variable definitions, units, bounds, and scaling;
+  \item objective terms, weights, and constraints;
+  \item operating scenarios and input data;
+  \item model and software versions;
+  \item solver, algorithm, tolerances, and linear-solver settings;
+  \item derivative method and sparsity information;
+  \item mesh, time step, and convergence study;
+  \item initial guesses, random seeds, and multistart strategy;
+  \item optimized design values and trajectories;
+  \item postprocessing scripts and validation cases;
+  \item limitations and known failure modes.
+\end{itemize}
+
+\subsection{Numerical verification}
+
+Before discussing physical meaning, verify that:
+\begin{itemize}[leftmargin=1.4em]
+  \item the solver reports acceptable feasibility and optimality residuals;
+  \item mesh refinement changes the objective and design variables negligibly;
+  \item trajectories satisfy constraints between nodes in an independent simulation;
+  \item derivative checks agree with finite-difference or complex-step tests;
+  \item multiple initial guesses lead to consistent high-quality solutions;
+  \item the reported optimum is not caused by a hidden bound or scaling error.
+\end{itemize}
+
+\subsection{Model validation}
+
+Model validation asks whether the mathematical model predicts the real or higher-fidelity system sufficiently well for the design decision. Useful comparisons include:
+\begin{itemize}[leftmargin=1.4em]
+  \item trajectory error over representative inputs;
+  \item natural frequencies and damping ratios;
+  \item load and energy metrics;
+  \item constraint margins;
+  \item closed-loop stability and bandwidth;
+  \item model error near the optimized design, not only near the baseline.
+\end{itemize}
+
+\subsection{Validation is not a single number}
+
+A high coefficient of determination for a surrogate or a small average trajectory error can still hide errors in rare but critical conditions. Validation should be matched to the design claim. If the claim concerns fatigue reduction, validate fatigue-driving loads. If the claim concerns constraint satisfaction, validate extreme trajectories and margins.
+
+\warningbox{\textbf{Avoid validation leakage.} Do not tune the model or surrogate repeatedly on the same cases used to claim independent validation. Preserve a final test set or use additional high-fidelity and experimental cases not used during model construction.}
+
+\section{Complete Practical CCD Workflow}
+
+Figure~\ref{fig:complete-workflow} combines the lessons of this chapter into a practical workflow.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp8_11.png}
+\caption{A complete workflow for practical control co-design. Validation failures should send the study back to the formulation, modeling, or numerical stage.}
+\label{fig:complete-workflow}
+\end{figure}
+
+\subsection{Step 1: define mission, metrics, and baselines}
+
+State the engineering mission and identify at least one conventional baseline. A CCD result without a fair baseline does not quantify the value of coordination.
+
+\subsection{Step 2: choose variables, architecture, and models}
+
+Decide which plant, control, information, and architecture choices are still flexible. Choose a model appropriate for the current stage and list its limitations explicitly.
+
+\subsection{Step 3: select CCD and numerical architectures}
+
+Choose sequential, nested, simultaneous, or hybrid coordination. Then choose shooting, direct transcription, collocation, or another numerical method. These are separate decisions.
+
+\subsection{Step 4: solve and verify convergence}
+
+Use scaling, derivatives, sparse structure, multiple initial guesses, and mesh refinement. Record all solver settings.
+
+\subsection{Step 5: screen the result physically}
+
+Check whether design values are realistic. Examine active bounds, trajectories, actuator demands, stability, and failure modes.
+
+\subsection{Step 6: assess uncertainty and robustness}
+
+Evaluate the design on operating scenarios and uncertain parameters not used in the nominal optimization. Redesign if margins are unacceptable.
+
+\subsection{Step 7: perform cross-fidelity and independent validation}
+
+Test the candidate using a more detailed model, independent implementation, or additional datasets.
+
+\subsection{Step 8: realize the controller and hardware}
+
+Implement sampling, estimators, actuator models, saturation logic, and real-time constraints. Use HIL and bench testing before field deployment.
+
+\subsection{Step 9: publish a reproducible design package}
+
+Provide enough information for another engineer to recreate the study and understand the limits of the conclusion.
+
+\section{Worked Example 8.1: Comparing Suspension Architectures}
+
+Consider the objective in Eq.~\eqref{eq:suspension-objective} and fixed road scenarios. A practical comparison may proceed as follows.
+
+\textbf{Sequential baseline.}
+Optimize $k_s$ and $c_s$ with $F=0$. Freeze the resulting plant, then optimize a feedback law or open-loop force trajectory.
+
+\textbf{Nested CCD.}
+For each proposed $k_s$ and $c_s$, solve the inner control problem to the specified tolerance. The outer objective is the resulting best closed-loop value.
+
+\textbf{Simultaneous CCD.}
+Discretize the states and control using direct transcription. Optimize plant variables and trajectory variables in one sparse NLP.
+
+\textbf{Required comparison outputs.}
+Report:
+\begin{enumerate}[leftmargin=1.5em]
+  \item the complete objective and each objective component;
+  \item optimized plant and controller values;
+  \item maximum suspension travel and actuator force;
+  \item body-acceleration and tire-deflection trajectories;
+  \item computation time and function or derivative evaluations;
+  \item mesh-convergence and independent-simulation checks.
+\end{enumerate}
+
+\textbf{Interpretation.}
+If nested and simultaneous methods produce similar objective values and design variables, this supports both the implementation and the theoretical equivalence. If they differ, investigate inner-loop convergence, local minima, feasibility handling, discretization, and controller representation before concluding that one architecture is superior.
+
+\section{Worked Example 8.2: Robust Suspension Design}
+
+Suppose the vehicle must perform under three road profiles and three payload levels. Define nine scenarios with probabilities $p_s$. The objective is
+\begin{equation}
+J_R(\xp,\xc)=\sum_{s=1}^{9}p_sJ_s(\xp,\xc)+\lambda\max_s J_s(\xp,\xc).
+\end{equation}
+
+The first term rewards good average performance; the second discourages a weak worst scenario. Enforce actuator and suspension-travel constraints for all nine cases.
+
+A useful comparison includes:
+\begin{itemize}[leftmargin=1.4em]
+  \item nominal design tested on all scenarios;
+  \item robust design tested on all scenarios;
+  \item nominal performance penalty of robustness;
+  \item reduction in worst-case objective or constraint violation;
+  \item changes in plant and controller variables.
+\end{itemize}
+
+The robust design may sacrifice a small amount of nominal comfort to obtain much larger margins against payload and road variability.
+
+\section{Worked Example 8.3: Surrogate-Assisted Wind CCD}
+
+Assume a high-fidelity wind-turbine model produces time histories of rotor speed, platform pitch, tower-base moment, generator power, and controller signals. A reduced dynamic model is needed for repeated CCD studies.
+
+A possible workflow is:
+\begin{enumerate}[leftmargin=1.5em]
+  \item select wind, wave, plant, and controller samples;
+  \item run high-fidelity closed-loop simulations;
+  \item identify a reduced-order or derivative-function surrogate;
+  \item validate time histories and performance metrics;
+  \item conduct controller or plant--controller optimization;
+  \item re-evaluate the optimum in the high-fidelity model;
+  \item add infill simulations near disagreement or promising designs;
+  \item perform final multi-seed and extreme-condition validation.
+\end{enumerate}
+
+A surrogate that predicts only annual energy may be inadequate if the controller optimization depends on transient loads. The surrogate outputs must match the decisions and constraints of the CCD problem.
+
+\section{Common Failure Modes}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Unfair baselines.} The CCD and sequential studies use different objectives, constraints, or models.
+  \item \textbf{Ideal actuators.} Unlimited force rate, bandwidth, energy, or thermal capacity creates unrealistic designs.
+  \item \textbf{Single-scenario optimization.} The design overfits one road, wind, or wave realization.
+  \item \textbf{Unverified convergence.} The reported design changes when the mesh or solver tolerance changes.
+  \item \textbf{Surrogate extrapolation.} The optimizer leaves the surrogate training domain.
+  \item \textbf{Metric-only validation.} Aggregate error is small, but critical peaks and constraints are inaccurate.
+  \item \textbf{Hidden implementation assumptions.} The final controller requires states, preview information, or computation not available in hardware.
+  \item \textbf{No independent reproduction.} Results cannot be recreated because code, data, units, and settings are incomplete.
+  \item \textbf{Optimization without engineering interpretation.} A low objective is reported without explaining the physical mechanism.
+\end{enumerate}
+
+\section{Chapter Summary}
+
+This chapter integrated the entire course through practical applications and advanced topics. The active-suspension tutorial demonstrated how to move from a dynamic model to a system-level CCD formulation, compare sequential, nested, and simultaneous architectures, and interpret coordinated plant--control results. The wind--wave application showed how the same principles extend to multiphysics systems with expensive simulations, broad operating conditions, and multiple controllers.
+
+We then examined uncertainty and robustness, emphasizing that nominal optimality is not enough. Scenario methods, worst-case design, chance constraints, and risk measures provide different ways to manage uncertain environments and models. Model fidelity and surrogate models were presented as staged engineering choices: low-fidelity models support exploration, while higher-fidelity models and experiments provide validation. Finally, the chapter connected optimization to implementable hardware and defined a reproducibility and validation ladder.
+
+The central lesson is that CCD is not complete when the optimizer stops. It is complete only when the coordinated design has been explained, numerically verified, tested against uncertainty, checked with appropriate fidelity, translated into realizable hardware and control, and documented so that others can reproduce the evidence.
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item practical CCD study
+  \item active suspension
+  \item fair baseline
+  \item system-level objective
+  \item nominal optimum
+  \item robust optimization
+  \item scenario optimization
+  \item chance constraint
+  \item CVaR
+  \item model fidelity
+  \item surrogate model
+  \item multi-fidelity optimization
+  \item infill
+  \item cross-fidelity validation
+  \item software-in-the-loop
+  \item hardware-in-the-loop
+  \item passive safety
+  \item reproducibility
+  \item verification
+  \item validation
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Conceptual problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item Explain the difference between a numerically optimal design and a practically credible CCD design.
+  \item Why is an active vehicle suspension a useful tutorial for CCD?
+  \item Explain why suspension travel is often better represented as a path constraint than as an objective term.
+  \item Why can a low aggregate objective hide an unacceptable design?
+  \item Describe the difference between verification and validation.
+\end{enumerate}
+
+\subsection*{Suspension modeling problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Derive the state-space form of Eq.~\eqref{eq:quarter-car} using the state vector $[z_s,\dot z_s,z_u,\dot z_u]^T$.
+  \item Add tire damping $c_t(\dot z_u-\dot z_r)$ to the model and derive the revised equations.
+  \item Identify at least five plant variables and five control variables for a higher-fidelity active suspension.
+  \item Propose a physically meaningful actuator-power model for the suspension.
+  \item Write plant constraints for spring packaging, actuator stroke, and maximum component mass.
+\end{enumerate}
+
+\subsection*{Architecture comparison problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Write sequential, nested, and simultaneous formulations for the same suspension objective.
+  \item List the conditions needed for a fair comparison among the three methods.
+  \item Explain why nested and simultaneous CCD may target the same optimum but produce different numerical results.
+  \item Give three reasons that a sequential design may remain attractive in industry.
+  \item Design a results table that reports enough information to compare the three methods critically.
+\end{enumerate}
+
+\subsection*{Uncertainty and robustness problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Define six uncertainty sources for an active suspension and classify each as aleatory or epistemic.
+  \item Formulate a nine-scenario expected-value suspension objective using three road inputs and three payload levels.
+  \item Write a worst-case version of the same problem.
+  \item Write a chance constraint requiring suspension travel limits to be satisfied with probability at least 0.999.
+  \item Explain the tradeoff between nominal performance and robustness.
+\end{enumerate}
+
+\subsection*{Model-fidelity and surrogate problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Propose low-, medium-, and high-fidelity models for the suspension example.
+  \item Give four examples of model details that could change the optimized suspension design.
+  \item Outline a surrogate-assisted optimization workflow for an expensive wind-turbine model.
+  \item Explain why a surrogate that predicts only scalar performance metrics may be inadequate for controller optimization.
+  \item Define a validation plan that tests surrogate accuracy near the predicted optimum.
+\end{enumerate}
+
+\subsection*{Wind and wave energy problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item List at least eight plant variables and six control variables for a hybrid floating wind--wave system.
+  \item Construct a multiobjective formulation balancing annual energy, platform motion, fatigue, and capital cost.
+  \item Define five path constraints for the wind--wave application.
+  \item Explain how WEC placement may affect both wave-energy capture and wind-turbine platform motion.
+  \item Propose a multi-fidelity optimization and validation plan for this system.
+\end{enumerate}
+
+\subsection*{Implementation and reproducibility problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Add actuator bandwidth, sampling delay, and sensor noise to the suspension CCD formulation.
+  \item Explain passive safety and propose one passive-safety requirement for the suspension.
+  \item Design a software-in-the-loop, HIL, and bench-test plan for an optimized controller.
+  \item Create a reproducibility checklist for a numerical CCD paper.
+  \item Explain how an independent forward simulation should be used to validate a direct-transcription solution.
+\end{enumerate}
+
+\subsection*{Course capstone project}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Select an actively controlled engineering system and complete a full CCD study. Your report should include: a sequential baseline; a nested or simultaneous CCD formulation; numerical convergence checks; uncertainty analysis; at least two model-fidelity levels; an implementation plan; and a reproducible package of equations, code, data, and solver settings.
+  \item Prepare a 10-minute design review that explains not only the optimized result, but also why the design changed physically, what evidence supports the result, and what risks remain before hardware deployment.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable figure files are supplied separately as SVG files:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp8\_1.svg}
+  \item \texttt{fig\_chp8\_2.svg}
+  \item \texttt{fig\_chp8\_3.svg}
+  \item \texttt{fig\_chp8\_4.svg}
+  \item \texttt{fig\_chp8\_5.svg}
+  \item \texttt{fig\_chp8\_6.svg}
+  \item \texttt{fig\_chp8\_7.svg}
+  \item \texttt{fig\_chp8\_8.svg}
+  \item \texttt{fig\_chp8\_9.svg}
+  \item \texttt{fig\_chp8\_10.svg}
+  \item \texttt{fig\_chp8\_11.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{allison2014suspension}
+J. T. Allison, T. Guo, and Z. Han, ``Co-design of an active suspension using simultaneous dynamic optimization,'' \emph{Journal of Mechanical Design}, vol. 136, no. 8, 081003, 2014.
+
+\bibitem{allisonherber}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\bibitem{herberdiss}
+D. R. Herber, \emph{Advances in Combined Architecture, Plant, and Control Design}. Ph.D. dissertation, University of Illinois at Urbana-Champaign, 2017.
+
+\bibitem{herbernested}
+D. R. Herber and J. T. Allison, ``Nested and simultaneous solution strategies for general combined plant and control design problems,'' \emph{Journal of Mechanical Design}, vol. 141, no. 1, 011402, 2019.
+
+\bibitem{bayatclosedloop}
+S. Bayat, L. Zuo, and Z. Liu, ``Bridging the gap between open-loop and closed-loop control in co-design: A framework for complete optimal plant and control architecture design,'' \emph{Journal of Dynamic Systems, Measurement, and Control}, vol. 148, no. 1, 011013, 2026.
+
+\bibitem{bayatfair}
+S. Bayat, L. Zuo, and Z. Liu, ``Towards a fair comparison between the nested and simultaneous control co-design methods using an active suspension case study,'' ASME IDETC/CIE, 2025.
+
+\bibitem{martinsning}
+J. R. R. A. Martins and A. Ning, \emph{Engineering Design Optimization}. Cambridge University Press, 2022.
+
+\bibitem{betts}
+J. T. Betts, \emph{Practical Methods for Optimal Control and Estimation Using Nonlinear Programming}. 2nd ed., SIAM, 2010.
+
+\bibitem{leebayat}
+Y. H. Lee, S. Bayat, and J. T. Allison, ``Wind turbine control co-design using dynamic system derivative function surrogate model based on OpenFAST linearization,'' \emph{Applied Energy}, vol. 396, 126203, 2025.
+
+\bibitem{bayatreview}
+S. Bayat et al., ``Control co-design of wind turbines and floating offshore systems,'' \emph{Applied Energy}, vol. 416, 127951, 2026.
+
+\bibitem{mayne}
+D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. M. Scokaert, ``Constrained model predictive control: Stability and optimality,'' \emph{Automatica}, vol. 36, no. 6, pp. 789--814, 2000.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 8
+\end{center}
+
+\end{document}

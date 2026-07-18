@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "build:pdf": "python scripts/build_pdf.py",
+    "build:site": "python scripts/build_site.py",
+    "build": "python scripts/build_site.py",
+    "dev": "python scripts/dev.py"
+  },
+  "dependencies": {
+    "myst": "^0.0.1-alpha",
+    "mystmd": "^1.7.1"
+  }
+}

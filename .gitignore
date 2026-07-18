@@ -1,0 +1,30 @@
+# macOS and editor metadata
+.DS_Store
+**/.DS_Store
+.agents/
+.cursor/
+.cursorignore
+.cursorindexingignore
+.vscode/
+
+# Dependencies and generated build files
+node_modules/
+_build/
+tmp/
+**/__pycache__/
+*.py[cod]
+*.synctex.gz
+
+# Local reference library and instructor-only working files
+Refs/
+activity_solution_drafts/
+
+# Duplicate/local export files (the canonical PDF is exports/notes.pdf)
+myst 2.yml
+chapter_1.pdf
+CCD_Methods.pdf
+advice.png
+advice-generated.png
+car.png
+exports/notes 2.pdf
+exports/notes 3.pdf

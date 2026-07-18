@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 440" role="img" aria-labelledby="title desc">
+  <title id="title">An integrated control co-design learning cycle</title>
+  <desc id="desc">A single continuous cycle connects physical reasoning, mathematical formulation, transparent computation, design interpretation, and validation. At the center is a reminder to connect models, computation, and engineering judgment rather than treating the optimization solver as a black box.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbfd"/>
+      <stop offset="1" stop-color="#eaf2f6"/>
+    </linearGradient>
+    <linearGradient id="center" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#003b70"/>
+      <stop offset="1" stop-color="#006374"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#00274c" flood-opacity="0.15"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#315b78"/>
+    </marker>
+    <style>
+      .stage { font: 700 18px Avenir, Helvetica, Arial, sans-serif; fill: #00274c; }
+      .detail { font: 500 14px Avenir, Helvetica, Arial, sans-serif; fill: #294b63; }
+      .number { font: 750 20px Avenir, Helvetica, Arial, sans-serif; fill: #ffffff; }
+      .center-title { font: 750 29px Avenir, Helvetica, Arial, sans-serif; fill: #ffffff; }
+      .center-text { font: 500 16px Avenir, Helvetica, Arial, sans-serif; fill: #eef9fa; }
+      .center-note { font: 700 15px Avenir, Helvetica, Arial, sans-serif; fill: #ffdc5e; }
+      .cycle-note { font: 700 13px Avenir, Helvetica, Arial, sans-serif; fill: #665016; letter-spacing: 0.055em; }
+    </style>
+  </defs>
+
+  <rect x="8" y="8" width="1184" height="424" rx="30" fill="url(#background)" stroke="#b8cad6" stroke-width="2"/>
+
+  <!-- One continuous path links the learning practices. -->
+  <path d="M226 155C270 80 355 55 438 73" fill="none" stroke="#315b78" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M484 66C566 35 652 35 730 67" fill="none" stroke="#315b78" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M776 76C864 62 946 95 980 160" fill="none" stroke="#315b78" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M1000 207C1004 274 958 330 889 351" fill="none" stroke="#315b78" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M840 365C700 412 496 412 357 365" fill="none" stroke="#c79000" stroke-width="4" stroke-dasharray="10 7" marker-end="url(#arrow)"/>
+  <path d="M309 351C237 326 193 268 198 204" fill="none" stroke="#315b78" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- Stage markers sit on the shared cycle rather than in separate boxes. -->
+  <g>
+    <circle cx="198" cy="181" r="31" fill="#4f86b5" stroke="#ffffff" stroke-width="5"/>
+    <text x="198" y="188" class="number" text-anchor="middle">1</text>
+    <text x="111" y="136" class="stage" text-anchor="middle">Reason Physically</text>
+    <text x="111" y="158" class="detail" text-anchor="middle">identify decisions</text>
+
+    <circle cx="461" cy="71" r="31" fill="#3b958d" stroke="#ffffff" stroke-width="5"/>
+    <text x="461" y="78" class="number" text-anchor="middle">2</text>
+    <text x="461" y="122" class="stage" text-anchor="middle">Formulate Mathematically</text>
+    <text x="461" y="144" class="detail" text-anchor="middle">expose coupling and assumptions</text>
+
+    <circle cx="753" cy="71" r="31" fill="#516f91" stroke="#ffffff" stroke-width="5"/>
+    <text x="753" y="78" class="number" text-anchor="middle">3</text>
+    <text x="753" y="122" class="stage" text-anchor="middle">Compute Transparently</text>
+    <text x="753" y="144" class="detail" text-anchor="middle">check units, scaling, and convergence</text>
+
+    <circle cx="996" cy="181" r="31" fill="#7b6a9b" stroke="#ffffff" stroke-width="5"/>
+    <text x="996" y="188" class="number" text-anchor="middle">4</text>
+    <text x="1086" y="136" class="stage" text-anchor="middle">Interpret the Design</text>
+    <text x="1086" y="158" class="detail" text-anchor="middle">explain what changed and why</text>
+
+    <circle cx="865" cy="361" r="31" fill="#b58216" stroke="#ffffff" stroke-width="5"/>
+    <text x="865" y="368" class="number" text-anchor="middle">5</text>
+    <text x="865" y="410" class="stage" text-anchor="middle">Test &amp; Validate</text>
+    <text x="335" y="402" class="cycle-note" text-anchor="middle">REFLECT • REVISE • REPEAT</text>
+  </g>
+
+  <!-- A single central message unifies the full figure. -->
+  <g filter="url(#shadow)">
+    <rect x="365" y="174" width="470" height="158" rx="42" fill="url(#center)"/>
+    <text x="600" y="219" class="center-title" text-anchor="middle">Learn Control Co-Design</text>
+    <text x="600" y="254" class="center-text" text-anchor="middle">Connect physical insight, mathematical models,</text>
+    <text x="600" y="278" class="center-text" text-anchor="middle">computation, and engineering judgment.</text>
+    <line x1="451" y1="296" x2="749" y2="296" stroke="#ffcb05" stroke-width="2" opacity="0.8"/>
+    <text x="600" y="318" class="center-note" text-anchor="middle">Never treat the optimization solver as a black box.</text>
+  </g>
+</svg>

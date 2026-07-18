@@ -1,0 +1,707 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{bm}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+\definecolor{CCDpurple}{RGB}{124,58,237}
+\definecolor{CCDred}{RGB}{178,58,72}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 6: Optimal Control and Closed-Loop CCD},
+  pdfauthor={Saeid Bayat}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 6: Optimal Control and Closed-Loop CCD}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\xp}{\vect{x}_p}
+\newcommand{\xc}{\vect{x}_c}
+\newcommand{\xstate}{\vect{x}}
+\newcommand{\uvec}{\vect{u}}
+\newcommand{\yvec}{\vect{y}}
+\newcommand{\wvec}{\vect{w}}
+\newcommand{\R}{\mathbb{R}}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\begin{document}
+
+% Cover
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Physical and Control Systems\par}
+
+\vspace{2.15in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 6\par}
+\vspace{0.18in}
+\noindent\begin{minipage}{0.92\linewidth}
+\raggedright
+{\fontsize{22}{26}\selectfont\bfseries\color{black!85} Optimal Control and Closed-Loop CCD\par}
+\end{minipage}
+\vspace{0.20in}
+\par\noindent{\large\color{CCDgray} From ideal open-loop trajectories to implementable feedback controllers\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large The key distinction in this chapter is information. An open-loop optimizer assumes a planned future, while a closed-loop controller reacts to measurements as the future unfolds.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+In earlier chapters, we formulated general control co-design (CCD) problems and discussed several possible solution architectures. We now turn to an important modeling issue inside those architectures: \emph{What kind of control object is being optimized?}
+
+Sometimes the optimizer chooses a full control history $\uvec(t)$ over a finite time interval. This is the classical setting of \textbf{optimal control}. Sometimes the optimizer chooses a finite set of controller parameters, such as gains in a feedback law. These two viewpoints are related, but they are not the same. The first often gives an ideal performance benchmark; the second usually leads to controllers that are actually implementable in practice.
+
+This chapter develops that distinction carefully. We begin with open-loop optimal control, then compare control trajectories with controller parameters, then move to feedback-controller co-design and model predictive control (MPC). A recurring theme is \textbf{information availability}: what the controller knows now, what it can predict, and what it cannot know exactly in advance.
+
+\begin{learningobjectives}
+  \item explain the idea of open-loop optimal control and its role in CCD;
+  \item distinguish between optimizing a control trajectory and optimizing controller parameters;
+  \item explain why feedback-controller co-design is important for implementable engineering systems;
+  \item discuss the limitations of assuming perfect future information;
+  \item identify different kinds of information available to a controller during operation;
+  \item explain the basic idea of model predictive control;
+  \item describe how open-loop optimal-control solutions can be turned into implementable closed-loop controllers.
+\end{learningobjectives}
+
+\section{Why This Chapter Matters}
+
+When students first see an optimal-control problem, it can appear to solve everything at once. After all, if we can optimize the control signal over time, why worry about controller structure at all?
+
+The answer is that a control trajectory and a controller are different objects:
+\begin{itemize}[leftmargin=1.4em]
+  \item a \textbf{control trajectory} is a time function planned in advance;
+  \item a \textbf{controller} is a rule that maps available information into actions during operation.
+\end{itemize}
+
+In a real engineering system, disturbances, noise, and uncertainty make it impossible to know the exact future. That is why practical systems almost always rely on feedback. Figure~\ref{fig:ch6-map} summarizes the main ideas of the chapter.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp6_1.png}
+\caption{Concept map for the chapter. The main thread runs from open-loop control to implementable closed-loop control.}
+\label{fig:ch6-map}
+\end{figure}
+
+\keyideabox{\textbf{Main idea.} Open-loop optimal control often gives a useful ideal benchmark or design insight, but most engineered systems must ultimately use a feedback controller that responds to measured information during operation.}
+
+\section{Open-Loop Optimal Control}
+
+\subsection{Basic definition}
+
+Open-loop optimal control (OLOC) optimizes a control function over a time interval, typically written as $\uvec(t)$ for $t\in[t_0,t_f]$. The control is computed using the model, the initial condition, and any assumed future information, and is then treated as a planned signal.
+
+A generic continuous-time optimal-control problem can be written as
+\begin{align}
+\min_{\uvec(\cdot),\xstate(\cdot)} \quad & J = \Phi\big(\xstate(t_f)\big) + \int_{t_0}^{t_f} L\big(\xstate(t),\uvec(t),t\big)\,dt \\
+\text{subject to} \quad & \dot{\xstate}(t) = f\big(\xstate(t),\uvec(t),t\big), \\
+& \xstate(t_0)=\xstate_0, \\
+& \vect{c}\big(\xstate(t),\uvec(t),t\big)\le 0, \\
+& \vect{b}\big(\xstate(t_f)\big)\le 0.
+\end{align}
+
+Here, the optimizer chooses the time functions $\uvec(t)$ and $\xstate(t)$ so as to minimize the objective while satisfying the system dynamics and constraints.
+
+\subsection{Interpretation}
+
+The word \emph{open-loop} means the control does not change in response to newly measured state information during the planned horizon. The control sequence is computed first; then it is applied as planned.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig_chp6_2.png}
+\caption{Open-loop optimal control. The control trajectory is planned using the model, the initial condition, and assumed future information.}
+\label{fig:ch6-oloc}
+\end{figure}
+
+This is not necessarily wrong. In some applications, an open-loop plan is entirely reasonable. For example:
+\begin{itemize}[leftmargin=1.4em]
+  \item if the horizon is very short,
+  \item if uncertainty is small,
+  \item if the trajectory is only a benchmark or design study,
+  \item if the optimized control is recomputed repeatedly, as in MPC.
+\end{itemize}
+
+\subsection{Role in control co-design}
+
+In CCD, OLOC is often used to answer questions such as:
+\begin{itemize}[leftmargin=1.4em]
+  \item If the plant were designed differently, what is the best achievable open-loop performance?
+  \item How much energy can ideally be extracted or saved?
+  \item What qualitative features appear in the best control action?
+  \item What plant characteristics make the ideal control task easier or harder?
+\end{itemize}
+
+Thus, OLOC is valuable even if it is not the final implementation method.
+
+\subsection{Example}
+
+Consider a wave-energy device. One can optimize the PTO force trajectory over a fixed wave record. The result may reveal an upper bound on energy capture under that assumed wave history. That does not automatically give an implementable controller, but it provides a useful benchmark and design insight.
+
+\section{Control Trajectories versus Controller Parameters}
+
+\subsection{Two different kinds of decision variables}
+
+In many optimization problems, students use the word ``control'' to describe whatever control-related quantity is being optimized. But two very different choices are possible:
+\begin{enumerate}[leftmargin=1.5em]
+  \item optimize the time-varying signal itself, $\uvec(t)$ or its discretized samples;
+  \item optimize parameters of a controller law, such as gains in $\uvec=\kappa(\yvec;\xc)$.
+\end{enumerate}
+
+Figure~\ref{fig:ch6-traj-vs-param} compares these two representations.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp6_3.png}
+\caption{Trajectory optimization versus controller-parameter optimization. The first optimizes a signal directly; the second optimizes a policy or law that generates the signal from information.}
+\label{fig:ch6-traj-vs-param}
+\end{figure}
+
+\subsection{Optimizing control trajectories}
+
+When a control trajectory is optimized, the decision variables may be the control values at mesh points:
+\begin{equation}
+\uvec_1,\uvec_2,\ldots,\uvec_N.
+\end{equation}
+
+This gives the optimizer great flexibility. It can shape the control signal almost arbitrarily, subject to bounds and the dynamic model.
+
+Advantages include:
+\begin{itemize}[leftmargin=1.4em]
+  \item high flexibility,
+  \item strong ability to reveal best-case performance,
+  \item a natural formulation for optimal-control theory.
+\end{itemize}
+
+Limitations include:
+\begin{itemize}[leftmargin=1.4em]
+  \item the result may be specific to one scenario or disturbance realization,
+  \item the control may be hard to implement directly,
+  \item no explicit feedback law is produced.
+\end{itemize}
+
+\subsection{Optimizing controller parameters}
+
+Alternatively, one may choose a controller structure and optimize its parameters:
+\begin{equation}
+\uvec(t)=\kappa\big(\yvec(t);\xc\big),
+\end{equation}
+where $\yvec(t)$ denotes the available measurements and $\xc$ is a vector of gains or coefficients.
+
+Examples include:
+\begin{itemize}[leftmargin=1.4em]
+  \item PID gains,
+  \item state-feedback gains,
+  \item observer or estimator parameters,
+  \item basis-function weights,
+  \item tuning weights in an MPC cost function.
+\end{itemize}
+
+Advantages include:
+\begin{itemize}[leftmargin=1.4em]
+  \item direct implementability,
+  \item explicit feedback structure,
+  \item usually lower-dimensional decision variables.
+\end{itemize}
+
+Limitations include:
+\begin{itemize}[leftmargin=1.4em]
+  \item the controller structure may be restrictive,
+  \item some ideal performance may be lost relative to full trajectory optimization,
+  \item choosing a suitable controller structure is itself a design decision.
+\end{itemize}
+
+\subsection{Why the distinction matters in CCD}
+
+A plant designed under ideal open-loop control may not remain optimal when only a realistic feedback controller is allowed. Therefore, the plant design can depend strongly on which control representation is used.
+
+\section{Feedback-Controller Co-Design}
+
+\subsection{Basic idea}
+
+Feedback-controller co-design optimizes plant variables together with parameters of a feedback controller. The controller uses measured information during operation and therefore can react to disturbances or uncertainty.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig_chp6_6.png}
+\caption{Feedback-controller co-design. The controller is represented by parameters in a realizable feedback law, and performance is assessed in closed loop.}
+\label{fig:ch6-feedback-ccd}
+\end{figure}
+
+A generic formulation is:
+\begin{align}
+\min_{\xp,\xc} \quad & J\big(\xp,\xc\big) \\
+\text{subject to} \quad & \dot{\xstate}(t)=f\big(\xstate(t),\uvec(t),\xp,\wvec(t)\big), \\
+& \uvec(t)=\kappa\big(\yvec(t);\xc\big), \\
+& \yvec(t)=h\big(\xstate(t),\xp\big), \\
+& \text{state, control, and design constraints.}
+\end{align}
+
+Here, the control signal is generated by a feedback law rather than optimized independently at every time instant.
+
+\subsection{What changes compared with OLOC}
+
+Compared with open-loop optimal control, the decision variables are no longer the entire future control history. Instead, the optimizer chooses the parameters $\xc$ of a feedback policy. The dynamic response is then determined by the interaction of:
+\begin{itemize}[leftmargin=1.4em]
+  \item the plant design $\xp$,
+  \item the controller parameters $\xc$,
+  \item the realized disturbances,
+  \item the available measurements.
+\end{itemize}
+
+\subsection{Why this is more realistic}
+
+A feedback controller can reject disturbances, reduce sensitivity to model mismatch, and respond to state deviations as they occur. For this reason, most real engineering systems---vehicles, robots, wind turbines, marine devices, and process systems---operate in closed loop.
+
+\subsection{Example}
+
+In wind-turbine control co-design, one may optimize tower or structural parameters together with pitch-controller gains. The measured rotor speed and other signals are used during operation, allowing the controller to respond to changing wind conditions.
+
+\section{Limitations of Perfect Future Information}
+
+\subsection{The hidden assumption in many open-loop problems}
+
+An OLOC formulation often assumes that the future disturbance history or reference signal is known exactly over the horizon. For example, in a simulation study, one may optimize a control trajectory for a known wave record or a known road profile.
+
+That is mathematically convenient, but it is often physically unrealistic.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp6_4.png}
+\caption{Perfect future information is rarely available. Some information is known now, some is forecast with uncertainty, and some is fundamentally unknown in advance.}
+\label{fig:ch6-perfect-future}
+\end{figure}
+
+\subsection{Why this matters}
+
+If the future is assumed to be known exactly, the optimizer may exploit details that a real controller could never know during operation. The resulting performance can therefore be too optimistic.
+
+This does not make OLOC useless. It simply means we must interpret the result correctly:
+\begin{itemize}[leftmargin=1.4em]
+  \item as an ideal upper bound,
+  \item as a benchmark for comparison,
+  \item as a source of design insight,
+  \item not automatically as a realizable control law.
+\end{itemize}
+
+\subsection{Illustrative example}
+
+Suppose an active suspension controller is optimized using a road profile that is assumed known perfectly over the next 10 seconds. If the actual road deviates from that assumed profile, the open-loop sequence may perform poorly. A feedback controller, by contrast, can respond to the actual motion and load transfer observed in real time.
+
+\subsection{Distinguishing forecast from certainty}
+
+In some applications, useful forecasts do exist. For instance:
+\begin{itemize}[leftmargin=1.4em]
+  \item weather forecasts for wind or wave energy,
+  \item route previews for autonomous vehicles,
+  \item upcoming demand estimates in process systems.
+\end{itemize}
+
+However, forecasts are not the same as exact future knowledge. A controller must usually account for forecast error, not ignore it.
+
+\section{Information Availability}
+
+\subsection{A control problem is an information problem}
+
+A good way to think about controller design is to ask: \emph{What information is available at the moment the control action must be chosen?}
+
+This question is central to both control and CCD because the plant may be redesigned to make useful information more available or more informative.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.88\textwidth]{figures/fig_chp6_5.png}
+\caption{Information availability. A controller can only use information that is measured, estimated, or predicted with realistic uncertainty.}
+\label{fig:ch6-info}
+\end{figure}
+
+\subsection{Three categories of information}
+
+It is useful to separate information into three categories:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Available now:} measured states, outputs, or commands available at the current time;
+  \item \textbf{Estimated or predicted:} forecasts, observers, estimators, or preview signals;
+  \item \textbf{Unavailable exactly:} future disturbance realizations, future sensor noise, and modeling errors.
+\end{enumerate}
+
+\subsection{CCD implications}
+
+In control co-design, plant design can affect information availability. For example:
+\begin{itemize}[leftmargin=1.4em]
+  \item adding sensors or changing sensor placement improves observability;
+  \item mechanical redesign may make important dynamics easier to measure;
+  \item actuator changes may influence what control authority is achievable;
+  \item structural design may reduce sensitivity to uncertain disturbances.
+\end{itemize}
+
+Thus, closed-loop CCD often involves not just plant and controller parameters, but also the information pattern available to the controller.
+
+\keyideabox{\textbf{Important viewpoint.} A control architecture should not assume more information than a real system can obtain. A large part of practical controller design is choosing actions based on the right information set, not based on impossible foresight.}
+
+\section{Model Predictive Control}
+
+\subsection{Core idea}
+
+Model predictive control (MPC) is one of the most important bridges between open-loop optimal control and practical feedback control. At each time step, MPC solves a finite-horizon optimal-control problem using the current state estimate and possibly forecasts over a short future horizon. It then applies only the first control move and repeats the process at the next time step.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp6_7.png}
+\caption{Receding-horizon idea in model predictive control. Each new optimization produces a local open-loop plan, but only the first action is implemented before the plan is updated.}
+\label{fig:ch6-mpc}
+\end{figure}
+
+\subsection{Why MPC is a feedback method}
+
+Although MPC repeatedly solves an open-loop optimization problem, it is still a feedback controller because each new optimization uses the most recent measurements or state estimates. The optimization horizon moves forward in time, which is why MPC is also called \emph{receding-horizon control}.
+
+\subsection{Generic structure}
+
+At time step $k$:
+\begin{enumerate}[leftmargin=1.5em]
+  \item measure or estimate the current state $\xstate_k$;
+  \item solve a finite-horizon optimal-control problem;
+  \item obtain an optimized sequence $\uvec_k,\uvec_{k+1},\ldots,\uvec_{k+N-1}$;
+  \item apply only the first control action $\uvec_k$;
+  \item advance to the next step and repeat.
+\end{enumerate}
+
+\subsection{Advantages of MPC}
+
+MPC is attractive because it:
+\begin{itemize}[leftmargin=1.4em]
+  \item incorporates a model directly,
+  \item handles multivariable systems naturally,
+  \item accommodates state and control constraints,
+  \item uses updated measurements, making it closed loop,
+  \item can incorporate short-term forecasts or preview information.
+\end{itemize}
+
+\subsection{Limitations of MPC}
+
+MPC also has challenges:
+\begin{itemize}[leftmargin=1.4em]
+  \item an optimization problem must be solved online,
+  \item the controller depends on model quality,
+  \item the chosen horizon length and discretization matter,
+  \item real-time feasibility can become difficult for fast systems or large models.
+\end{itemize}
+
+\subsection{MPC in CCD}
+
+In CCD, the plant can be optimized together with MPC tuning parameters such as prediction horizon length, control horizon length, weighting matrices, or estimator settings. Such a formulation can be more realistic than pure OLOC because it uses a controller that can actually operate in closed loop.
+
+\section{Moving from OLOC Solutions to Implementable Controllers}
+
+\subsection{Why the transition is needed}
+
+A common workflow in research is:
+\begin{enumerate}[leftmargin=1.5em]
+  \item solve an OLOC problem first,
+  \item learn from the resulting ideal control pattern,
+  \item build a simpler implementable controller that captures the most important features,
+  \item co-design the plant with that implementable controller.
+\end{enumerate}
+
+This is often a very productive strategy. Figure~\ref{fig:ch6-implementable} summarizes the idea.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp6_8.png}
+\caption{A practical workflow from ideal open-loop optimization to an implementable closed-loop controller.}
+\label{fig:ch6-implementable}
+\end{figure}
+
+\subsection{What can be learned from OLOC}
+
+An OLOC solution may reveal:
+\begin{itemize}[leftmargin=1.4em]
+  \item when the control action tends to be active,
+  \item whether the control behaves like damping, stiffness, or phase lead,
+  \item what bandwidth or authority is needed,
+  \item what physical plant characteristics are most valuable.
+\end{itemize}
+
+These observations can guide controller-structure selection.
+
+\subsection{Typical transition paths}
+
+Some common transitions are:
+\begin{itemize}[leftmargin=1.4em]
+  \item OLOC $\rightarrow$ PID or gain-scheduled feedback controller,
+  \item OLOC $\rightarrow$ linear quadratic regulator (LQR) or state feedback,
+  \item OLOC $\rightarrow$ MPC,
+  \item OLOC $\rightarrow$ rule-based controller informed by optimal behavior,
+  \item OLOC $\rightarrow$ parameterized controller identified from optimal trajectories.
+\end{itemize}
+
+\subsection{Why not skip OLOC entirely?}
+
+Because OLOC can still be extremely useful. It often provides:
+\begin{itemize}[leftmargin=1.4em]
+  \item a best-case reference,
+  \item insight into what control should do ideally,
+  \item a benchmark against which practical controllers can be judged,
+  \item a way to understand whether poor performance is caused by the plant or by controller limitations.
+\end{itemize}
+
+Thus, OLOC is often best viewed as an \emph{intermediate design tool} rather than as the final controller.
+
+\section{Worked Examples}
+
+\subsection{Worked Example 6.1: active suspension}
+
+Suppose an active suspension is subjected to a known short road disturbance in simulation.
+
+\textbf{Open-loop formulation:}
+optimize actuator force $u(t)$ over the disturbance interval to minimize body acceleration and suspension deflection.
+
+\textbf{Interpretation:}
+this provides a best-case force history for that specific road input.
+
+\textbf{Closed-loop implementation:}
+construct a feedback controller based on measured suspension deflection and body velocity, then tune or co-design its gains.
+
+The open-loop solution may show, for example, that strong control action is mainly needed at the onset of the disturbance and again when the suspension rebounds.
+
+\subsection{Worked Example 6.2: wind turbine}
+
+A wind-turbine study may optimize a blade-pitch trajectory against a known wind profile. This can indicate the best achievable load reduction for that profile, but the real turbine does not know the exact future gust history. A practical controller therefore uses measured rotor speed and other signals, possibly with preview or short-term forecasting. MPC or gain-scheduled feedback becomes a more realistic implementation path.
+
+\subsection{Worked Example 6.3: marine energy device}
+
+For a wave-energy converter, OLOC may optimize PTO force for a recorded wave sequence, giving a theoretical energy-capture benchmark. A practical controller must instead operate on measured or forecast wave information, perhaps using feedback or predictive control. Closed-loop CCD then redesigns the PTO or geometry together with that realizable controller.
+
+\section{Comparison Table}
+
+Table~\ref{tab:ch6-compare} summarizes the most important distinctions developed in this chapter.
+
+\begin{table}[H]
+\centering
+\caption{Comparison of control representations relevant to CCD.}
+\label{tab:ch6-compare}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.9cm} >{\raggedright\arraybackslash}p{3.0cm} >{\raggedright\arraybackslash}p{3.2cm} >{\raggedright\arraybackslash}p{3.0cm}}
+\toprule
+Approach & Main decision variable & Main strength & Main limitation \\
+\midrule
+Open-loop optimal control & Full control trajectory $\uvec(t)$ or sampled control values & High flexibility and strong benchmark value & May require unrealistic future information and may not be directly implementable \\
+Controller-parameter optimization & Gain or coefficient vector $\xc$ & Directly implementable and naturally feedback-based & Performance depends on chosen controller structure \\
+Feedback-controller co-design & Plant variables plus controller parameters & Realistic closed-loop design & Can be more restrictive than full trajectory optimization \\
+Model predictive control & Repeated finite-horizon optimization with updated state estimates & Closed-loop behavior with constraint handling and prediction & Requires online optimization and a good model \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Common Mistakes and Misunderstandings}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Confusing a control trajectory with a controller.} A planned signal $u(t)$ is not the same thing as a feedback law.
+  \item \textbf{Treating OLOC as automatically implementable.} An optimal open-loop signal may rely on impossible future information.
+  \item \textbf{Ignoring information availability.} A controller can only use the information it can realistically measure, estimate, or forecast.
+  \item \textbf{Assuming feedback always removes all uncertainty effects.} Feedback helps, but it does not eliminate model mismatch or measurement noise.
+  \item \textbf{Thinking MPC is purely open loop.} Each MPC subproblem is open loop, but the overall strategy is closed loop because it is re-solved using updated measurements.
+  \item \textbf{Assuming controller-parameter optimization is always inferior.} In practice, a well-chosen feedback structure can outperform a theoretically ideal but nonimplementable open-loop strategy on real uncertain systems.
+\end{enumerate}
+
+\section{Chapter Summary}
+
+This chapter developed the distinction between open-loop optimal control and implementable closed-loop control in the context of CCD. We saw that open-loop optimal control directly optimizes a control trajectory and is valuable for performance benchmarks, insight, and idealized analysis. However, it often assumes future information that a real system does not possess.
+
+We then distinguished trajectory optimization from controller-parameter optimization. Practical closed-loop systems generally use a controller law that maps available measurements into control actions. This viewpoint leads naturally to feedback-controller co-design, where plant variables and controller parameters are optimized together. We also introduced model predictive control as an important bridge: it repeatedly solves a finite-horizon open-loop problem, yet operates in closed loop by updating the optimization as new information becomes available.
+
+Finally, we emphasized how to move from ideal open-loop solutions to implementable controllers. In practice, OLOC is often best used as a benchmark or design guide, while the final engineering design is based on a realizable feedback controller.
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item open-loop optimal control (OLOC)
+  \item control trajectory
+  \item controller parameterization
+  \item feedback controller
+  \item feedback-controller co-design
+  \item future information
+  \item information availability
+  \item measured state
+  \item estimated state
+  \item forecast
+  \item implementable controller
+  \item model predictive control (MPC)
+  \item receding horizon
+  \item prediction horizon
+  \item benchmark solution
+  \item realizability
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Conceptual problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item Define open-loop optimal control in your own words.
+  \item What is the difference between a control trajectory and a controller?
+  \item Why is feedback usually required in practical engineering systems?
+  \item What does ``perfect future information'' mean in an OLOC setting?
+  \item Why is MPC considered a feedback method even though it solves an open-loop problem internally?
+\end{enumerate}
+
+\subsection*{Comparison problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Compare open-loop control and feedback control in terms of information usage.
+  \item Compare trajectory optimization and controller-parameter optimization.
+  \item Compare an ideal OLOC solution and an MPC implementation.
+  \item Give one advantage and one limitation of OLOC in CCD.
+  \item Give one advantage and one limitation of feedback-controller co-design.
+\end{enumerate}
+
+\subsection*{Formulation problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Write a generic open-loop optimal-control problem with state dynamics and path constraints.
+  \item Write a generic closed-loop control relation $\uvec=\kappa(\yvec;\xc)$ and explain each symbol.
+  \item Write a generic feedback-controller co-design optimization problem involving plant variables $\xp$ and controller parameters $\xc$.
+  \item In an MPC setting, list the sequence of steps performed at one time instant.
+  \item Describe how the decision variables change when moving from OLOC to feedback-controller co-design.
+\end{enumerate}
+
+\subsection*{Interpretation problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item A student says, ``If the open-loop optimum is best, then that is the controller we should implement.'' Explain what is wrong with this statement.
+  \item Another student says, ``MPC is not feedback because it computes an open-loop plan.'' Explain why this statement is incomplete.
+  \item Why can the best plant under open-loop control differ from the best plant under feedback control?
+  \item How can forecast uncertainty reduce the usefulness of an open-loop solution?
+  \item Why can plant redesign sometimes improve information availability to the controller?
+\end{enumerate}
+
+\subsection*{Application problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item For an active suspension, explain how you would use OLOC as a preliminary design study before designing a feedback controller.
+  \item For a wind-turbine problem, give one example of information that is measured and one example of information that is only forecast.
+  \item For a marine-energy system, explain why a wave-record-based OLOC problem may be useful but not sufficient for final controller implementation.
+  \item Choose an engineering system of your interest and explain whether you would prefer a direct feedback-controller co-design or an OLOC-first workflow.
+  \item Give one example in which perfect future information is almost available and one example in which it is clearly unavailable.
+\end{enumerate}
+
+\subsection*{Mini-project problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Pick an engineering system and draw two block diagrams: one for an open-loop optimal-control design study and one for an implementable feedback-controller design.
+  \item Build a small comparison table for your system showing what information is available now, what can be predicted, and what remains unknown.
+  \item Propose an MPC formulation for your chosen system, including the states, inputs, constraints, and prediction horizon.
+  \item Describe how you would convert an ideal open-loop control history into a simpler practical controller structure.
+  \item Write a one-page memo explaining whether OLOC should be viewed as a final controller or as a design-analysis tool in your chosen application.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable figure files are supplied separately as SVG files:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp6\_1.svg}
+  \item \texttt{fig\_chp6\_2.svg}
+  \item \texttt{fig\_chp6\_3.svg}
+  \item \texttt{fig\_chp6\_4.svg}
+  \item \texttt{fig\_chp6\_5.svg}
+  \item \texttt{fig\_chp6\_6.svg}
+  \item \texttt{fig\_chp6\_7.svg}
+  \item \texttt{fig\_chp6\_8.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{betts}
+J. T. Betts, \emph{Practical Methods for Optimal Control and Estimation Using Nonlinear Programming}. 2nd ed., SIAM, 2010.
+
+\bibitem{brysonho}
+A. E. Bryson and Y.-C. Ho, \emph{Applied Optimal Control}. Hemisphere, 1975.
+
+\bibitem{allison2014aiaa}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\bibitem{allison2014jmd}
+J. T. Allison, T. Guo, and Z. Han, ``Co-design of an active suspension using simultaneous dynamic optimization,'' \emph{Journal of Mechanical Design}, vol. 136, no. 8, 081003, 2014.
+
+\bibitem{herber2019}
+D. R. Herber and J. T. Allison, ``Nested and simultaneous solution strategies for general combined plant and control design problems,'' \emph{Journal of Mechanical Design}, vol. 141, no. 1, 011402, 2019.
+
+\bibitem{garciasanz2019}
+M. Garcia-Sanz, ``Control co-design: An engineering game changer,'' \emph{Advanced Control for Applications}, vol. 1, no. 1, 2019.
+
+\bibitem{bayatbridging}
+S. Bayat, L. Yang, and L. Zuo, ``Bridging the gap between open-loop and closed-loop control in co-design: A framework for complete optimal plant and control architecture design,'' 2026.
+
+\bibitem{mayneMPC}
+D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. M. Scokaert, ``Constrained model predictive control: Stability and optimality,'' \emph{Automatica}, vol. 36, no. 6, pp. 789--814, 2000.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 6
+\end{center}
+
+\end{document}

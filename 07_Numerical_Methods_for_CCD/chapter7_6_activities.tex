@@ -1,0 +1,406 @@
+\section{Advanced Numerical Activities}
+
+The following activities are intended for strong master's or PhD students.
+Students may use GPOPS-II, Dymos, or an equivalent direct-collocation package
+where specified.
+
+\subsection*{Problem 1: Minimum-Time Control with an Active State Constraint}
+
+Consider
+\begin{equation}
+\dot{x}_1 = x_2,
+\qquad
+\dot{x}_2 = u,
+\end{equation}
+with
+\begin{equation}
+\mathbf{x}(0)=
+\begin{bmatrix}
+0\\
+0
+\end{bmatrix},
+\qquad
+\mathbf{x}(t_f)=
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix},
+\end{equation}
+and constraints
+\begin{equation}
+-1 \leq u(t) \leq 1,
+\qquad
+|x_2(t)| \leq 0.6.
+\end{equation}
+
+Minimize
+\begin{equation}
+J=t_f.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the optimal control structure and identify all bang and
+    state-constrained arcs.
+    
+    \item Compute the switching times and the optimal final time analytically.
+    
+    \item Solve the problem using GPOPS-II or Dymos.
+    
+    \item Plot $x_1(t)$, $x_2(t)$, and $u(t)$, and mark every switching point.
+    
+    \item Repeat the numerical solution using 20, 40, and 80 mesh intervals,
+    and report the error in $t_f$.
+    
+    \item Verify the final solution using independent high-accuracy integration.
+\end{enumerate}
+
+
+\subsection*{Problem 2: Plant and Actuator Co-Design of a Dynamic System}
+
+Consider
+\begin{equation}
+\dot{x}_1=x_2,
+\end{equation}
+\begin{equation}
+m\dot{x}_2=-kx_1-cx_2+u,
+\end{equation}
+where
+\begin{equation}
+m=1,
+\qquad
+c=0.5.
+\end{equation}
+
+The spring stiffness $k$ and actuator capacity $F_{\max}$ are plant-design
+variables:
+\begin{equation}
+0.5 \leq k \leq 8,
+\qquad
+0.2 \leq F_{\max} \leq 5.
+\end{equation}
+
+The control satisfies
+\begin{equation}
+|u(t)| \leq F_{\max}.
+\end{equation}
+
+Use
+\begin{equation}
+\mathbf{x}(0)=
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix},
+\qquad
+\mathbf{x}(t_f)=
+\begin{bmatrix}
+0\\
+0
+\end{bmatrix},
+\qquad
+t_f=4.
+\end{equation}
+
+Minimize
+\begin{equation}
+J=
+\int_0^{t_f}
+\left(
+x_1^2+0.1x_2^2+0.01u^2
+\right)\,dt
++
+0.03F_{\max}^2
++
+0.002k^2.
+\end{equation}
+
+\begin{enumerate}
+    \item Nondimensionalize the states, control, time, and design variables.
+    
+    \item Formulate the simultaneous direct-collocation problem.
+    
+    \item Solve the problem using GPOPS-II or Dymos.
+    
+    \item Determine whether the actuator constraint is active.
+    
+    \item Repeat the solution after multiplying the $F_{\max}^2$ penalty by
+    $0.1$, $1$, and $10$.
+    
+    \item Explain how the actuator-cost weight changes both $k^*$ and
+    $F_{\max}^*$.
+\end{enumerate}
+
+
+\subsection*{Problem 3: Multiple Shooting versus Direct Collocation for an Unstable System}
+
+Consider
+\begin{equation}
+\dot{\mathbf{x}}
+=
+\begin{bmatrix}
+0 & 1\\
+4 & 0
+\end{bmatrix}
+\mathbf{x}
++
+\begin{bmatrix}
+0\\
+1
+\end{bmatrix}u,
+\end{equation}
+with
+\begin{equation}
+\mathbf{x}(0)=
+\begin{bmatrix}
+1\\
+0
+\end{bmatrix},
+\qquad
+\mathbf{x}(3)=
+\begin{bmatrix}
+0\\
+0
+\end{bmatrix}.
+\end{equation}
+
+Minimize
+\begin{equation}
+J=
+\int_0^3
+\left(
+\mathbf{x}^{T}\mathbf{x}
++
+0.05u^2
+\right)\,dt,
+\qquad
+|u|\leq 5.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the exact state-transition equation over one shooting interval:
+    \begin{equation}
+    \mathbf{x}_{i+1}
+    =
+    e^{A\Delta t}\mathbf{x}_i
+    +
+    \int_0^{\Delta t}
+    e^{A(\Delta t-\tau)}B\,u_i\,d\tau.
+    \end{equation}
+    
+    \item Formulate a 10-segment multiple-shooting nonlinear program with
+    piecewise-constant control.
+    
+    \item Formulate a Hermite--Simpson transcription using 30 intervals.
+    
+    \item Solve both formulations.
+    
+    \item Compare Jacobian sparsity, condition number, optimizer iterations,
+    and sensitivity to initial guesses.
+    
+    \item Explain why direct single shooting performs poorly for this unstable
+    system.
+\end{enumerate}
+
+
+\subsection*{Problem 4: Analytical Hermite--Simpson Jacobian}
+
+Consider the nonlinear, parameter-dependent system
+\begin{equation}
+\dot{x}_1=x_2,
+\end{equation}
+\begin{equation}
+\dot{x}_2=-p\sin x_1+u,
+\end{equation}
+where $p$ is a plant-design variable.
+
+For interval $i$, define
+\begin{equation}
+\mathbf{f}_i
+=
+\mathbf{f}(\mathbf{x}_i,u_i,p),
+\qquad
+\mathbf{f}_{i+1}
+=
+\mathbf{f}(\mathbf{x}_{i+1},u_{i+1},p),
+\end{equation}
+and
+\begin{equation}
+\mathbf{x}_{i+1/2}
+=
+\frac{\mathbf{x}_i+\mathbf{x}_{i+1}}{2}
++
+\frac{h_i}{8}
+\left(
+\mathbf{f}_i-\mathbf{f}_{i+1}
+\right).
+\end{equation}
+
+The Hermite--Simpson defect is
+\begin{equation}
+\mathbf{d}_i
+=
+\mathbf{x}_{i+1}
+-
+\mathbf{x}_i
+-
+\frac{h_i}{6}
+\left(
+\mathbf{f}_i
++
+4\mathbf{f}_{i+1/2}
++
+\mathbf{f}_{i+1}
+\right).
+\end{equation}
+
+\begin{enumerate}
+    \item Derive
+    \begin{equation}
+    \frac{\partial\mathbf{d}_i}{\partial\mathbf{x}_i},
+    \qquad
+    \frac{\partial\mathbf{d}_i}{\partial\mathbf{x}_{i+1}},
+    \qquad
+    \frac{\partial\mathbf{d}_i}{\partial u_i},
+    \qquad
+    \frac{\partial\mathbf{d}_i}{\partial u_{i+1}},
+    \qquad
+    \frac{\partial\mathbf{d}_i}{\partial p}.
+    \end{equation}
+    
+    \item Assemble the Jacobian sparsity pattern for $N$ intervals.
+    
+    \item Determine the exact number of nonzero entries.
+    
+    \item Explain why the column associated with $p$ is globally dense while
+    the state and control blocks remain locally sparse.
+    
+    \item Verify the analytical Jacobian using complex-step differentiation.
+\end{enumerate}
+
+
+\subsection*{Problem 5: Derivative Verification for a Shooting Formulation}
+
+Consider
+\begin{equation}
+\dot{x}=-x^3+u,
+\qquad
+x(0)=1,
+\qquad
+0\leq t\leq 2.
+\end{equation}
+
+Parameterize $u(t)$ using $N=20$ piecewise-constant values:
+\begin{equation}
+\mathbf{U}
+=
+\begin{bmatrix}
+u_0 & u_1 & \cdots & u_{19}
+\end{bmatrix}^{T}.
+\end{equation}
+
+Minimize
+\begin{equation}
+J(\mathbf{U})
+=
+x(2)^2
++
+0.05
+\int_0^2u(t)^2\,dt.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the forward sensitivity equations
+    \begin{equation}
+    \frac{d}{dt}
+    \left(
+    \frac{\partial x}{\partial u_j}
+    \right)
+    =
+    -3x^2
+    \frac{\partial x}{\partial u_j}
+    +
+    \frac{\partial u}{\partial u_j}.
+    \end{equation}
+    
+    \item Derive the gradient $\nabla_{\mathbf{U}}J$.
+    
+    \item Compute the gradient using:
+    \begin{enumerate}
+        \item forward finite differences,
+        \item central finite differences,
+        \item complex-step differentiation,
+        \item sensitivity equations or automatic differentiation.
+    \end{enumerate}
+    
+    \item Perform a directional-derivative test using a random normalized vector
+    $\mathbf{p}$.
+    
+    \item Plot derivative error for step sizes from $10^{-2}$ to $10^{-14}$.
+    
+    \item Explain the truncation-error and cancellation-error regions in the
+    resulting plot.
+\end{enumerate}
+
+
+\subsection*{Problem 6: Hypersensitive Optimal-Control Problem}
+
+Consider
+\begin{equation}
+\dot{x}=-x^3+u,
+\end{equation}
+with
+\begin{equation}
+x(0)=1,
+\qquad
+x(T)=1.5,
+\qquad
+T=50.
+\end{equation}
+
+Minimize
+\begin{equation}
+J=
+\frac{1}{2}
+\int_0^T
+\left(
+x^2+u^2
+\right)\,dt.
+\end{equation}
+
+\begin{enumerate}
+    \item Solve the problem using direct single shooting.
+    
+    \item Solve it using multiple shooting with 5, 10, and 20 segments.
+    
+    \item Solve it using GPOPS-II or Dymos with an adaptive collocation mesh.
+    
+    \item Plot the state and control near:
+    \begin{enumerate}
+        \item the initial boundary layer,
+        \item the long interior arc,
+        \item the terminal boundary layer.
+    \end{enumerate}
+    
+    \item Compare the methods in terms of:
+    \begin{enumerate}
+        \item convergence,
+        \item sensitivity to the initial guess,
+        \item Jacobian conditioning,
+        \item mesh size,
+        \item computation time.
+    \end{enumerate}
+    
+    \item Independently integrate the collocation solution and report
+    \begin{equation}
+    e_x=
+    \max_t
+    \left|
+    x_{\mathrm{collocation}}(t)
+    -
+    x_{\mathrm{verification}}(t)
+    \right|.
+    \end{equation}
+    
+    \item Explain why this problem is difficult for single shooting even though
+    it contains only one state.
+\end{enumerate}

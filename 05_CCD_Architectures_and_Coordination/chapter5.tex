@@ -1,0 +1,707 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{bm}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDtan}{RGB}{247,239,225}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+\definecolor{CCDpurple}{RGB}{124,58,237}
+\definecolor{CCDred}{RGB}{178,58,72}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 5: CCD Architectures and Coordination Strategies},
+  pdfauthor={Saeid Bayat}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 5: CCD Architectures and Coordination Strategies}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\xp}{\vect{x}_p}
+\newcommand{\xc}{\vect{x}_c}
+\newcommand{\xstate}{\vect{x}}
+\newcommand{\uvec}{\vect{u}}
+\newcommand{\R}{\mathbb{R}}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\begin{document}
+
+% Cover
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Physical and Control Systems\par}
+
+\vspace{2.15in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 5\par}
+\vspace{0.18in}
+\noindent\begin{minipage}{0.92\linewidth}
+\raggedright
+{\fontsize{22}{26}\selectfont\bfseries\color{black!85} CCD Architectures and Coordination Strategies\par}
+\end{minipage}
+\vspace{0.20in}
+\par\noindent{\large\color{CCDgray} Sequential, nested, and simultaneous ways to solve coupled plant--control design problems\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large The same CCD problem can be solved through different architectures. The architecture determines how plant and controller decisions exchange information during optimization.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+By this point in the course, we know what a control co-design (CCD) problem is and how to write a continuous-time mathematical formulation. A new question now arises: \emph{How should we actually organize the solution process?}
+
+That question is not trivial. A plant and a controller can be optimized one after another, alternated repeatedly, embedded in a nested architecture, or solved together in one simultaneous optimization problem. Each option is called an \textbf{architecture} or a \textbf{coordination strategy}. The architectures often target the same engineering goal, but they differ in how strongly they coordinate plant and controller decisions, how much computational effort they require, and how much numerical difficulty they introduce.
+
+This chapter explains the most common architectures for CCD: single-pass sequential design, iterative sequential design, nested CCD, and simultaneous CCD. We discuss their mathematical relationships, their practical differences, and the computational trade-offs that affect engineering choice. The chapter ends with guidelines for choosing a suitable architecture for a real application.
+
+\begin{learningobjectives}
+  \item describe the main CCD architectures and the information flow in each one;
+  \item distinguish single-pass sequential design from iterative sequential design;
+  \item explain the ideas behind nested CCD and simultaneous CCD;
+  \item discuss when different architectures may be mathematically equivalent and why they still behave differently in practice;
+  \item evaluate computational trade-offs among architectures;
+  \item choose an appropriate CCD architecture for a given engineering problem.
+\end{learningobjectives}
+
+\section{Why CCD Architectures Matter}
+
+A CCD problem may be written generically as
+\begin{equation}
+\min_{\xp,\xc} \; J(\xp,\xc)
+\qquad \text{subject to dynamic and engineering constraints.}
+\end{equation}
+
+The mathematical problem statement alone does not tell us how the optimization should be organized. In principle, one could optimize everything simultaneously. In practice, however, engineering teams often already have separate plant-design and controller-design tools, or they may be limited by simulation cost, software structure, derivative availability, or organizational workflow.
+
+Thus, an architecture answers questions such as:
+\begin{itemize}[leftmargin=1.4em]
+  \item Which subproblem is solved first?
+  \item Which quantities are held fixed while others are optimized?
+  \item Does the plant optimization call the controller optimization as an inner loop?
+  \item Are all variables optimized in one level, or in multiple levels?
+  \item How often is information exchanged between plant and controller design steps?
+\end{itemize}
+
+Figure~\ref{fig:ch5-architecture-landscape} summarizes the main architecture classes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp5_1.png}
+\caption{Main CCD architectures. They differ mainly in the strength of coordination between plant and controller design and in the associated implementation cost.}
+\label{fig:ch5-architecture-landscape}
+\end{figure}
+
+The architecture matters because plant and controller decisions are coupled. If the coupling is weak, a simple sequential method may work well. If the coupling is strong, ignoring that interaction can lead to poor solutions.
+
+\keyideabox{\textbf{Main idea.} A CCD architecture is not the engineering problem itself. It is the \emph{solution organization} used to solve that problem. Different architectures may address the same underlying CCD formulation but coordinate the variables in very different ways.}
+
+\section{Single-Pass Sequential Design}
+
+\subsection{Basic idea}
+
+Single-pass sequential design is the most traditional and simplest architecture. The plant is designed first, often using a simplified controller assumption or a nominal control policy. Then the controller is designed for the chosen plant. There is only one pass through the two stages.
+
+Figure~\ref{fig:ch5-single-pass} shows the information flow.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp5_2.png}
+\caption{Single-pass sequential design. The plant is chosen first, then the controller is designed for that fixed plant.}
+\label{fig:ch5-single-pass}
+\end{figure}
+
+Mathematically, a simple version may be written as:
+\begin{align}
+\xp^* &= \arg\min_{\xp} J_p(\xp;\hat{\xc}), \\
+\xc^* &= \arg\min_{\xc} J_c(\xp^*,\xc),
+\end{align}
+where $\hat{\xc}$ is a nominal or assumed controller.
+
+\subsection{Interpretation}
+
+This architecture reflects the workflow commonly used in traditional engineering design:
+\begin{enumerate}[leftmargin=1.5em]
+  \item choose a physical design;
+  \item freeze that physical design;
+  \item tune or optimize the controller afterward.
+\end{enumerate}
+
+It is simple because each stage can use its own tools. The plant team and control team do not need tight coupling in software or optimization strategy.
+
+\subsection{Advantages}
+
+Single-pass sequential design is attractive because it:
+\begin{itemize}[leftmargin=1.4em]
+  \item is easy to explain and implement,
+  \item uses existing design workflows,
+  \item requires relatively little optimization infrastructure,
+  \item works reasonably well when plant--control coupling is weak.
+\end{itemize}
+
+\subsection{Limitations}
+
+The main drawback is that early plant decisions may ignore how a better controller would change the design trade-off. For example, a passive structure may be oversized if the optimizer does not account for the load-reduction ability of feedback control.
+
+In other words, the architecture is simple, but the coordination is weak. If the controller strongly affects the best plant design, then single-pass sequential design may be noticeably suboptimal.
+
+\subsection{Example}
+
+Suppose a vehicle suspension spring and damper are selected first using only passive performance metrics. Afterward, an active controller is tuned. If the controller could have allowed a softer spring while maintaining handling, then the single-pass approach may miss a better ride-comfort solution.
+
+\section{Iterative Sequential Design}
+
+\subsection{Basic idea}
+
+Iterative sequential design improves on the single-pass idea by allowing repeated alternation between plant design and controller design. Instead of solving the two stages once, we cycle between them until the design changes become small.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp5_3.png}
+\caption{Iterative sequential design. Plant and controller optimization are alternated repeatedly until the design converges or the changes become small.}
+\label{fig:ch5-iterative-sequential}
+\end{figure}
+
+A simple abstract version is:
+\begin{align}
+\xp^{(k+1)} &= \arg\min_{\xp} J(\xp,\xc^{(k)}), \\
+\xc^{(k+1)} &= \arg\min_{\xc} J(\xp^{(k+1)},\xc),
+\end{align}
+where $k$ is the iteration index.
+
+\subsection{Interpretation}
+
+This is an alternating-coordination approach. The plant optimization uses the current controller, and the controller optimization uses the updated plant. It is more coordinated than a single-pass method because information is exchanged repeatedly.
+
+\subsection{Advantages}
+
+Iterative sequential design has several benefits:
+\begin{itemize}[leftmargin=1.4em]
+  \item it can substantially improve upon a single-pass design,
+  \item it preserves separate plant and controller subproblems,
+  \item it can reuse legacy models and optimization tools,
+  \item it is often easier to implement than full simultaneous CCD.
+\end{itemize}
+
+\subsection{Limitations}
+
+However, the method still has limitations:
+\begin{itemize}[leftmargin=1.4em]
+  \item convergence is not always guaranteed,
+  \item the final result may depend on the order of updates,
+  \item the method may cycle or converge slowly,
+  \item the result may still differ from a fully coordinated optimum.
+\end{itemize}
+
+In strongly coupled problems, the repeated alternation can become expensive because each improvement in one subproblem changes the best solution of the other subproblem.
+
+\subsection{Example}
+
+In a wind-turbine problem, one may alternately redesign structural parameters and retune the pitch controller. This may gradually improve the system, but the process may require many expensive simulation-based iterations.
+
+\section{Nested CCD}
+
+\subsection{Basic idea}
+
+Nested CCD uses a \textbf{bi-level} structure. The outer optimization chooses plant variables, and for each candidate plant, an inner optimization computes the best controller. Thus, the plant optimization explicitly accounts for the controller's best achievable performance.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp5_4.png}
+\caption{Nested CCD. The outer plant-design optimization evaluates each plant through an inner controller-optimization problem.}
+\label{fig:ch5-nested}
+\end{figure}
+
+A common idealized nested formulation is:
+\begin{align}
+\min_{\xp} \quad & \phi(\xp) \\
+\text{where} \quad & \phi(\xp)= \min_{\xc} J(\xp,\xc)
+\quad \text{subject to the controller-related constraints.}
+\end{align}
+
+Here the outer optimization does not directly choose $\xc$; rather, it uses the \emph{best achievable} controller for each plant.
+
+\subsection{Interpretation}
+
+Nested CCD has a strong conceptual appeal: the plant is evaluated fairly because the inner problem gives it the best possible controller under the chosen controller structure and constraints.
+
+This is especially useful when the controller optimization is well established or when a high-quality inner-loop solver already exists.
+
+\subsection{Advantages}
+
+Nested CCD provides:
+\begin{itemize}[leftmargin=1.4em]
+  \item stronger coordination than sequential methods,
+  \item a natural separation between plant and controller roles,
+  \item a clear interpretation of plant quality under best control,
+  \item compatibility with legacy controller-tuning tools.
+\end{itemize}
+
+\subsection{Limitations}
+
+Its main limitation is computational cost. Every outer-loop plant evaluation may require solving a full inner-loop controller optimization. If the outer search needs many evaluations, total cost can become very large.
+
+Other practical difficulties include:
+\begin{itemize}[leftmargin=1.4em]
+  \item possible noise or discontinuity in the outer objective if the inner solve is imperfect,
+  \item difficulty obtaining exact derivatives through the inner optimization,
+  \item dependence on how reliably the inner problem is solved.
+\end{itemize}
+
+\subsection{Example}
+
+For an active suspension, the outer loop may vary suspension stiffness and damping, while the inner loop computes the best feedback gains for each plant candidate. The outer loop then compares plants using the optimized controller performance returned by the inner loop.
+
+\section{Simultaneous CCD}
+
+\subsection{Basic idea}
+
+Simultaneous CCD solves plant variables, controller variables, and often trajectory variables in a single optimization problem. Instead of separating the design into stages or levels, it treats all coupled decisions as part of one integrated problem.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp5_5.png}
+\caption{Simultaneous CCD. Plant, controller, and trajectory variables are optimized together within one optimization problem.}
+\label{fig:ch5-simultaneous}
+\end{figure}
+
+A generic statement is:
+\begin{equation}
+\min_{\xp,\xc,\xstate(\cdot),\uvec(\cdot)} J(\xp,\xc,\xstate,\uvec)
+\qquad \text{subject to all model and engineering constraints.}
+\end{equation}
+
+In a finite-dimensional transcription, this becomes one large nonlinear programming (NLP) problem.
+
+\subsection{Interpretation}
+
+Simultaneous CCD fully embraces the coupling among variables. The optimizer can change plant variables and controller variables together, while accounting for the resulting dynamic trajectories and constraints.
+
+This direct integration often provides the clearest path to a fully coordinated optimum, especially when strong interactions are present.
+
+\subsection{Advantages}
+
+Simultaneous CCD offers:
+\begin{itemize}[leftmargin=1.4em]
+  \item the strongest possible coordination,
+  \item direct access to trade-offs between plant and control decisions,
+  \item a unified mathematical structure,
+  \item a natural setting for gradient-based optimization with sparse derivatives.
+\end{itemize}
+
+\subsection{Limitations}
+
+The cost of this integration is increased complexity. The resulting NLP can be large, nonlinear, and numerically challenging. The user may need:
+\begin{itemize}[leftmargin=1.4em]
+  \item careful scaling,
+  \item good initial guesses,
+  \item reliable derivatives,
+  \item specialized numerical optimization tools,
+  \item more sophisticated software integration.
+\end{itemize}
+
+Thus, simultaneous CCD is often powerful but not always easy to deploy.
+
+\section{Mathematical Equivalence and Practical Differences}
+
+\subsection{Why equivalence is discussed}
+
+The literature often notes that nested and simultaneous CCD can be mathematically equivalent under ideal assumptions. More broadly, different architectures may aim to solve the same underlying CCD problem. This can create confusion: if they are equivalent, why do we need multiple architectures?
+
+The answer is that \textbf{mathematical equivalence does not imply practical sameness}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.93\textwidth]{figures/fig_chp5_7.png}
+\caption{Mathematical equivalence versus practical differences. Different architectures may target the same optimal solution in principle, yet behave differently in real computations.}
+\label{fig:ch5-equivalence}
+\end{figure}
+
+\subsection{Ideal equivalence}
+
+Suppose the underlying problem is
+\begin{equation}
+\min_{\xp,\xc} J(\xp,\xc).
+\end{equation}
+
+If the nested architecture solves the inner controller problem exactly for every plant and the outer optimization then finds the global optimum, it should identify the same best pair $(\xp^*,\xc^*)$ that a perfect simultaneous method would identify.
+
+Thus, under exact and global conditions, the two architectures can target the same solution.
+
+\subsection{Why practical behavior differs}
+
+Real numerical optimization is not exact. In practice, several issues create differences:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Local minima.} Different architectures may get trapped in different local optima.
+  \item \textbf{Initialization.} Some architectures are much more sensitive to initial guesses.
+  \item \textbf{Approximate inner solves.} In nested CCD, the inner controller problem may not be solved fully at every outer iteration.
+  \item \textbf{Derivative quality.} Simultaneous methods often rely heavily on gradient and Jacobian information.
+  \item \textbf{Numerical scaling.} A large simultaneous NLP may be harder to scale well.
+  \item \textbf{Convergence criteria.} Different stopping rules can produce different practical results.
+\end{itemize}
+
+Therefore, engineers should not interpret ``equivalence'' too literally. It means the architectures can target the same ideal problem, not that they will automatically behave the same in real computation.
+
+\keyideabox{\textbf{Important distinction.} Two architectures may be equivalent \emph{as mathematical statements of an ideal solution}, yet very different \emph{as computational procedures}. For an engineer, that practical difference often matters more than the formal equivalence.}
+
+\section{Computational Trade-Offs}
+
+\subsection{General trade-off picture}
+
+A useful way to think about architectures is to compare coordination strength against implementation and computation cost. Figure~\ref{fig:ch5-tradeoffs} shows a typical pattern.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/fig_chp5_6.png}
+\caption{Typical computational trade-off among CCD architectures. Greater coordination often comes with greater implementation and numerical complexity.}
+\label{fig:ch5-tradeoffs}
+\end{figure}
+
+The trend is usually as follows:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Single-pass sequential}: lowest setup cost, weakest coordination.
+  \item \textbf{Iterative sequential}: moderate implementation effort, moderate coordination.
+  \item \textbf{Nested CCD}: stronger coordination, potentially high repeated-solve cost.
+  \item \textbf{Simultaneous CCD}: strongest coordination, often the most challenging numerically.
+\end{itemize}
+
+\subsection{Simulation cost}
+
+If each function evaluation requires a long dynamic simulation, then repeated outer-loop searches in nested methods can become expensive. On the other hand, a simultaneous method may reduce repeated complete re-optimization but require a larger single solve.
+
+\subsection{Derivative availability}
+
+If reliable gradients are available, simultaneous methods can become very effective. If derivatives are unavailable or unreliable, sequential or nested strategies may be easier to implement, especially with derivative-free outer loops.
+
+\subsection{Software and organizational cost}
+
+Not all costs are numerical. Some architectures are easier to fit into an existing engineering organization. A company with separate plant and controls teams may find iterative or nested methods easier to adopt than a fully unified simultaneous framework.
+
+\subsection{Robustness versus optimality}
+
+Sometimes engineers choose a simpler architecture not because it is theoretically best, but because it is robust, interpretable, and available with existing tools. In other cases, the need for maximum performance justifies the effort required by simultaneous CCD.
+
+\section{Choosing an Appropriate Architecture}
+
+No single architecture is always best. The right choice depends on the problem, the tools, and the engineering objectives.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp5_8.png}
+\caption{A simple guideline for choosing an architecture. The strength of plant--control coupling is a central factor, but not the only one.}
+\label{fig:ch5-choose}
+\end{figure}
+
+\subsection{When to favor single-pass sequential design}
+
+A simple sequential architecture may be appropriate when:
+\begin{itemize}[leftmargin=1.4em]
+  \item plant--control coupling is weak,
+  \item a quick baseline result is needed,
+  \item the main goal is ease of implementation,
+  \item the controller has only a modest influence on plant trade-offs.
+\end{itemize}
+
+\subsection{When to favor iterative sequential design}
+
+Iterative sequential design is often a good compromise when:
+\begin{itemize}[leftmargin=1.4em]
+  \item some coupling exists, but full integration is not yet practical,
+  \item separate plant and control tools must be retained,
+  \item repeated coordination is acceptable,
+  \item a better solution than single-pass is desired with moderate effort.
+\end{itemize}
+
+\subsection{When to favor nested CCD}
+
+Nested CCD is often attractive when:
+\begin{itemize}[leftmargin=1.4em]
+  \item the controller optimization problem is well defined and reliable,
+  \item plant performance should be evaluated under best achievable control,
+  \item the problem structure naturally suggests an outer plant loop and inner control loop,
+  \item software reuse is important.
+\end{itemize}
+
+\subsection{When to favor simultaneous CCD}
+
+Simultaneous CCD is often preferred when:
+\begin{itemize}[leftmargin=1.4em]
+  \item plant--control coupling is strong,
+  \item the highest possible performance is sought,
+  \item gradients and modern NLP tools are available,
+  \item a unified optimization formulation is feasible.
+\end{itemize}
+
+\subsection{Additional practical questions}
+
+Before choosing an architecture, an engineer should ask:
+\begin{enumerate}[leftmargin=1.5em]
+  \item How expensive is each simulation or evaluation?
+  \item Are accurate derivatives available?
+  \item How nonlinear or nonconvex is the problem?
+  \item How many variables are involved?
+  \item Are there legacy tools that must be preserved?
+  \item Is the aim a baseline design, or the best achievable design?
+\end{enumerate}
+
+\section{Worked Examples}
+
+\subsection{Worked Example 5.1: active suspension}
+
+Consider an active suspension with plant variables $\xp=[k_s,c_s]^T$ and control gains $\xc=[K_1,K_2,K_3,K_4]^T$.
+
+\textbf{Single-pass sequential approach:}
+choose $k_s$ and $c_s$ first using passive metrics, then tune the gains.
+
+\textbf{Iterative sequential approach:}
+alternate between plant redesign and gain tuning until the ride-comfort and handling measures stabilize.
+
+\textbf{Nested approach:}
+for each candidate $(k_s,c_s)$, solve an inner controller-tuning problem and return the best value of the suspension objective.
+
+\textbf{Simultaneous approach:}
+solve for $(k_s,c_s,K_1,K_2,K_3,K_4)$ together in one optimization problem.
+
+This example clearly shows that the engineering system stays the same while the solution architecture changes.
+
+\subsection{Worked Example 5.2: wind-turbine design}
+
+Suppose plant variables include tower and structural parameters, while controller variables include pitch-control settings. If the controller strongly influences structural loads, then a single-pass sequential approach may miss major opportunities. A nested or simultaneous strategy becomes more attractive because the best plant depends strongly on what the controller can achieve.
+
+\subsection{Worked Example 5.3: marine energy device}
+
+A wave-energy device may have plant variables such as buoy geometry and PTO properties, and control variables such as reactive or latching control parameters. If hydrodynamic performance and control strategy are tightly coupled, a simultaneous or nested architecture may provide much higher-quality results than a purely sequential approach.
+
+\section{Comparison Table}
+
+Table~\ref{tab:ch5-compare} summarizes the main differences among the four architectures.
+
+\begin{table}[H]
+\centering
+\caption{Qualitative comparison of common CCD architectures.}
+\label{tab:ch5-compare}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2.8cm} >{\raggedright\arraybackslash}p{2.5cm} >{\raggedright\arraybackslash}p{2.6cm} >{\raggedright\arraybackslash}p{2.4cm}}
+\toprule
+Architecture & Coordination strength & Implementation difficulty & Typical computational burden & Good use case \\
+\midrule
+Single-pass sequential & Low & Low & Low & Weak coupling, quick baseline \\
+Iterative sequential & Moderate & Low to moderate & Moderate & Moderate coupling, reusable separate tools \\
+Nested CCD & High & Moderate & High due to repeated inner solves & Best-control evaluation of each plant \\
+Simultaneous CCD & Very high & High & High but often efficient with good derivatives & Strong coupling, unified optimization \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Common Mistakes and Misunderstandings}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Thinking ``simultaneous'' always means ``better.''} It may offer better coordination, but poor scaling or bad derivatives can still lead to disappointing results.
+  \item \textbf{Thinking ``equivalent'' means ``same in practice.''} As discussed earlier, equivalence is an ideal mathematical statement, not a promise of identical computation.
+  \item \textbf{Ignoring setup cost.} A theoretically elegant architecture may not be practical in a short project.
+  \item \textbf{Using single-pass sequential design when coupling is strong.} This can hide major design opportunities.
+  \item \textbf{Choosing nested CCD without considering inner-solve cost.} Repeated controller optimization may dominate total runtime.
+  \item \textbf{Neglecting initialization.} Architecture choice and initialization strategy often interact strongly.
+\end{enumerate}
+
+\section{Chapter Summary}
+
+This chapter introduced the main CCD architectures used to coordinate plant and controller design. Single-pass sequential design is simple and inexpensive but weakly coordinated. Iterative sequential design improves coordination through repeated alternation. Nested CCD uses an outer plant optimization with an inner controller optimization, providing stronger coupling at potentially high computational cost. Simultaneous CCD solves plant and controller decisions together in one optimization problem, offering the strongest coordination but also greater numerical difficulty.
+
+We also explained that architectures can be mathematically equivalent in principle while behaving quite differently in practice because of initialization, local minima, derivative quality, scaling, and computational burden. Finally, we discussed how to choose an architecture based on coupling strength, solver availability, software structure, and engineering goals.
+
+The next chapters will build on this understanding by examining more detailed optimal-control and numerical optimization methods that can be used inside these architectures.
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item CCD architecture
+  \item coordination strategy
+  \item single-pass sequential design
+  \item iterative sequential design
+  \item nested CCD
+  \item simultaneous CCD
+  \item outer loop
+  \item inner loop
+  \item bi-level optimization
+  \item one-level optimization
+  \item mathematical equivalence
+  \item practical difference
+  \item coupling strength
+  \item computational trade-off
+  \item legacy tools
+  \item derivative availability
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Conceptual problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item In your own words, explain what is meant by a CCD architecture.
+  \item What is the main difference between single-pass sequential design and iterative sequential design?
+  \item Why is nested CCD called a bi-level architecture?
+  \item Why is simultaneous CCD often considered the most tightly coordinated architecture?
+  \item Give one situation in which a single-pass sequential design may be acceptable.
+\end{enumerate}
+
+\subsection*{Comparison problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Compare iterative sequential design and nested CCD in terms of coordination strength and computational burden.
+  \item Compare nested CCD and simultaneous CCD in terms of mathematical equivalence and practical numerical behavior.
+  \item For each architecture, state one major advantage and one major limitation.
+  \item Which architecture is most likely to reuse separate legacy plant and controller optimization tools? Explain.
+  \item Which architecture is most likely to require the best derivative information? Explain.
+\end{enumerate}
+
+\subsection*{Formulation problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Write a simple mathematical statement of a single-pass sequential design process for variables $\xp$ and $\xc$.
+  \item Write the alternating-update form of an iterative sequential design strategy.
+  \item Write a nested CCD formulation in terms of an outer objective $\phi(\xp)$.
+  \item Write a simultaneous CCD optimization problem in generic form.
+  \item Explain how the variable sets differ among sequential, nested, and simultaneous architectures.
+\end{enumerate}
+
+\subsection*{Interpretation problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item A student says, ``Nested CCD is always better than simultaneous CCD because the controller is optimized exactly for each plant.'' Is this statement always true? Explain.
+  \item Another student says, ``If two architectures are mathematically equivalent, they must produce the same answer in practice.'' Explain why this reasoning is incomplete.
+  \item Why can strong plant--control coupling make a simple sequential approach unattractive?
+  \item Why might a company still choose iterative sequential design even if simultaneous CCD could produce a better final design?
+  \item Describe how local minima can cause different architectures to produce different practical results.
+\end{enumerate}
+
+\subsection*{Application problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item For an active suspension problem, propose a suitable architecture and justify your choice.
+  \item For a wind-turbine control co-design problem with strong load--control interaction, propose a suitable architecture and justify your choice.
+  \item For a small classroom project with limited coding time, which architecture would you recommend first? Why?
+  \item For a marine energy device with expensive simulations but a reliable controller-tuning routine, which architecture might be attractive? Explain.
+  \item For a research-grade optimization study focused on maximum performance, which architecture would you investigate first? Why?
+\end{enumerate}
+
+\subsection*{Mini-project problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Pick an engineering system of your choice and outline how it would be solved using each of the four architectures in this chapter.
+  \item Create a comparison table for your chosen system showing expected modeling effort, simulation cost, and likely solution quality for each architecture.
+  \item Write a one-page memo recommending a CCD architecture for a real or imagined project. Include both technical and organizational reasons.
+  \item Sketch a flowchart for your preferred architecture on your chosen application.
+  \item Discuss how your architecture choice might change if simulation time increased by a factor of 100.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable figure files are supplied separately as SVG files:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp5\_1.svg}
+  \item \texttt{fig\_chp5\_2.svg}
+  \item \texttt{fig\_chp5\_3.svg}
+  \item \texttt{fig\_chp5\_4.svg}
+  \item \texttt{fig\_chp5\_5.svg}
+  \item \texttt{fig\_chp5\_6.svg}
+  \item \texttt{fig\_chp5\_7.svg}
+  \item \texttt{fig\_chp5\_8.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{allison2014aiaa}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\bibitem{allison2014jmd}
+J. T. Allison, T. Guo, and Z. Han, ``Co-design of an active suspension using simultaneous dynamic optimization,'' \emph{Journal of Mechanical Design}, vol. 136, no. 8, 081003, 2014.
+
+\bibitem{herber2019}
+D. R. Herber and J. T. Allison, ``Nested and simultaneous solution strategies for general combined plant and control design problems,'' \emph{Journal of Mechanical Design}, vol. 141, no. 1, 011402, 2019.
+
+\bibitem{bridginggap}
+S. Bayat, L. Yang, and L. Zuo, ``Bridging the gap between open-loop and closed-loop control in co-design: A framework for complete optimal plant and control architecture design,'' 2026.
+
+\bibitem{faircomparison}
+S. Bayat, L. Zuo, and Z. Liu, ``Towards a fair comparison between the nested and simultaneous control co-design methods using an active suspension case study,'' DETC/CIE, 2025.
+
+\bibitem{garciasanz2019}
+M. Garcia-Sanz, ``Control co-design: An engineering game changer,'' \emph{Advanced Control for Applications}, vol. 1, no. 1, 2019.
+
+\bibitem{martinsning}
+J. R. R. A. Martins and A. Ning, \emph{Engineering Design Optimization}. Cambridge University Press, 2021.
+
+\bibitem{betts}
+J. T. Betts, \emph{Practical Methods for Optimal Control and Estimation Using Nonlinear Programming}. 2nd ed., SIAM, 2010.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 5
+\end{center}
+
+\end{document}

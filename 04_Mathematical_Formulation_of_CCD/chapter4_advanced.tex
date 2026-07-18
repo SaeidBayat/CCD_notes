@@ -1,0 +1,724 @@
+
+\section{Advanced Activities}
+
+The following activities are intended for strong master's or PhD students.
+They emphasize rigorous mathematical formulation of control co-design
+problems, including trajectory variables, objective-function transformations,
+path and boundary constraints, free-final-time problems, multi-scenario
+formulations, and multiphase systems.
+
+\subsection*{Problem 1: Complete Continuous-Time CCD Formulation with Free Final Time}
+
+Consider the controlled mass--spring--damper system
+\begin{equation}
+m\ddot{q}(t)+c\dot{q}(t)+kq(t)=u(t)+d(t),
+\end{equation}
+where
+\begin{equation}
+m=1.5~\mathrm{kg},
+\qquad
+d(t)=2e^{-0.5t}\sin(3t).
+\end{equation}
+
+The plant design variables are
+\begin{equation}
+0.5\leq k\leq 8,
+\qquad
+0.1\leq c\leq 4,
+\qquad
+0.5\leq F_{\max}\leq 6,
+\end{equation}
+and the final time is also a design variable:
+\begin{equation}
+2\leq t_f\leq 8.
+\end{equation}
+
+The control trajectory satisfies
+\begin{equation}
+|u(t)|\leq F_{\max}.
+\end{equation}
+
+The initial and terminal conditions are
+\begin{equation}
+q(0)=1,
+\qquad
+\dot{q}(0)=0,
+\end{equation}
+\begin{equation}
+q(t_f)=0,
+\qquad
+\dot{q}(t_f)=0.
+\end{equation}
+
+The displacement and velocity must satisfy
+\begin{equation}
+|q(t)|\leq 1.2,
+\qquad
+|\dot{q}(t)|\leq 2.5.
+\end{equation}
+
+Minimize
+\begin{equation}
+J
+=
+\int_0^{t_f}
+\left[
+q(t)^2
++
+0.1\dot{q}(t)^2
++
+0.02u(t)^2
+\right]dt
++
+0.03k^2
++
+0.02c^2
++
+0.04F_{\max}^2
++
+0.2t_f.
+\end{equation}
+
+\begin{enumerate}
+    \item Define a first-order state vector and derive the state equations
+    in the form
+    \begin{equation}
+    \dot{\mathbf{x}}
+    =
+    \mathbf{f}
+    \left(
+    \mathbf{x},
+    u,
+    \mathbf{x}_p,
+    t
+    \right).
+    \end{equation}
+
+    \item Define the complete plant-design vector, control trajectory, state
+    trajectory, and free-time variable.
+
+    \item Write the problem in the general Bolza form
+    \begin{align}
+    \min_{\mathbf{x}_p,u(\cdot),\mathbf{x}(\cdot),t_f}
+    \quad
+    &
+    \Phi
+    \left(
+    \mathbf{x}(0),
+    \mathbf{x}(t_f),
+    \mathbf{x}_p,
+    t_f
+    \right)
+    +
+    \int_0^{t_f}
+    L
+    \left(
+    \mathbf{x},
+    u,
+    \mathbf{x}_p,
+    t
+    \right)dt,
+    \\
+    \text{subject to}
+    \quad
+    &
+    \dot{\mathbf{x}}
+    -
+    \mathbf{f}
+    \left(
+    \mathbf{x},
+    u,
+    \mathbf{x}_p,
+    t
+    \right)
+    =
+    \mathbf{0},
+    \end{align}
+    together with all path, boundary, and bound constraints.
+
+    \item Classify every constraint as one of the following:
+    \begin{enumerate}
+        \item dynamic equality constraint,
+        \item path inequality constraint,
+        \item boundary equality constraint,
+        \item simple bound.
+    \end{enumerate}
+
+    \item Determine whether $F_{\max}$ is redundant when $u(t)$ is also
+    bounded. Explain why it is still a meaningful plant or actuator-design
+    variable in this formulation.
+
+    \item Replace the terminal equalities with the terminal tolerance
+    \begin{equation}
+    \left\|
+    \mathbf{x}(t_f)
+    \right\|_2
+    \leq 10^{-2},
+    \end{equation}
+    and write the equivalent scalar inequality constraint.
+
+    \item Explain which terms in the objective discourage the optimizer from
+    selecting the largest possible actuator, the stiffest possible spring,
+    or the longest possible maneuver time.
+\end{enumerate}
+
+
+\subsection*{Problem 2: Conversion among Lagrange, Mayer, and Bolza Forms}
+
+Consider the dynamic optimization problem
+\begin{equation}
+\min_{u(\cdot)}
+\quad
+J
+=
+\int_0^{t_f}
+\left[
+x(t)^2
++
+\rho u(t)^2
+\right]dt,
+\end{equation}
+subject to
+\begin{equation}
+\dot{x}(t)=a x(t)+b u(t),
+\qquad
+x(0)=x_0.
+\end{equation}
+
+\begin{enumerate}
+    \item Introduce an auxiliary state $z(t)$ and convert the Lagrange
+    objective into an equivalent Mayer objective.
+
+    \item State the initial condition for $z(t)$ and write the augmented
+    dynamics.
+
+    \item Prove that
+    \begin{equation}
+    z(t_f)
+    =
+    \int_0^{t_f}
+    \left[
+    x(t)^2+\rho u(t)^2
+    \right]dt.
+    \end{equation}
+
+    \item Now consider the Bolza objective
+    \begin{equation}
+    J
+    =
+    \frac{1}{2}q_f x(t_f)^2
+    +
+    \int_0^{t_f}
+    \left[
+    x(t)^2+\rho u(t)^2
+    \right]dt.
+    \end{equation}
+    Convert it into a pure Mayer problem.
+
+    \item Add the integral energy constraint
+    \begin{equation}
+    \int_0^{t_f}u(t)^2dt
+    \leq E_{\max}.
+    \end{equation}
+    Introduce another auxiliary state and rewrite the integral inequality
+    as a terminal boundary constraint.
+
+    \item Show that the resulting augmented system contains no integral
+    objective or integral constraint.
+
+    \item Explain why the Mayer transformation is mathematically exact but
+    may still affect numerical conditioning and scaling.
+
+    \item Generalize the transformation to the vector running cost
+    \begin{equation}
+    \mathbf{L}
+    \left(
+    \mathbf{x},
+    \mathbf{u},
+    \mathbf{x}_p,
+    t
+    \right)
+    \in\mathbb{R}^{n_L}.
+    \end{equation}
+\end{enumerate}
+
+
+\subsection*{Problem 3: Time Normalization for a Free-Final-Time CCD Problem}
+
+Consider the general free-final-time CCD problem
+\begin{equation}
+\min_{\mathbf{x}_p,\mathbf{x}_c,\mathbf{u}(\cdot),t_f}
+\quad
+\Phi
+\left(
+\mathbf{x}(t_f),
+\mathbf{x}_p,
+\mathbf{x}_c,
+t_f
+\right)
++
+\int_{t_0}^{t_f}
+L
+\left(
+\mathbf{x},
+\mathbf{u},
+\mathbf{x}_p,
+\mathbf{x}_c,
+t
+\right)dt,
+\end{equation}
+subject to
+\begin{equation}
+\dot{\mathbf{x}}
+=
+\mathbf{f}
+\left(
+\mathbf{x},
+\mathbf{u},
+\mathbf{x}_p,
+\mathbf{x}_c,
+t
+\right).
+\end{equation}
+
+Introduce normalized time
+\begin{equation}
+\tau
+=
+\frac{t-t_0}{t_f-t_0},
+\qquad
+0\leq\tau\leq1.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive
+    \begin{equation}
+    \frac{dt}{d\tau}=t_f-t_0.
+    \end{equation}
+
+    \item Show that the transformed dynamics are
+    \begin{equation}
+    \frac{d\mathbf{x}}{d\tau}
+    =
+    (t_f-t_0)
+    \mathbf{f}
+    \left(
+    \mathbf{x},
+    \mathbf{u},
+    \mathbf{x}_p,
+    \mathbf{x}_c,
+    t(\tau)
+    \right).
+    \end{equation}
+
+    \item Transform the integral objective to the fixed interval
+    $\tau\in[0,1]$.
+
+    \item Transform the path constraint
+    \begin{equation}
+    \mathbf{g}
+    \left(
+    \mathbf{x}(t),
+    \mathbf{u}(t),
+    \mathbf{x}_p,
+    t
+    \right)
+    \leq\mathbf{0}.
+    \end{equation}
+
+    \item Transform the explicit time-dependent disturbance
+    \begin{equation}
+    d(t)=A\sin(\omega t+\phi).
+    \end{equation}
+
+    \item For the scalar system
+    \begin{equation}
+    \dot{x}=-px+u,
+    \qquad
+    x(0)=1,
+    \qquad
+    x(t_f)=0,
+    \end{equation}
+    write the complete normalized-time formulation when
+    \begin{equation}
+    J
+    =
+    t_f
+    +
+    \int_0^{t_f}
+    \left(
+    x^2+0.1u^2
+    \right)dt.
+    \end{equation}
+
+    \item Explain why $t_f$ appears in both the transformed dynamics and the
+    transformed running cost.
+
+    \item State the condition that must be imposed to prevent the optimizer
+    from selecting
+    \begin{equation}
+    t_f=t_0.
+    \end{equation}
+\end{enumerate}
+
+
+\subsection*{Problem 4: Formulating Actuator Dynamics, Rate Limits, and Energy Limits}
+
+Consider the plant
+\begin{equation}
+\dot{x}_1=x_2,
+\end{equation}
+\begin{equation}
+m\dot{x}_2=-kx_1-cx_2+f_a+d(t),
+\end{equation}
+where $f_a(t)$ is the actual actuator force.
+
+The actuator command is $u_c(t)$, but the actuator has first-order dynamics:
+\begin{equation}
+\dot{f}_a
+=
+\frac{1}{\tau_a}
+\left(
+u_c-f_a
+\right).
+\end{equation}
+
+The actuator capacity and bandwidth are design variables:
+\begin{equation}
+0.5\leq F_{\max}\leq5,
+\qquad
+0.02\leq\tau_a\leq0.3.
+\end{equation}
+
+The actuator is subject to
+\begin{equation}
+|u_c(t)|\leq F_{\max},
+\end{equation}
+\begin{equation}
+|f_a(t)|\leq F_{\max},
+\end{equation}
+\begin{equation}
+|\dot{f}_a(t)|\leq R_{\max},
+\end{equation}
+and
+\begin{equation}
+\int_0^T
+f_a(t)^2dt
+\leq E_{\max}.
+\end{equation}
+
+\begin{enumerate}
+    \item Construct an augmented state vector that includes the actuator
+    dynamics.
+
+    \item Introduce an energy-accumulation state $e(t)$ such that
+    \begin{equation}
+    \dot{e}=f_a^2,
+    \qquad
+    e(0)=0.
+    \end{equation}
+
+    \item Rewrite the energy limit as a terminal boundary constraint.
+
+    \item Rewrite the actuator-rate constraint entirely in terms of
+    $u_c$, $f_a$, and $\tau_a$, without using $\dot{f}_a$ explicitly.
+
+    \item Write the complete augmented dynamics in residual form
+    \begin{equation}
+    \mathbf{r}
+    \left(
+    \dot{\mathbf{x}},
+    \mathbf{x},
+    u_c,
+    \mathbf{x}_p,
+    t
+    \right)
+    =
+    \mathbf{0}.
+    \end{equation}
+
+    \item Identify which of the following are plant variables, control
+    trajectories, states, path constraints, and boundary constraints:
+    \begin{equation}
+    k,\quad c,\quad F_{\max},\quad \tau_a,\quad
+    u_c(t),\quad f_a(t),\quad e(t).
+    \end{equation}
+
+    \item Explain why imposing only
+    \begin{equation}
+    |u_c(t)|\leq F_{\max}
+    \end{equation}
+    is not sufficient to guarantee that the actual actuator force is
+    physically feasible.
+
+    \item Add the actuator-design penalty
+    \begin{equation}
+    J_{\mathrm{act}}
+    =
+    \alpha_FF_{\max}^2
+    +
+    \frac{\alpha_\tau}{\tau_a},
+    \end{equation}
+    and explain the physical tradeoff represented by the second term.
+\end{enumerate}
+
+
+\subsection*{Problem 5: Multi-Scenario Robust CCD Formulation}
+
+A controlled system is described under scenario $s$ by
+\begin{equation}
+\dot{\mathbf{x}}_s
+=
+\mathbf{f}
+\left(
+\mathbf{x}_s,
+\mathbf{u}_s,
+\mathbf{x}_p,
+\boldsymbol{\theta}_s,
+t
+\right),
+\qquad
+s=1,\ldots,N_s,
+\end{equation}
+where $\mathbf{x}_p$ is a common plant design and
+$\boldsymbol{\theta}_s$ contains scenario-dependent parameters.
+
+Each scenario has objective
+\begin{equation}
+J_s
+=
+\Phi_s
+\left(
+\mathbf{x}_s(t_f),
+\mathbf{x}_p
+\right)
++
+\int_0^{t_f}
+L_s
+\left(
+\mathbf{x}_s,
+\mathbf{u}_s,
+\mathbf{x}_p,
+t
+\right)dt.
+\end{equation}
+
+The robust objective is
+\begin{equation}
+J_R
+=
+\sum_{s=1}^{N_s}p_sJ_s
++
+\lambda
+\max_{s}
+J_s,
+\end{equation}
+where
+\begin{equation}
+p_s\geq0,
+\qquad
+\sum_{s=1}^{N_s}p_s=1.
+\end{equation}
+
+\begin{enumerate}
+    \item Write the complete multi-scenario CCD problem when the plant
+    design $\mathbf{x}_p$ is common to all scenarios but each scenario has
+    its own open-loop control trajectory $\mathbf{u}_s(t)$.
+
+    \item Introduce an epigraph variable $\eta$ and replace
+    \begin{equation}
+    \max_s J_s
+    \end{equation}
+    with smooth algebraic inequalities.
+
+    \item Write the resulting objective and all epigraph constraints.
+
+    \item Add scenario-wise path constraints
+    \begin{equation}
+    \mathbf{g}_s
+    \left(
+    \mathbf{x}_s,
+    \mathbf{u}_s,
+    \mathbf{x}_p,
+    t
+    \right)
+    \leq\mathbf{0}.
+    \end{equation}
+
+    \item Add the common actuator-capacity variable $F_{\max}$ and impose
+    \begin{equation}
+    |u_s(t)|\leq F_{\max},
+    \qquad
+    s=1,\ldots,N_s.
+    \end{equation}
+
+    \item Now assume that one causal feedback controller
+    \begin{equation}
+    \mathbf{u}_s(t)
+    =
+    \boldsymbol{\pi}
+    \left(
+    \mathbf{y}_s(t);
+    \mathbf{x}_c
+    \right)
+    \end{equation}
+    must be shared by all scenarios. Rewrite the decision-variable set.
+
+    \item Explain the difference between scenario-dependent open-loop
+    controls and a common feedback law from the viewpoint of information
+    availability and implementability.
+
+    \item If each scenario has $n_x$ states, $n_u$ controls, and $N+1$
+    transcription nodes, determine the total number of trajectory decision
+    variables for:
+    \begin{enumerate}
+        \item scenario-dependent open-loop controls;
+        \item common parameterized feedback with $n_c$ controller parameters.
+    \end{enumerate}
+\end{enumerate}
+
+
+\subsection*{Problem 6: Multiphase Hybrid Control Co-Design Formulation}
+
+A robotic system performs two phases:
+
+\begin{enumerate}
+    \item a free-motion phase,
+    \item a contact phase.
+\end{enumerate}
+
+During phase 1,
+\begin{equation}
+\dot{\mathbf{x}}^{(1)}
+=
+\mathbf{f}^{(1)}
+\left(
+\mathbf{x}^{(1)},
+\mathbf{u}^{(1)},
+\mathbf{x}_p,
+t
+\right),
+\qquad
+t\in[t_0,t_s].
+\end{equation}
+
+At contact, the state undergoes the jump
+\begin{equation}
+\mathbf{x}^{(2)}(t_s^+)
+=
+\boldsymbol{\Delta}
+\left(
+\mathbf{x}^{(1)}(t_s^-),
+\mathbf{x}_p
+\right).
+\end{equation}
+
+During phase 2,
+\begin{equation}
+\dot{\mathbf{x}}^{(2)}
+=
+\mathbf{f}^{(2)}
+\left(
+\mathbf{x}^{(2)},
+\mathbf{u}^{(2)},
+\mathbf{x}_p,
+t
+\right),
+\qquad
+t\in[t_s,t_f].
+\end{equation}
+
+The switching time $t_s$ and final time $t_f$ are decision variables.
+
+The objective is
+\begin{align}
+J
+=&
+\int_{t_0}^{t_s}
+L^{(1)}
+\left(
+\mathbf{x}^{(1)},
+\mathbf{u}^{(1)},
+\mathbf{x}_p,
+t
+\right)dt
+\nonumber\\
+&+
+\int_{t_s}^{t_f}
+L^{(2)}
+\left(
+\mathbf{x}^{(2)},
+\mathbf{u}^{(2)},
+\mathbf{x}_p,
+t
+\right)dt
++
+\Phi
+\left(
+\mathbf{x}^{(2)}(t_f),
+\mathbf{x}_p,
+t_f
+\right).
+\end{align}
+
+\begin{enumerate}
+    \item Write the full multiphase CCD decision set, including plant
+    variables, both state trajectories, both control trajectories, $t_s$,
+    and $t_f$.
+
+    \item Write the dynamic equality constraints for both phases.
+
+    \item Write the phase-linkage constraint associated with the jump map.
+
+    \item Add the event condition
+    \begin{equation}
+    h_{\mathrm{contact}}
+    \left(
+    \mathbf{x}^{(1)}(t_s^-),
+    \mathbf{x}_p
+    \right)
+    =
+    0.
+    \end{equation}
+
+    \item Add the time-ordering constraints
+    \begin{equation}
+    t_0<t_s<t_f.
+    \end{equation}
+
+    \item Suppose the normal contact force in phase 2 is
+    \begin{equation}
+    F_n
+    =
+    \psi
+    \left(
+    \mathbf{x}^{(2)},
+    \mathbf{u}^{(2)},
+    \mathbf{x}_p
+    \right).
+    \end{equation}
+    Write the unilateral-contact path constraint.
+
+    \item Suppose the impact impulse must satisfy
+    \begin{equation}
+    I
+    \left(
+    \mathbf{x}^{(1)}(t_s^-),
+    \mathbf{x}_p
+    \right)
+    \leq I_{\max}.
+    \end{equation}
+    Classify this as a path or boundary constraint and justify your answer.
+
+    \item Convert both phases to fixed normalized-time intervals
+    \begin{equation}
+    \tau_1,\tau_2\in[0,1].
+    \end{equation}
+    Derive the scaled dynamics for each phase.
+
+    \item Explain why using one continuous dynamic model without the jump
+    map would produce an incorrect formulation.
+
+    \item Describe how the formulation would change if the contact sequence
+    itself were an architecture decision rather than fixed in advance.
+\end{enumerate}

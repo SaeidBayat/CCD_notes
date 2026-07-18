@@ -1,0 +1,654 @@
+
+\section{Advanced Activities}
+
+The following activities are intended for strong master's or PhD students.
+They deepen the central ideas of this chapter: plant--control coupling,
+system-level objectives, the performance loss caused by sequential design,
+control authority, implementation realism, and the conditions under which
+control co-design is worth the additional modeling and computational effort.
+
+\subsection*{Problem 1: Exact Sequential versus Simultaneous Co-Design}
+
+Consider the coupled quadratic design problem
+\begin{equation}
+J(p,c)
+=
+4p^2+3c^2+4pc-12p-10c+20,
+\end{equation}
+where $p$ is a plant-design variable and $c$ is a controller-design
+variable. The design bounds are
+\begin{equation}
+0\leq p\leq3,
+\qquad
+0\leq c\leq3.
+\end{equation}
+
+\begin{enumerate}
+    \item Compute the Hessian of $J$ and determine whether the problem is
+    strictly convex.
+
+    \item In a single-pass sequential workflow, set the nominal controller
+    to
+    \begin{equation}
+    \hat{c}=0.
+    \end{equation}
+    First optimize $p$, then freeze $p$ and optimize $c$. Compute
+    \begin{equation}
+    p_{\mathrm{seq}},
+    \qquad
+    c_{\mathrm{seq}},
+    \qquad
+    J_{\mathrm{seq}}.
+    \end{equation}
+
+    \item Solve the simultaneous CCD problem
+    \begin{equation}
+    \min_{p,c}J(p,c)
+    \end{equation}
+    analytically.
+
+    \item Compute the percentage improvement
+    \begin{equation}
+    \eta
+    =
+    \frac{
+    J_{\mathrm{seq}}-J_{\mathrm{CCD}}
+    }{
+    J_{\mathrm{seq}}
+    }
+    \times100\%.
+    \end{equation}
+
+    \item Repeat the sequential calculation using
+    \begin{equation}
+    \hat{c}=0.5,\ 1,\ 2.
+    \end{equation}
+    Determine how strongly the final sequential design depends on the
+    assumed nominal controller.
+
+    \item Derive the value of $\hat{c}$ for which the single-pass sequential
+    workflow reproduces the simultaneous optimum exactly.
+
+    \item Explain why this special value does not make sequential design
+    generally equivalent to CCD.
+\end{enumerate}
+
+
+\subsection*{Problem 2: Quantifying Plant--Control Coupling}
+
+Consider the parameterized system-level objective
+\begin{equation}
+J(p,c;\gamma)
+=
+\frac{1}{2}a p^2
++
+\frac{1}{2}b c^2
++
+\gamma pc
+-
+r_p p
+-
+r_c c,
+\end{equation}
+where
+\begin{equation}
+a>0,
+\qquad
+b>0.
+\end{equation}
+
+The scalar $\gamma$ represents plant--control coupling strength.
+
+\begin{enumerate}
+    \item Derive the condition on $\gamma$ for $J$ to be strictly convex.
+
+    \item Derive the optimal controller for a fixed plant:
+    \begin{equation}
+    c^*(p).
+    \end{equation}
+
+    \item Compute the controller sensitivity
+    \begin{equation}
+    \frac{dc^*}{dp}.
+    \end{equation}
+
+    \item Derive the optimal plant for a fixed controller:
+    \begin{equation}
+    p^*(c),
+    \end{equation}
+    and compute
+    \begin{equation}
+    \frac{dp^*}{dc}.
+    \end{equation}
+
+    \item Show that both sensitivities vanish when
+    \begin{equation}
+    \gamma=0.
+    \end{equation}
+
+    \item Solve for the simultaneous optimum
+    \begin{equation}
+    p^*(\gamma),
+    \qquad
+    c^*(\gamma).
+    \end{equation}
+
+    \item Use
+    \begin{equation}
+    a=4,
+    \qquad
+    b=3,
+    \qquad
+    r_p=6,
+    \qquad
+    r_c=5,
+    \end{equation}
+    and evaluate the optimum for
+    \begin{equation}
+    \gamma
+    \in
+    \{0,\ 0.5,\ 1,\ 2,\ 3\}.
+    \end{equation}
+
+    \item Plot
+    \begin{equation}
+    \left|
+    \frac{dc^*}{dp}
+    \right|
+    \end{equation}
+    and the sequential performance loss as functions of $\gamma$.
+
+    \item Propose a dimensionless coupling index based on the Hessian
+    cross-term and justify your choice.
+\end{enumerate}
+
+
+\subsection*{Problem 3: Control Authority and the Value of Integration}
+
+Consider
+\begin{equation}
+m\ddot{x}+c\dot{x}+kx=u,
+\end{equation}
+with
+\begin{equation}
+m=1,
+\qquad
+x(0)=1,
+\qquad
+\dot{x}(0)=0.
+\end{equation}
+
+Use the PD controller
+\begin{equation}
+u=-K_px-K_d\dot{x},
+\end{equation}
+with
+\begin{equation}
+0\leq K_p\leq K_{p,\max},
+\qquad
+0\leq K_d\leq K_{d,\max}.
+\end{equation}
+
+The plant-design variables satisfy
+\begin{equation}
+0.1\leq k\leq6,
+\qquad
+0.05\leq c\leq3.
+\end{equation}
+
+Define
+\begin{equation}
+A_{\mathrm{cl}}
+=
+\begin{bmatrix}
+0&1\\
+-(k+K_p)&-(c+K_d)
+\end{bmatrix}.
+\end{equation}
+
+For stable designs, let $P$ solve
+\begin{equation}
+A_{\mathrm{cl}}^TP
++
+PA_{\mathrm{cl}}
++
+Q
++
+K^TRK
+=
+0,
+\end{equation}
+where
+\begin{equation}
+Q=
+\begin{bmatrix}
+1&0\\
+0&0.05
+\end{bmatrix},
+\qquad
+R=0.02,
+\qquad
+K=
+\begin{bmatrix}
+K_p&K_d
+\end{bmatrix}.
+\end{equation}
+
+Define the total cost
+\begin{equation}
+J
+=
+\mathbf{x}_0^TP\mathbf{x}_0
++
+0.02k^2
++
+0.03c^2,
+\qquad
+\mathbf{x}_0=
+\begin{bmatrix}
+1\\0
+\end{bmatrix}.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the closed-loop stability conditions.
+
+    \item Explain why
+    \begin{equation}
+    \mathbf{x}_0^TP\mathbf{x}_0
+    \end{equation}
+    equals the infinite-horizon dynamic performance cost.
+
+    \item For
+    \begin{equation}
+    K_{p,\max}
+    =
+    K_{d,\max}
+    \in
+    \{0,\ 0.5,\ 1,\ 2,\ 4,\ 8\},
+    \end{equation}
+    solve:
+    \begin{enumerate}
+        \item the passive-first sequential problem;
+        \item the simultaneous CCD problem.
+    \end{enumerate}
+
+    \item Plot the relative CCD advantage
+    \begin{equation}
+    \eta_{\mathrm{CCD}}
+    =
+    \frac{
+    J_{\mathrm{seq}}-J_{\mathrm{CCD}}
+    }{
+    J_{\mathrm{seq}}
+    }
+    \end{equation}
+    against allowable control authority.
+
+    \item Determine whether the coupling becomes weak as the allowable
+    controller gains approach zero.
+
+    \item Determine whether unlimited control authority drives the optimal
+    passive stiffness and damping to their lower bounds.
+
+    \item Add the actuator-effort regularization
+    \begin{equation}
+    \beta(K_p^2+K_d^2)
+    \end{equation}
+    with
+    \begin{equation}
+    \beta\in\{0,\ 10^{-3},\ 10^{-2},\ 10^{-1}\},
+    \end{equation}
+    and repeat the study.
+
+    \item Explain why strong control authority does not automatically imply
+    that the most active design is the most practical design.
+\end{enumerate}
+
+
+\subsection*{Problem 4: System-Level Objective and Hidden Tradeoffs}
+
+An active suspension study uses the weighted objective
+\begin{equation}
+J
+=
+w_aJ_a
++
+w_tJ_t
++
+w_uJ_u
++
+w_mJ_m,
+\end{equation}
+where
+\begin{align}
+J_a&=\int_0^T a_s(t)^2dt,\\
+J_t&=\int_0^T \Delta z_t(t)^2dt,\\
+J_u&=\int_0^T F(t)^2dt,\\
+J_m&=M(\mathbf{x}_p).
+\end{align}
+
+Two feasible designs produce the normalized metrics
+\begin{equation}
+\mathbf{J}^{(A)}
+=
+\begin{bmatrix}
+0.60\\
+1.10\\
+1.45\\
+0.75
+\end{bmatrix},
+\qquad
+\mathbf{J}^{(B)}
+=
+\begin{bmatrix}
+0.85\\
+0.80\\
+0.70\\
+1.10
+\end{bmatrix}.
+\end{equation}
+
+\begin{enumerate}
+    \item Determine the region of nonnegative weight vectors
+    \begin{equation}
+    \mathbf{w}
+    =
+    \begin{bmatrix}
+    w_a&w_t&w_u&w_m
+    \end{bmatrix}^{T},
+    \qquad
+    \sum_iw_i=1,
+    \end{equation}
+    for which design $A$ is preferred.
+
+    \item Determine the region for which design $B$ is preferred.
+
+    \item Show that neither design dominates the other in the Pareto sense.
+
+    \item Use the weight vectors
+    \begin{align}
+    \mathbf{w}^{(1)}
+    &=
+    \begin{bmatrix}
+    0.55&0.20&0.15&0.10
+    \end{bmatrix}^{T},
+    \\
+    \mathbf{w}^{(2)}
+    &=
+    \begin{bmatrix}
+    0.25&0.25&0.25&0.25
+    \end{bmatrix}^{T},
+    \\
+    \mathbf{w}^{(3)}
+    &=
+    \begin{bmatrix}
+    0.20&0.25&0.15&0.40
+    \end{bmatrix}^{T},
+    \end{align}
+    and determine which design is selected in each case.
+
+    \item Suppose passenger comfort must satisfy the hard requirement
+    \begin{equation}
+    J_a\leq0.75.
+    \end{equation}
+    Determine which designs remain feasible.
+
+    \item Suppose actuator effort must satisfy
+    \begin{equation}
+    J_u\leq1.
+    \end{equation}
+    Determine which designs remain feasible.
+
+    \item Explain why moving an engineering requirement from the objective
+    to a constraint can change the selected CCD solution even when the same
+    physical metric is used.
+
+    \item Construct a third feasible design $C$ that dominates either $A$
+    or $B$ but not both.
+
+    \item Explain why reporting only the aggregate weighted objective can
+    hide an unacceptable engineering compromise.
+\end{enumerate}
+
+
+\subsection*{Problem 5: Ideal Actuator versus Implementable Actuator}
+
+Consider the plant
+\begin{equation}
+\dot{x}=-x+f_a+d(t),
+\qquad
+x(0)=0,
+\end{equation}
+where
+\begin{equation}
+d(t)=\sin(4t).
+\end{equation}
+
+An idealized study assumes
+\begin{equation}
+f_a(t)=u_c(t).
+\end{equation}
+
+A more realistic actuator satisfies
+\begin{equation}
+\dot{f}_a
+=
+\omega_a
+\left(
+u_c-f_a
+\right),
+\end{equation}
+with
+\begin{equation}
+|u_c(t)|\leq F_{\max}.
+\end{equation}
+
+The actuator design variables are
+\begin{equation}
+0.5\leq F_{\max}\leq5,
+\qquad
+2\leq\omega_a\leq50.
+\end{equation}
+
+Minimize
+\begin{equation}
+J
+=
+\int_0^{10}
+\left(
+x(t)^2
++
+0.02u_c(t)^2
+\right)dt
++
+0.05F_{\max}^2
++
+\frac{0.1}{\omega_a}.
+\end{equation}
+
+\begin{enumerate}
+    \item For the ideal actuator, derive the control command that would
+    cancel the disturbance exactly while maintaining
+    \begin{equation}
+    x(t)=0.
+    \end{equation}
+
+    \item Determine the minimum ideal actuator capacity required for exact
+    disturbance cancellation.
+
+    \item For the finite-bandwidth actuator, derive the steady-state
+    sinusoidal amplitude and phase of $f_a(t)$ when
+    \begin{equation}
+    u_c(t)=-\sin(4t).
+    \end{equation}
+
+    \item Derive the resulting steady-state amplitude of $x(t)$.
+
+    \item Evaluate the state-response amplitude for
+    \begin{equation}
+    \omega_a
+    \in
+    \{2,\ 4,\ 8,\ 16,\ 32,\ 50\}.
+    \end{equation}
+
+    \item Determine the smallest actuator bandwidth for which the state
+    amplitude is within $5\%$ of the ideal-actuator prediction.
+
+    \item Optimize $F_{\max}$ and $\omega_a$ for the realistic model using a
+    suitable numerical method.
+
+    \item Explain why a low objective obtained with the ideal actuator model
+    is not sufficient evidence of a useful CCD result.
+
+    \item Identify at least three other implementation effects that could
+    invalidate an apparently strong CCD solution.
+\end{enumerate}
+
+
+\subsection*{Problem 6: When Is Control Co-Design Worth Using?}
+
+A design team may choose either a sequential process or a CCD process.
+
+For project $i$, define:
+\begin{equation}
+V_i
+=
+\text{expected lifecycle value of performance improvement},
+\end{equation}
+\begin{equation}
+C_i
+=
+\text{additional modeling and computational cost of CCD},
+\end{equation}
+and
+\begin{equation}
+R_i
+=
+\text{expected cost of model or implementation failure}.
+\end{equation}
+
+The expected net value of CCD is
+\begin{equation}
+N_i
+=
+V_i-C_i-R_i.
+\end{equation}
+
+For a stylized dynamic system, assume
+\begin{equation}
+V
+=
+V_0
+\left[
+1-
+\exp
+\left(
+-\alpha A\Gamma
+\right)
+\right],
+\end{equation}
+where:
+\begin{equation}
+A\geq0
+\end{equation}
+is normalized control authority and
+\begin{equation}
+\Gamma\geq0
+\end{equation}
+is normalized plant--control coupling strength.
+
+Assume
+\begin{equation}
+C
+=
+C_0+C_1n_pn_c+C_2N_s,
+\end{equation}
+where $n_p$ and $n_c$ are the numbers of plant and controller variables and
+$N_s$ is the number of uncertainty scenarios.
+
+Assume
+\begin{equation}
+R
+=
+R_0
+\exp
+\left(
+-\beta F
+\right),
+\end{equation}
+where
+\begin{equation}
+0\leq F\leq1
+\end{equation}
+is a normalized model-fidelity and validation score.
+
+Use
+\begin{equation}
+V_0=100,
+\qquad
+\alpha=0.8,
+\qquad
+C_0=5,
+\end{equation}
+\begin{equation}
+C_1=0.15,
+\qquad
+C_2=0.5,
+\qquad
+R_0=40,
+\qquad
+\beta=3.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the break-even condition
+    \begin{equation}
+    N=0.
+    \end{equation}
+
+    \item For
+    \begin{equation}
+    n_p=8,
+    \qquad
+    n_c=5,
+    \qquad
+    N_s=10,
+    \end{equation}
+    compute the minimum product
+    \begin{equation}
+    A\Gamma
+    \end{equation}
+    required for CCD to have positive expected net value when
+    \begin{equation}
+    F=0.8.
+    \end{equation}
+
+    \item Repeat for
+    \begin{equation}
+    F=0.3,\ 0.5,\ 1.
+    \end{equation}
+
+    \item Plot the break-even boundary in the $(A,\Gamma)$ plane.
+
+    \item Determine how the break-even boundary changes when the number of
+    uncertainty scenarios increases.
+
+    \item Explain why high coupling and high control authority favor CCD.
+
+    \item Explain why poor model fidelity can eliminate the expected value
+    of CCD even when the numerical optimization predicts a large
+    performance improvement.
+
+    \item Use the model to compare the following projects:
+    \begin{enumerate}
+        \item a legacy machine with nearly fixed hardware and weak control
+        authority;
+        \item a flexible robot with strong sensing and actuation;
+        \item a new floating wind platform with uncertain hydrodynamics;
+        \item a regulated product with fixed plant architecture.
+    \end{enumerate}
+
+    \item Discuss the limitations of using a single scalar net-value model to
+    decide whether CCD should be pursued.
+\end{enumerate}

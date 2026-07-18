@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img" aria-labelledby="title desc">
+  <title id="title">Control co-design overview</title>
+  <desc id="desc">Physical and control design decisions influence one another through plant-control coupling. They are optimized jointly subject to coupled dynamics, objectives, and constraints. The resulting plant and controller form one integrated dynamic system, which is analyzed, optimized, and validated for higher performance, greater robustness, and lower resource use while satisfying physical and operational constraints.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbfd"/>
+      <stop offset="1" stop-color="#edf3f7"/>
+    </linearGradient>
+    <linearGradient id="ccd" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#003b70"/>
+      <stop offset="1" stop-color="#006374"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="7" flood-color="#00274c" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrowNavy" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#173f5f"/>
+    </marker>
+    <marker id="arrowGold" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10Z" fill="#c79000"/>
+    </marker>
+    <style>
+      .label { font: 700 23px Avenir, Helvetica, Arial, sans-serif; fill: #00274c; }
+      .detail { font: 500 15.5px Avenir, Helvetica, Arial, sans-serif; fill: #294b63; }
+      .center-label { font: 750 29px Avenir, Helvetica, Arial, sans-serif; fill: #ffffff; }
+      .center-detail { font: 500 16px Avenir, Helvetica, Arial, sans-serif; fill: #ffffff; }
+      .system-label { font: 700 19px Avenir, Helvetica, Arial, sans-serif; fill: #00274c; }
+      .metric { font: 650 16.5px Avenir, Helvetica, Arial, sans-serif; fill: #00274c; }
+      .small { font: 700 14px Avenir, Helvetica, Arial, sans-serif; fill: #604b15; letter-spacing: 0.035em; }
+      .constraint { font: 500 13.5px Avenir, Helvetica, Arial, sans-serif; fill: #294b63; }
+    </style>
+  </defs>
+
+  <rect x="8" y="8" width="1184" height="504" rx="28" fill="url(#background)" stroke="#b8cad6" stroke-width="2"/>
+
+  <!-- Physical and control decisions: identical size and symmetric placement. -->
+  <g filter="url(#shadow)">
+    <rect x="55" y="48" width="320" height="160" rx="20" fill="#ffffff" stroke="#4f86b5" stroke-width="3"/>
+    <circle cx="96" cy="88" r="18" fill="#4f86b5"/>
+    <path d="M88 88h16M96 80v16" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <text x="126" y="95" class="label">Physical Design</text>
+    <text x="84" y="129" class="detail">geometry • materials • dimensions</text>
+    <text x="84" y="154" class="detail">topology • component selection</text>
+    <text x="84" y="179" class="detail">sensors • actuators • physical limits</text>
+
+    <rect x="55" y="312" width="320" height="160" rx="20" fill="#ffffff" stroke="#3b958d" stroke-width="3"/>
+    <circle cx="96" cy="352" r="18" fill="#3b958d"/>
+    <path d="M85 355c7-17 15 12 23-6" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+    <text x="126" y="359" class="label">Control Design</text>
+    <text x="84" y="393" class="detail">feedback laws • optimal trajectories</text>
+    <text x="84" y="418" class="detail">state estimation • prediction</text>
+    <text x="84" y="443" class="detail">information availability • computation</text>
+  </g>
+
+  <!-- Direct two-way plant-control interaction. -->
+  <path d="M96 218V302" fill="none" stroke="#173f5f" stroke-width="3.5" marker-start="url(#arrowNavy)" marker-end="url(#arrowNavy)"/>
+  <rect x="122" y="237" width="223" height="45" rx="12" fill="#edf3f7" stroke="#9eb5c4" stroke-width="1.5"/>
+  <text x="233.5" y="265" class="system-label" text-anchor="middle">Plant–Control Coupling</text>
+
+  <!-- Both decision sets enter the joint optimization. -->
+  <path d="M375 128C425 128 428 184 466 207" fill="none" stroke="#173f5f" stroke-width="4" marker-end="url(#arrowNavy)"/>
+  <path d="M375 392C425 392 428 336 466 313" fill="none" stroke="#173f5f" stroke-width="4" marker-end="url(#arrowNavy)"/>
+
+  <!-- Central CCD block remains the visual focus. -->
+  <g filter="url(#shadow)">
+    <rect x="468" y="151" width="326" height="218" rx="42" fill="url(#ccd)"/>
+    <path d="M525 246a106 106 0 0 1 205-13" fill="none" stroke="#ffcb05" stroke-width="5" stroke-linecap="round" opacity="0.28" marker-end="url(#arrowGold)"/>
+    <path d="M736 274a106 106 0 0 1-205 13" fill="none" stroke="#ffcb05" stroke-width="5" stroke-linecap="round" opacity="0.28" marker-end="url(#arrowGold)"/>
+    <text x="631" y="208" class="center-label" text-anchor="middle">Control Co-Design</text>
+    <line x1="524" y1="225" x2="738" y2="225" stroke="#ffcb05" stroke-width="2.5" opacity="0.9"/>
+    <text x="631" y="257" class="center-detail" text-anchor="middle">Joint optimization of physical and</text>
+    <text x="631" y="282" class="center-detail" text-anchor="middle">control decisions subject to coupled</text>
+    <text x="631" y="307" class="center-detail" text-anchor="middle">dynamics, objectives, and constraints</text>
+  </g>
+
+  <path d="M794 260H833" fill="none" stroke="#173f5f" stroke-width="5" marker-end="url(#arrowNavy)"/>
+
+  <!-- Integrated outcome, deliberately smaller than the CCD block. -->
+  <g filter="url(#shadow)">
+    <rect x="840" y="92" width="300" height="320" rx="23" fill="#ffffff" stroke="#173f5f" stroke-width="3"/>
+    <text x="990" y="128" class="small" text-anchor="middle">INTEGRATED DYNAMIC SYSTEM</text>
+    <rect x="870" y="151" width="240" height="78" rx="15" fill="#edf4fa" stroke="#4f86b5" stroke-width="2"/>
+    <text x="990" y="182" class="label" text-anchor="middle">Plant + Controller</text>
+    <text x="990" y="210" class="detail" text-anchor="middle">designed as one system</text>
+    <line x1="870" y1="253" x2="1110" y2="253" stroke="#cbd8e0" stroke-width="2"/>
+    <circle cx="876" cy="282" r="7" fill="#d69f00" stroke="#7b5d00" stroke-width="1"/>
+    <text x="896" y="288" class="metric">Higher performance</text>
+    <circle cx="876" cy="317" r="7" fill="#d69f00" stroke="#7b5d00" stroke-width="1"/>
+    <text x="896" y="323" class="metric">Greater robustness</text>
+    <circle cx="876" cy="352" r="7" fill="#d69f00" stroke="#7b5d00" stroke-width="1"/>
+    <text x="896" y="358" class="metric">Lower cost, energy, resources</text>
+    <text x="990" y="390" class="constraint" text-anchor="middle">Physical and operational constraints satisfied</text>
+  </g>
+
+</svg>

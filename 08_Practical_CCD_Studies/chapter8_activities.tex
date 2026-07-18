@@ -1,0 +1,807 @@
+
+\section{Advanced Activities}
+
+The following activities are intended for strong master's or PhD students.
+They integrate the main ideas developed throughout the course through
+active-suspension and wind--wave-energy applications. The activities emphasize
+fair architecture comparison, robustness, surrogate and multi-fidelity
+modeling, implementable hardware, and reproducible validation. MATLAB, Python,
+OpenMDAO, GPOPS-II, Dymos, IPOPT, SNOPT, or equivalent tools may be used where
+specified.
+
+\subsection*{Problem 1: Full Active-Suspension CCD Benchmark}
+
+Consider the quarter-car suspension model
+\begin{align}
+m_s\ddot{z}_s
+&=
+-k_s(z_s-z_u)
+-c_s(\dot{z}_s-\dot{z}_u)
++f_a,
+\\
+m_u\ddot{z}_u
+&=
+k_s(z_s-z_u)
++c_s(\dot{z}_s-\dot{z}_u)
+-k_t(z_u-z_r)
+-f_a,
+\end{align}
+with actuator dynamics
+\begin{equation}
+\dot{f}_a
+=
+\omega_a
+\left(
+f_c-f_a
+\right).
+\end{equation}
+
+Use
+\begin{equation}
+m_s=300~\mathrm{kg},
+\qquad
+m_u=40~\mathrm{kg},
+\qquad
+k_t=190\,000~\mathrm{N/m},
+\end{equation}
+and
+\begin{equation}
+\omega_a=60~\mathrm{rad/s}.
+\end{equation}
+
+The plant-design variables are
+\begin{equation}
+10\,000\leq k_s\leq40\,000~\mathrm{N/m},
+\end{equation}
+\begin{equation}
+500\leq c_s\leq3500~\mathrm{N\,s/m},
+\end{equation}
+and
+\begin{equation}
+500\leq F_{\max}\leq4000~\mathrm{N}.
+\end{equation}
+
+Use the causal feedback controller
+\begin{equation}
+f_c(t)
+=
+\operatorname{sat}
+\left[
+-K_1(z_s-z_u)
+-K_2(\dot{z}_s-\dot{z}_u)
+-K_3(z_u-z_r)
+-K_4\dot{z}_u,
+F_{\max}
+\right].
+\end{equation}
+
+The controller gains satisfy
+\begin{equation}
+0\leq K_1\leq60\,000,
+\qquad
+0\leq K_2\leq6000,
+\end{equation}
+\begin{equation}
+0\leq K_3\leq80\,000,
+\qquad
+0\leq K_4\leq6000.
+\end{equation}
+
+The road input is a half-cosine bump:
+\begin{equation}
+z_r(t)
+=
+\begin{cases}
+\dfrac{h_b}{2}
+\left[
+1-\cos
+\left(
+\dfrac{2\pi(t-t_b)}{T_b}
+\right)
+\right],
+&
+t_b\leq t\leq t_b+T_b,
+\\[1em]
+0,
+&
+\text{otherwise},
+\end{cases}
+\end{equation}
+with
+\begin{equation}
+h_b=0.05~\mathrm{m},
+\qquad
+t_b=0.25~\mathrm{s},
+\qquad
+T_b=0.10~\mathrm{s}.
+\end{equation}
+
+Use the system-level objective
+\begin{align}
+J
+=&
+\frac{1}{T}
+\int_0^T
+\Bigg[
+0.45
+\left(
+\frac{\ddot{z}_s}{2.5}
+\right)^2
++
+0.20
+\left(
+\frac{z_u-z_r}{0.015}
+\right)^2
+\nonumber\\
+&\qquad
++
+0.20
+\left(
+\frac{z_s-z_u}{0.05}
+\right)^2
++
+0.10
+\left(
+\frac{f_c}{3000}
+\right)^2
+\Bigg]dt
+\nonumber\\
+&+
+0.05
+\left(
+\frac{F_{\max}}{3000}
+\right)^2
++
+0.02
+\left(
+\frac{k_s}{25\,000}
+\right)^2
++
+0.02
+\left(
+\frac{c_s}{2000}
+\right)^2,
+\end{align}
+with
+\begin{equation}
+T=2~\mathrm{s}.
+\end{equation}
+
+Impose
+\begin{equation}
+|z_s-z_u|\leq0.08~\mathrm{m},
+\end{equation}
+\begin{equation}
+|z_u-z_r|\leq0.025~\mathrm{m},
+\end{equation}
+\begin{equation}
+|f_c|\leq F_{\max},
+\qquad
+|f_a|\leq F_{\max}.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the five-state nonlinear closed-loop model.
+
+    \item Formulate the single-pass sequential design:
+    \begin{enumerate}
+        \item optimize $k_s$, $c_s$, and $F_{\max}$ using a fixed nominal
+        controller;
+        \item freeze the plant and optimize $K_1,\ldots,K_4$.
+    \end{enumerate}
+
+    \item Formulate the nested design
+    \begin{equation}
+    \min_{k_s,c_s,F_{\max}}
+    \left[
+    \min_{K_1,\ldots,K_4}
+    J
+    \right].
+    \end{equation}
+
+    \item Formulate the simultaneous CCD problem.
+
+    \item Solve all three formulations using identical dynamics, constraints,
+    integration tolerances, initial conditions, and objective weights.
+
+    \item Use at least ten initial guesses for the nested and simultaneous
+    formulations.
+
+    \item Compare the best designs in terms of:
+    \begin{equation}
+    J^*,
+    \quad
+    k_s^*,
+    \quad
+    c_s^*,
+    \quad
+    F_{\max}^*,
+    \quad
+    K_1^*,\ldots,K_4^*.
+    \end{equation}
+
+    \item Verify every candidate design using an independent high-accuracy
+    forward simulation and a time grid at least ten times finer than the
+    optimization grid.
+
+    \item Explain any disagreement between the nested and simultaneous
+    results in terms of local minima, inner-loop convergence, derivatives,
+    scaling, and solver termination criteria.
+\end{enumerate}
+
+
+\subsection*{Problem 2: Robust Suspension Design using Expected Value, Worst Case, and CVaR}
+
+Use the suspension model from Problem 1. Define the uncertain sprung mass
+\begin{equation}
+m_s
+\in
+\{240,\ 300,\ 360\}~\mathrm{kg},
+\end{equation}
+and the uncertain bump height
+\begin{equation}
+h_b
+\in
+\{0.03,\ 0.05,\ 0.07\}~\mathrm{m}.
+\end{equation}
+
+This produces nine equally probable scenarios. Let the scenario objective be
+\begin{equation}
+J_s(\mathbf{x}_p,\mathbf{x}_c),
+\qquad
+s=1,\ldots,9.
+\end{equation}
+
+\begin{enumerate}
+    \item Formulate the expected-value problem
+    \begin{equation}
+    \min_{\mathbf{x}_p,\mathbf{x}_c}
+    \frac{1}{9}
+    \sum_{s=1}^{9}J_s.
+    \end{equation}
+
+    \item Formulate the worst-case problem using an epigraph variable $\eta$:
+    \begin{align}
+    \min_{\mathbf{x}_p,\mathbf{x}_c,\eta}
+    \quad
+    & \eta,
+    \\
+    \text{subject to}
+    \quad
+    & J_s\leq\eta,
+    \qquad
+    s=1,\ldots,9.
+    \end{align}
+
+    \item Formulate the combined mean--worst-case problem
+    \begin{equation}
+    \min
+    \quad
+    \frac{1}{9}
+    \sum_{s=1}^{9}J_s
+    +
+    \lambda\eta,
+    \end{equation}
+    for
+    \begin{equation}
+    \lambda
+    \in
+    \{0,\ 0.1,\ 0.5,\ 1,\ 2\}.
+    \end{equation}
+
+    \item Formulate the empirical CVaR objective at confidence level
+    \begin{equation}
+    \alpha=0.9
+    \end{equation}
+    using auxiliary variables $\xi_s$:
+    \begin{equation}
+    \operatorname{CVaR}_{\alpha}
+    =
+    \eta
+    +
+    \frac{1}{(1-\alpha)N_s}
+    \sum_{s=1}^{N_s}\xi_s,
+    \end{equation}
+    subject to
+    \begin{equation}
+    \xi_s\geq J_s-\eta,
+    \qquad
+    \xi_s\geq0.
+    \end{equation}
+
+    \item Require every path constraint to hold in all nine scenarios.
+
+    \item Solve the nominal, expected-value, worst-case, and CVaR designs.
+
+    \item Compare:
+    \begin{equation}
+    J_{\mathrm{nominal}},
+    \qquad
+    \mathbb{E}[J],
+    \qquad
+    \max_sJ_s,
+    \qquad
+    \operatorname{CVaR}_{0.9}.
+    \end{equation}
+
+    \item Quantify the nominal-performance penalty of robustness.
+
+    \item Determine which plant and controller variables change most strongly
+    when moving from nominal to robust design.
+
+    \item Explain why a robust design can have a worse nominal objective but
+    still be the more credible engineering design.
+\end{enumerate}
+
+
+\subsection*{Problem 3: Surrogate-Assisted Wind-Turbine CCD with Adaptive Infill}
+
+Consider a simplified floating-wind CCD problem with plant variables
+\begin{equation}
+\mathbf{x}_p
+=
+\begin{bmatrix}
+D_p&
+K_m&
+C_m
+\end{bmatrix}^{T},
+\end{equation}
+where $D_p$ is a platform-dimension parameter, $K_m$ is an effective mooring
+stiffness, and $C_m$ is an effective mooring damping parameter.
+
+The controller variables are
+\begin{equation}
+\mathbf{x}_c
+=
+\begin{bmatrix}
+K_{\Omega}&
+K_{\theta}&
+K_{\dot{\theta}}
+\end{bmatrix}^{T}.
+\end{equation}
+
+A high-fidelity simulator returns
+\begin{equation}
+\mathbf{y}
+=
+\begin{bmatrix}
+P_{\mathrm{mean}}&
+\theta_{\mathrm{rms}}&
+M_{\mathrm{tower,max}}&
+T_{\mathrm{moor,max}}
+\end{bmatrix}^{T}.
+\end{equation}
+
+The system-level objective is
+\begin{align}
+J_{\mathrm{HF}}
+=&
+-
+\frac{P_{\mathrm{mean}}}{P_{\mathrm{ref}}}
++
+0.3
+\left(
+\frac{\theta_{\mathrm{rms}}}{\theta_{\mathrm{ref}}}
+\right)^2
+\nonumber\\
+&+
+0.2
+\left(
+\frac{M_{\mathrm{tower,max}}}{M_{\mathrm{ref}}}
+\right)^2
++
+0.1
+\left(
+\frac{T_{\mathrm{moor,max}}}{T_{\mathrm{ref}}}
+\right)^2
++
+C_{\mathrm{plant}}(\mathbf{x}_p).
+\end{align}
+
+\begin{enumerate}
+    \item Construct a Latin-hypercube design of experiments containing at
+    least 150 plant--controller samples.
+
+    \item Train separate Gaussian-process or radial-basis surrogates for all
+    four outputs.
+
+    \item Split the data into training, validation, and test sets, and report:
+    \begin{equation}
+    R^2,
+    \qquad
+    \mathrm{RMSE},
+    \qquad
+    \max|e|.
+    \end{equation}
+
+    \item Formulate the surrogate CCD problem, including high-fidelity output
+    constraints
+    \begin{equation}
+    M_{\mathrm{tower,max}}\leq M_{\mathrm{allow}},
+    \end{equation}
+    and
+    \begin{equation}
+    T_{\mathrm{moor,max}}\leq T_{\mathrm{allow}}.
+    \end{equation}
+
+    \item Solve the surrogate optimization from at least twenty initial
+    guesses.
+
+    \item Evaluate the best five surrogate candidates in the high-fidelity
+    model.
+
+    \item Define a combined infill criterion
+    \begin{equation}
+    \mathcal{I}(\mathbf{z})
+    =
+    \widehat{J}(\mathbf{z})
+    -
+    \kappa\sigma_J(\mathbf{z})
+    +
+    \rho\,V(\mathbf{z}),
+    \end{equation}
+    where $\sigma_J$ is predictive uncertainty and $V$ is a predicted
+    constraint-violation penalty.
+
+    \item Add at least five adaptive infill points per iteration and repeat
+    until the high-fidelity objective changes by less than
+    \begin{equation}
+    0.5\%.
+    \end{equation}
+
+    \item Compare the surrogate optimum and final high-fidelity optimum.
+
+    \item Explain why a surrogate that predicts only annual energy or mean
+    power is insufficient when transient loads appear in the constraints.
+\end{enumerate}
+
+
+\subsection*{Problem 4: Multi-Fidelity CCD with a Trust-Region Correction Model}
+
+Let
+\begin{equation}
+J_L(\mathbf{z})
+\end{equation}
+be a low-fidelity CCD objective and
+\begin{equation}
+J_H(\mathbf{z})
+\end{equation}
+the corresponding high-fidelity objective, where
+\begin{equation}
+\mathbf{z}
+=
+\begin{bmatrix}
+\mathbf{x}_p\\
+\mathbf{x}_c
+\end{bmatrix}.
+\end{equation}
+
+Define the discrepancy
+\begin{equation}
+\delta(\mathbf{z})
+=
+J_H(\mathbf{z})-J_L(\mathbf{z}).
+\end{equation}
+
+At iteration $k$, construct the corrected model
+\begin{equation}
+m_k(\mathbf{z})
+=
+J_L(\mathbf{z})
++
+\widehat{\delta}_k(\mathbf{z}),
+\end{equation}
+and solve
+\begin{equation}
+\min_{\mathbf{z}}
+\quad
+m_k(\mathbf{z})
+\end{equation}
+subject to
+\begin{equation}
+\left\|
+\mathbf{z}-\mathbf{z}^{(k)}
+\right\|_2
+\leq
+\Delta_k.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the predicted reduction
+    \begin{equation}
+    \Delta m_k
+    =
+    m_k(\mathbf{z}^{(k)})
+    -
+    m_k(\mathbf{z}^{(k)}+\mathbf{s}_k).
+    \end{equation}
+
+    \item Derive the actual high-fidelity reduction
+    \begin{equation}
+    \Delta J_{H,k}
+    =
+    J_H(\mathbf{z}^{(k)})
+    -
+    J_H(\mathbf{z}^{(k)}+\mathbf{s}_k).
+    \end{equation}
+
+    \item Define the trust-region ratio
+    \begin{equation}
+    \rho_k
+    =
+    \frac{\Delta J_{H,k}}
+    {\Delta m_k}.
+    \end{equation}
+
+    \item Propose explicit rules for:
+    \begin{enumerate}
+        \item accepting or rejecting the trial design;
+        \item shrinking the trust region;
+        \item expanding the trust region.
+    \end{enumerate}
+
+    \item Implement the method for a low-fidelity suspension or wind model
+    and a higher-fidelity validation model.
+
+    \item Use both additive correction
+    \begin{equation}
+    J_H\approx J_L+\widehat{\delta}
+    \end{equation}
+    and multiplicative correction
+    \begin{equation}
+    J_H\approx\widehat{\beta}J_L.
+    \end{equation}
+
+    \item Compare the two correction strategies in terms of:
+    \begin{equation}
+    \text{high-fidelity calls},
+    \quad
+    \text{final objective},
+    \quad
+    \text{constraint satisfaction}.
+    \end{equation}
+
+    \item Determine whether the low-fidelity optimum lies inside a region
+    where the correction model is accurate.
+
+    \item Explain why unconstrained optimization of a corrected surrogate can
+    be unreliable without a trust region or another mechanism that controls
+    extrapolation.
+\end{enumerate}
+
+
+\subsection*{Problem 5: From Optimized Suspension to Implementable Hardware}
+
+Use the optimized active-suspension design from Problem 1. Replace the ideal
+implementation with the sampled-data controller
+\begin{equation}
+f_{c,k}
+=
+\operatorname{sat}
+\left[
+-K\widehat{\mathbf{x}}_k,
+F_{\max}
+\right],
+\end{equation}
+where the controller is updated every
+\begin{equation}
+T_s
+\end{equation}
+seconds and held constant between updates.
+
+The sensor measurements satisfy
+\begin{equation}
+\mathbf{y}_k
+=
+C\mathbf{x}_k
++
+\mathbf{v}_k,
+\end{equation}
+where $\mathbf{v}_k$ is zero-mean measurement noise.
+
+The command is delayed by
+\begin{equation}
+n_d
+\end{equation}
+sampling intervals, and the actuator also satisfies
+\begin{equation}
+|\dot{f}_a|
+\leq
+R_{\max}.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive a discrete-time model using zero-order hold.
+
+    \item Construct a state observer or Kalman filter for the available
+    measurements.
+
+    \item Implement the delayed command
+    \begin{equation}
+    f_{c,k}^{\mathrm{applied}}
+    =
+    f_{c,k-n_d}.
+    \end{equation}
+
+    \item Impose the actuator-rate limit using
+    \begin{equation}
+    |f_{a,k+1}-f_{a,k}|
+    \leq
+    R_{\max}T_s.
+    \end{equation}
+
+    \item Evaluate
+    \begin{equation}
+    T_s
+    \in
+    \{0.001,\ 0.005,\ 0.01,\ 0.02,\ 0.05\}~\mathrm{s}
+    \end{equation}
+    and
+    \begin{equation}
+    n_d
+    \in
+    \{0,\ 1,\ 2,\ 5\}.
+    \end{equation}
+
+    \item Determine the largest sampling time and delay for which all path
+    constraints remain satisfied.
+
+    \item Add a passive-safety requirement: when the actuator is disabled,
+    the passive suspension must satisfy
+    \begin{equation}
+    |z_s-z_u|
+    \leq
+    0.10~\mathrm{m}.
+    \end{equation}
+
+    \item Re-optimize the plant and controller while including sampling time,
+    command delay, observer dynamics, force-rate limits, and passive safety.
+
+    \item Compare the ideal and implementable CCD designs in terms of:
+    \begin{equation}
+    J,
+    \quad
+    k_s,
+    \quad
+    c_s,
+    \quad
+    F_{\max},
+    \quad
+    \text{constraint margin}.
+    \end{equation}
+
+    \item Design a software-in-the-loop, hardware-in-the-loop, and bench-test
+    validation sequence for the final design.
+\end{enumerate}
+
+
+\subsection*{Problem 6: Independent Reproduction and Validation Audit}
+
+A research team reports an optimized CCD design
+\begin{equation}
+\mathbf{z}^*
+=
+\begin{bmatrix}
+\mathbf{x}_p^*\\
+\mathbf{x}_c^*
+\end{bmatrix},
+\end{equation}
+with reported objective
+\begin{equation}
+J_{\mathrm{reported}},
+\end{equation}
+maximum path-constraint violation below
+\begin{equation}
+10^{-6},
+\end{equation}
+and a claimed
+\begin{equation}
+18\%
+\end{equation}
+improvement over a sequential baseline.
+
+You are asked to perform an independent reproduction and validation audit.
+
+\begin{enumerate}
+    \item Define a reproducibility package containing:
+    \begin{enumerate}
+        \item governing equations;
+        \item units and variable definitions;
+        \item initial and boundary conditions;
+        \item objective weights;
+        \item all constraints and bounds;
+        \item software versions;
+        \item solver settings;
+        \item initialization;
+        \item random seeds;
+        \item raw and processed data.
+    \end{enumerate}
+
+    \item Recompute the reported objective using an independent implementation.
+
+    \item Define the relative objective discrepancy
+    \begin{equation}
+    e_J
+    =
+    \frac{
+    |J_{\mathrm{reproduced}}-J_{\mathrm{reported}}|
+    }{
+    \max(1,|J_{\mathrm{reported}}|)
+    }.
+    \end{equation}
+
+    \item Independently simulate the reported control law and compute the
+    maximum trajectory discrepancy
+    \begin{equation}
+    e_x
+    =
+    \max_t
+    \left\|
+    \mathbf{x}_{\mathrm{reported}}(t)
+    -
+    \mathbf{x}_{\mathrm{independent}}(t)
+    \right\|_{\infty}.
+    \end{equation}
+
+    \item Re-evaluate every path constraint on a dense grid and report
+    \begin{equation}
+    v_{\max}
+    =
+    \max_{t,j}
+    g_j
+    \left(
+    \mathbf{x}(t),
+    \mathbf{u}(t)
+    \right).
+    \end{equation}
+
+    \item Repeat the optimization using:
+    \begin{enumerate}
+        \item at least ten initial guesses;
+        \item two mesh densities;
+        \item two NLP solvers or algorithms;
+        \item two derivative methods.
+    \end{enumerate}
+
+    \item Reconstruct the sequential baseline using exactly the same model,
+    objective, constraints, tolerances, and information assumptions as the
+    CCD problem.
+
+    \item Compute the verified improvement
+    \begin{equation}
+    \eta_{\mathrm{verified}}
+    =
+    \frac{
+    J_{\mathrm{seq,verified}}
+    -
+    J_{\mathrm{CCD,verified}}
+    }{
+    J_{\mathrm{seq,verified}}
+    }.
+    \end{equation}
+
+    \item Test both designs under uncertainty and at a higher model-fidelity
+    level.
+
+    \item Define explicit acceptance criteria for:
+    \begin{equation}
+    e_J,
+    \qquad
+    e_x,
+    \qquad
+    v_{\max},
+    \qquad
+    \eta_{\mathrm{verified}}.
+    \end{equation}
+
+    \item Classify the final conclusion as one of the following:
+    \begin{enumerate}
+        \item numerically reproduced and physically validated;
+        \item numerically reproduced but not physically validated;
+        \item partially reproduced;
+        \item not reproduced.
+    \end{enumerate}
+
+    \item Explain why an optimizer success message and a low reported
+    objective are insufficient evidence for a credible CCD result.
+\end{enumerate}

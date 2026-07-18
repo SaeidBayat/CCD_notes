@@ -1,0 +1,649 @@
+
+\section{Advanced Readiness Activities}
+
+The following activities are intended for strong senior undergraduate,
+master's, or beginning PhD students. They reinforce the mathematical and
+computational foundations needed for the later control co-design chapters.
+The problems combine multivariable calculus, numerical integration, linear
+algebra, ordinary differential equations, state-space modeling, discretization,
+and basic optimization.
+
+\subsection*{Problem 1: Composite Engineering Functions, Gradients, and Hessians}
+
+For a mass--spring--damper system, define the natural frequency and damping
+ratio as
+\begin{equation}
+\omega_n(m,k)
+=
+\sqrt{\frac{k}{m}},
+\end{equation}
+and
+\begin{equation}
+\zeta(m,k,c)
+=
+\frac{c}{2\sqrt{km}}.
+\end{equation}
+
+Consider the dimensionless design objective
+\begin{equation}
+J(m,k,c)
+=
+\left(
+\frac{\omega_n-\omega_d}{\omega_d}
+\right)^2
++
+\beta
+\left(
+\frac{\zeta-\zeta_d}{\zeta_d}
+\right)^2
++
+\gamma
+\left(
+\frac{m}{m_{\mathrm{ref}}}
+\right)^2,
+\end{equation}
+where
+\begin{equation}
+\omega_d=4~\mathrm{rad/s},
+\qquad
+\zeta_d=0.7,
+\qquad
+\beta=2,
+\end{equation}
+\begin{equation}
+\gamma=0.05,
+\qquad
+m_{\mathrm{ref}}=2~\mathrm{kg}.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive
+    \begin{equation}
+    \frac{\partial\omega_n}{\partial m},
+    \qquad
+    \frac{\partial\omega_n}{\partial k}.
+    \end{equation}
+
+    \item Derive
+    \begin{equation}
+    \frac{\partial\zeta}{\partial m},
+    \qquad
+    \frac{\partial\zeta}{\partial k},
+    \qquad
+    \frac{\partial\zeta}{\partial c}.
+    \end{equation}
+
+    \item Use the chain rule to derive the complete gradient
+    \begin{equation}
+    \nabla J(m,k,c).
+    \end{equation}
+
+    \item Evaluate $J$ and $\nabla J$ at
+    \begin{equation}
+    m=2~\mathrm{kg},
+    \qquad
+    k=24~\mathrm{N/m},
+    \qquad
+    c=5~\mathrm{N\,s/m}.
+    \end{equation}
+
+    \item Let
+    \begin{equation}
+    \mathbf{d}
+    =
+    \frac{1}{\sqrt{6}}
+    \begin{bmatrix}
+    1\\
+    -2\\
+    1
+    \end{bmatrix}.
+    \end{equation}
+    Compute the directional derivative
+    \begin{equation}
+    D_{\mathbf{d}}J
+    =
+    \nabla J^T\mathbf{d}.
+    \end{equation}
+
+    \item Derive the $3\times3$ Hessian matrix
+    \begin{equation}
+    H_J(m,k,c).
+    \end{equation}
+
+    \item Evaluate the eigenvalues of the Hessian at the stated design and
+    determine whether $J$ is locally convex there.
+
+    \item Verify the analytical gradient using central finite differences
+    with step sizes
+    \begin{equation}
+    h=10^{-2},\ 10^{-4},\ 10^{-6},\ 10^{-8}.
+    \end{equation}
+\end{enumerate}
+
+
+\subsection*{Problem 2: Numerical Integration and Observed Convergence Order}
+
+Consider
+\begin{equation}
+q(t)
+=
+e^{-t}\sin(3t),
+\qquad
+0\leq t\leq2,
+\end{equation}
+and define
+\begin{equation}
+I
+=
+\int_0^2 q(t)^2\,dt.
+\end{equation}
+
+\begin{enumerate}
+    \item Evaluate $I$ analytically.
+
+    \item Approximate $I$ using:
+    \begin{enumerate}
+        \item the left-rectangle rule,
+        \item the midpoint rule,
+        \item the composite trapezoidal rule,
+        \item composite Simpson's rule.
+    \end{enumerate}
+
+    \item Use
+    \begin{equation}
+    N=10,\ 20,\ 40,\ 80,\ 160
+    \end{equation}
+    equal subintervals.
+
+    \item For each method, compute the absolute error
+    \begin{equation}
+    e_N
+    =
+    |I_N-I|.
+    \end{equation}
+
+    \item Estimate the observed convergence order using
+    \begin{equation}
+    p_N
+    =
+    \frac{
+    \log(e_N/e_{2N})
+    }{
+    \log 2
+    }.
+    \end{equation}
+
+    \item Compare the observed orders with the theoretical orders of the four
+    methods.
+
+    \item Derive the composite trapezoidal approximation in matrix form:
+    \begin{equation}
+    I_N
+    =
+    \mathbf{w}^T\mathbf{q}^{\,2},
+    \end{equation}
+    where $\mathbf{w}$ is the quadrature-weight vector.
+
+    \item Explain why a highly accurate state trajectory does not
+    automatically guarantee a highly accurate integral performance measure
+    if the quadrature rule is inconsistent with the trajectory
+    approximation.
+\end{enumerate}
+
+
+\subsection*{Problem 3: Linear Algebra, Modal Coordinates, and Positive Definiteness}
+
+Consider the undamped two-degree-of-freedom mechanical system
+\begin{equation}
+M\ddot{\mathbf{q}}
++
+K\mathbf{q}
+=
+\mathbf{0},
+\end{equation}
+where
+\begin{equation}
+M=
+\begin{bmatrix}
+2&0\\
+0&1
+\end{bmatrix},
+\qquad
+K=
+\begin{bmatrix}
+6&-2\\
+-2&4
+\end{bmatrix}.
+\end{equation}
+
+\begin{enumerate}
+    \item Verify that $M$ and $K$ are symmetric positive definite.
+
+    \item Solve the generalized eigenvalue problem
+    \begin{equation}
+    K\boldsymbol{\phi}
+    =
+    \omega^2M\boldsymbol{\phi}.
+    \end{equation}
+
+    \item Compute the two natural frequencies.
+
+    \item Normalize the mode shapes so that
+    \begin{equation}
+    \Phi^TM\Phi=I.
+    \end{equation}
+
+    \item Verify that
+    \begin{equation}
+    \Phi^TK\Phi
+    =
+    \operatorname{diag}
+    \left(
+    \omega_1^2,
+    \omega_2^2
+    \right).
+    \end{equation}
+
+    \item Introduce modal coordinates
+    \begin{equation}
+    \mathbf{q}=\Phi\boldsymbol{\eta}
+    \end{equation}
+    and derive the decoupled equations of motion.
+
+    \item For
+    \begin{equation}
+    \mathbf{q}(0)=
+    \begin{bmatrix}
+    1\\
+    0
+    \end{bmatrix},
+    \qquad
+    \dot{\mathbf{q}}(0)=
+    \begin{bmatrix}
+    0\\
+    0
+    \end{bmatrix},
+    \end{equation}
+    compute the initial modal coordinates.
+
+    \item Derive the exact displacement response
+    \begin{equation}
+    \mathbf{q}(t).
+    \end{equation}
+
+    \item Compute the total mechanical energy
+    \begin{equation}
+    E(t)
+    =
+    \frac{1}{2}
+    \dot{\mathbf{q}}^TM\dot{\mathbf{q}}
+    +
+    \frac{1}{2}
+    \mathbf{q}^TK\mathbf{q}
+    \end{equation}
+    and prove that it is constant.
+
+    \item Explain why positive definiteness of $M$ and $K$ matters
+    physically and mathematically.
+\end{enumerate}
+
+
+\subsection*{Problem 4: Exact State-Space Response of a Forced Dynamic System}
+
+Consider
+\begin{equation}
+m\ddot{x}
++
+c\dot{x}
++
+kx
+=
+u_0,
+\end{equation}
+where $u_0$ is a constant input. Use
+\begin{equation}
+m=1.5~\mathrm{kg},
+\qquad
+c=1.8~\mathrm{N\,s/m},
+\qquad
+k=12~\mathrm{N/m},
+\end{equation}
+\begin{equation}
+u_0=3~\mathrm{N},
+\qquad
+x(0)=0.2~\mathrm{m},
+\qquad
+\dot{x}(0)=-0.1~\mathrm{m/s}.
+\end{equation}
+
+\begin{enumerate}
+    \item Define
+    \begin{equation}
+    \mathbf{x}
+    =
+    \begin{bmatrix}
+    x\\
+    \dot{x}
+    \end{bmatrix}
+    \end{equation}
+    and derive
+    \begin{equation}
+    \dot{\mathbf{x}}
+    =
+    A\mathbf{x}
+    +
+    B u_0.
+    \end{equation}
+
+    \item Compute the eigenvalues of $A$ and classify the response as
+    underdamped, critically damped, or overdamped.
+
+    \item Compute the equilibrium state
+    \begin{equation}
+    \mathbf{x}_{\mathrm{eq}}
+    \end{equation}
+    associated with the constant input.
+
+    \item Define
+    \begin{equation}
+    \widetilde{\mathbf{x}}
+    =
+    \mathbf{x}
+    -
+    \mathbf{x}_{\mathrm{eq}}
+    \end{equation}
+    and derive the homogeneous shifted system.
+
+    \item Derive
+    \begin{equation}
+    \mathbf{x}(t)
+    =
+    e^{At}
+    \left(
+    \mathbf{x}(0)-\mathbf{x}_{\mathrm{eq}}
+    \right)
+    +
+    \mathbf{x}_{\mathrm{eq}}.
+    \end{equation}
+
+    \item Obtain explicit scalar expressions for $x(t)$ and $\dot{x}(t)$.
+
+    \item Compute the first time at which the displacement reaches its
+    steady-state value.
+
+    \item Compute the maximum displacement over
+    \begin{equation}
+    0\leq t\leq5.
+    \end{equation}
+
+    \item Verify the analytical solution using a numerical ODE integrator.
+
+    \item Repeat the numerical solution using forward Euler with
+    \begin{equation}
+    h=0.2,\ 0.1,\ 0.05,\ 0.025.
+    \end{equation}
+    Estimate the observed global convergence order.
+\end{enumerate}
+
+
+\subsection*{Problem 5: Discretized Minimum-Energy Control Solved by Linear Algebra}
+
+Consider the double-integrator system
+\begin{equation}
+\dot{x}_1=x_2,
+\qquad
+\dot{x}_2=u,
+\end{equation}
+with
+\begin{equation}
+x_1(0)=0,
+\qquad
+x_2(0)=0.
+\end{equation}
+
+Use a time horizon
+\begin{equation}
+T=1
+\end{equation}
+and divide it into four equal intervals of length
+\begin{equation}
+h=\frac{1}{4}.
+\end{equation}
+
+Assume the control is piecewise constant:
+\begin{equation}
+u(t)=u_i,
+\qquad
+t\in[ih,(i+1)h),
+\qquad
+i=0,1,2,3.
+\end{equation}
+
+Use the exact zero-order-hold discrete dynamics
+\begin{equation}
+\begin{bmatrix}
+x_{1,i+1}\\
+x_{2,i+1}
+\end{bmatrix}
+=
+\begin{bmatrix}
+1&h\\
+0&1
+\end{bmatrix}
+\begin{bmatrix}
+x_{1,i}\\
+x_{2,i}
+\end{bmatrix}
++
+\begin{bmatrix}
+h^2/2\\
+h
+\end{bmatrix}
+u_i.
+\end{equation}
+
+The terminal requirements are
+\begin{equation}
+x_1(1)=1,
+\qquad
+x_2(1)=0.
+\end{equation}
+
+Minimize the discrete control effort
+\begin{equation}
+J
+=
+h\sum_{i=0}^{3}u_i^2.
+\end{equation}
+
+\begin{enumerate}
+    \item Propagate the dynamics symbolically and express the terminal state
+    as
+    \begin{equation}
+    \mathbf{x}_4
+    =
+    G\mathbf{U},
+    \end{equation}
+    where
+    \begin{equation}
+    \mathbf{U}
+    =
+    \begin{bmatrix}
+    u_0&u_1&u_2&u_3
+    \end{bmatrix}^{T}.
+    \end{equation}
+
+    \item Write the terminal requirements as
+    \begin{equation}
+    G\mathbf{U}
+    =
+    \mathbf{b}.
+    \end{equation}
+
+    \item Show that the problem is a minimum-norm equality-constrained
+    quadratic problem.
+
+    \item Using Lagrange multipliers, prove that
+    \begin{equation}
+    \mathbf{U}^*
+    =
+    G^T
+    \left(
+    GG^T
+    \right)^{-1}
+    \mathbf{b}.
+    \end{equation}
+
+    \item Compute all four optimal control values.
+
+    \item Compute the complete state trajectory at the five time nodes.
+
+    \item Verify the terminal conditions exactly.
+
+    \item Repeat the derivation for an arbitrary number $N$ of equal
+    intervals.
+
+    \item Explain how the dimensions of $G$, $\mathbf{U}$, and
+    $\mathbf{b}$ change with $N$.
+
+    \item Compare the discrete solution with the continuous minimum-energy
+    control obtained by calculus of variations or an optimal-control
+    solver.
+\end{enumerate}
+
+
+\subsection*{Problem 6: State and Parameter Sensitivities for a Readiness Mini-Project}
+
+Consider the mass--spring--damper system
+\begin{equation}
+m\ddot{q}
++
+c\dot{q}
++
+kq
+=
+u(t),
+\end{equation}
+with
+\begin{equation}
+m=1,
+\qquad
+q(0)=1,
+\qquad
+\dot{q}(0)=0,
+\end{equation}
+and
+\begin{equation}
+u(t)=e^{-t}.
+\end{equation}
+
+The plant parameters are
+\begin{equation}
+\mathbf{p}
+=
+\begin{bmatrix}
+k\\
+c
+\end{bmatrix}.
+\end{equation}
+
+Define the state vector
+\begin{equation}
+\mathbf{x}
+=
+\begin{bmatrix}
+q\\
+v
+\end{bmatrix},
+\end{equation}
+and the performance measure
+\begin{equation}
+J(k,c)
+=
+\frac{1}{2}
+\int_0^5
+\left(
+q(t)^2
++
+0.1v(t)^2
+\right)dt
++
+0.01k^2
++
+0.02c^2.
+\end{equation}
+
+\begin{enumerate}
+    \item Derive the state-space model
+    \begin{equation}
+    \dot{\mathbf{x}}
+    =
+    \mathbf{f}
+    \left(
+    \mathbf{x},
+    \mathbf{p},
+    t
+    \right).
+    \end{equation}
+
+    \item Define the parameter-sensitivity vectors
+    \begin{equation}
+    \mathbf{s}_k
+    =
+    \frac{\partial\mathbf{x}}{\partial k},
+    \qquad
+    \mathbf{s}_c
+    =
+    \frac{\partial\mathbf{x}}{\partial c}.
+    \end{equation}
+
+    \item Derive the sensitivity equations
+    \begin{equation}
+    \dot{\mathbf{s}}_j
+    =
+    \frac{\partial\mathbf{f}}{\partial\mathbf{x}}
+    \mathbf{s}_j
+    +
+    \frac{\partial\mathbf{f}}{\partial p_j},
+    \qquad
+    j\in\{k,c\}.
+    \end{equation}
+
+    \item Derive the initial conditions for both sensitivity vectors.
+
+    \item Derive
+    \begin{equation}
+    \frac{\partial J}{\partial k}
+    \qquad\text{and}\qquad
+    \frac{\partial J}{\partial c}
+    \end{equation}
+    in terms of the state and sensitivity trajectories.
+
+    \item Simulate the state and sensitivity equations simultaneously at
+    \begin{equation}
+    k=4,
+    \qquad
+    c=0.8.
+    \end{equation}
+
+    \item Verify both derivatives using central finite differences.
+
+    \item Investigate the finite-difference error for
+    \begin{equation}
+    h=10^{-2},\ 10^{-4},\ 10^{-6},\ 10^{-8}.
+    \end{equation}
+
+    \item Use the computed gradient to perform ten steepest-descent
+    iterations with a backtracking line search, subject to
+    \begin{equation}
+    0.5\leq k\leq10,
+    \qquad
+    0.05\leq c\leq4.
+    \end{equation}
+
+    \item Report the final design, objective value, gradient norm, and state
+    response.
+
+    \item Explain how this mini-project combines the main prerequisite topics
+    of Chapter 0 and prepares students for later CCD formulations.
+\end{enumerate}

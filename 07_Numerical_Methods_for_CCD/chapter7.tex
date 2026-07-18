@@ -1,0 +1,1189 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.86in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{bm}
+\usepackage{listings}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDtan}{RGB}{247,239,225}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+\definecolor{CCDpurple}{RGB}{124,58,237}
+\definecolor{CCDred}{RGB}{178,58,72}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 7: Numerical Methods for Control Co-Design},
+  pdfauthor={Saeid Bayat}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 7: Numerical Methods for CCD}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\xp}{\vect{x}_p}
+\newcommand{\xc}{\vect{x}_c}
+\newcommand{\xstate}{\vect{x}}
+\newcommand{\uvec}{\vect{u}}
+\newcommand{\zvec}{\vect{z}}
+\newcommand{\fvec}{\vect{f}}
+\newcommand{\cvec}{\vect{c}}
+\newcommand{\gvec}{\vect{g}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\normtwo}[1]{\left\lVert #1 \right\rVert_2}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\newcommand{\warningbox}[1]{%
+\begin{center}
+\fcolorbox{CCDred}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  rulecolor=\color{CCDgray},
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false
+}
+
+\begin{document}
+
+% Cover
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Physical and Control Systems\par}
+
+\vspace{2.15in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 7\par}
+\vspace{0.18in}
+\noindent\begin{minipage}{0.92\linewidth}
+\raggedright
+{\fontsize{22}{26}\selectfont\bfseries\color{black!85} Numerical Methods for Control Co-Design\par}
+\end{minipage}
+\vspace{0.20in}
+\par\noindent{\large\color{CCDgray} Discretization, shooting, transcription, sparse optimization, and numerical verification\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large A successful numerical CCD study must do more than return an optimum. It must approximate the continuous dynamics accurately, exploit problem structure efficiently, and demonstrate that the reported design is not a mesh or solver artifact.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+Control co-design problems are often infinite-dimensional because the states and controls are functions of time. A computer cannot optimize over arbitrary continuous functions directly. Numerical methods therefore replace the original continuous problem with a finite collection of variables and algebraic constraints. This replacement is the central computational step in modern optimal control and CCD.
+
+This chapter develops the major numerical approaches used for that step. We begin with time discretization and explain the distinction among direct shooting, multiple shooting, direct transcription, and collocation. We then show how defect constraints enforce the dynamics, how direct transcription produces a large but sparse nonlinear programming problem (NLP), and why derivative quality and sparsity are decisive for computational performance. The final sections present mesh refinement, convergence verification, and a practical implementation workflow.
+
+The chapter is intentionally detailed. Numerical methods are not an implementation detail that can be left entirely to software. The selected method, mesh, scaling, derivative strategy, and verification procedure can change the design that is reported as optimal.
+
+\begin{learningobjectives}
+  \item explain why a continuous-time CCD problem must be discretized for numerical solution;
+  \item construct a computational time mesh and identify the resulting discrete variables;
+  \item explain direct shooting and its sensitivity limitations;
+  \item formulate multiple-shooting continuity constraints;
+  \item derive a basic direct-transcription NLP;
+  \item write Euler, trapezoidal, and Hermite-Simpson defect constraints;
+  \item explain why direct-transcription Jacobians and Hessians are sparse;
+  \item compare finite differences, complex-step differentiation, analytic derivatives, and automatic differentiation;
+  \item perform mesh-refinement and convergence checks;
+  \item organize a reliable numerical implementation workflow for CCD.
+\end{learningobjectives}
+
+\section{From a Continuous CCD Problem to a Computable Problem}
+
+A general finite-horizon CCD problem can be written as
+\begin{align}
+\min_{\xp,\xc,\xstate(\cdot),\uvec(\cdot)} \quad &
+J = \Phi\big(\xstate(t_f),\xp,\xc\big)
++ \int_{t_0}^{t_f} L\big(\xstate(t),\uvec(t),\xp,\xc,t\big)\,dt,
+\label{eq:continuous-ccd-objective}\\
+\text{subject to} \quad &
+\dot{\xstate}(t)=\fvec\big(\xstate(t),\uvec(t),\xp,\xc,t\big),
+\label{eq:continuous-ccd-dyn}\\
+& \cvec\big(\xstate(t),\uvec(t),\xp,\xc,t\big)\leq \vect{0},
+\qquad t\in[t_0,t_f],
+\label{eq:continuous-ccd-path}\\
+& \vect{b}\big(\xstate(t_0),\xstate(t_f),\xp,\xc\big)=\vect{0},
+\label{eq:continuous-ccd-boundary}\\
+& \xp^L\leq\xp\leq\xp^U, \qquad \xc^L\leq\xc\leq\xc^U.
+\end{align}
+
+The plant and controller parameters are finite-dimensional, but $\xstate(t)$ and $\uvec(t)$ are functions. A numerical method approximates these functions using a finite number of coefficients or samples. The result is a nonlinear program of the form
+\begin{align}
+\min_{\zvec\in\R^{n_z}} \quad & F(\zvec),\\
+\text{subject to} \quad & \gvec_e(\zvec)=\vect{0},\\
+& \gvec_i(\zvec)\leq\vect{0},\\
+& \zvec^L\leq\zvec\leq\zvec^U.
+\end{align}
+
+The vector $\zvec$ contains the discretized states and controls, along with plant and controller variables. The central numerical questions are:
+\begin{itemize}[leftmargin=1.4em]
+  \item How are the state and control trajectories represented?
+  \item How are the differential equations enforced?
+  \item How accurately is the integral objective approximated?
+  \item How are path constraints enforced between mesh points?
+  \item How large and sparse is the resulting NLP?
+\end{itemize}
+
+Figure~\ref{fig:method-landscape} places the principal methods in context.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp7_1.png}
+\caption{Major numerical approaches for dynamic optimization. This chapter focuses on the direct methods most commonly used in CCD.}
+\label{fig:method-landscape}
+\end{figure}
+
+\subsection{Direct versus indirect methods}
+
+\textbf{Indirect methods} derive the first-order necessary conditions, including state equations, costate equations, stationarity conditions, and transversality conditions. The resulting boundary-value problem is then solved numerically. These methods can achieve high accuracy and provide theoretical insight, but they require costate initialization and careful treatment of active path constraints.
+
+\textbf{Direct methods} parameterize the controls, states, or both and solve a finite optimization problem directly. They avoid writing the necessary conditions explicitly. Direct methods are usually more robust for general engineering problems with bounds, path constraints, black-box components, and complicated CCD couplings.
+
+\subsection{Sequential versus simultaneous direct methods}
+
+In a \textbf{sequential direct method}, the optimizer chooses a finite set of control or design parameters, and a forward simulation computes the state trajectory. Direct shooting is the main example.
+
+In a \textbf{simultaneous direct method}, the state samples are optimization variables in addition to the controls and design parameters. Algebraic defect constraints enforce consistency with the dynamics. Direct transcription and collocation belong to this category.
+
+\keyideabox{The terms \emph{sequential} and \emph{simultaneous} in this chapter describe how a dynamic optimization problem is numerically solved. They are different from sequential and simultaneous \emph{CCD architectures}, which describe coordination between plant and controller design variables.}
+
+\section{Time Discretization}
+
+\subsection{The computational mesh}
+
+Choose mesh points
+\begin{equation}
+ t_0 < t_1 < \cdots < t_N=t_f.
+\end{equation}
+The interval length is
+\begin{equation}
+ h_k=t_{k+1}-t_k, \qquad k=0,\ldots,N-1.
+\end{equation}
+The mesh may be uniform, with all $h_k$ equal, or nonuniform, with smaller intervals in dynamically difficult regions.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp7_2.png}
+\caption{Time discretization. The mesh converts continuous trajectories into a finite set of samples and local approximations.}
+\label{fig:time-mesh}
+\end{figure}
+
+At each node, define
+\begin{equation}
+\xstate_k \approx \xstate(t_k), \qquad \uvec_k \approx \uvec(t_k).
+\end{equation}
+For $n_x$ states and $n_u$ controls, the node variables require approximately
+\begin{equation}
+(N+1)(n_x+n_u)
+\end{equation}
+scalar decision variables, before adding plant, controller, midpoint, phase, or auxiliary variables.
+
+\subsection{Uniform and nonuniform meshes}
+
+A uniform mesh is easy to construct and is often appropriate for smooth trajectories. A nonuniform mesh is better when the solution contains:
+\begin{itemize}[leftmargin=1.4em]
+  \item fast transients,
+  \item switching control,
+  \item entry into or exit from an active path constraint,
+  \item impacts, events, or changes in dynamics,
+  \item boundary layers near $t_0$ or $t_f$.
+\end{itemize}
+
+A mesh should resolve the physics, not merely divide the horizon into a convenient number of intervals.
+
+\subsection{Local and global approximations}
+
+Two broad trajectory representations are common:
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Local polynomial approximations}, such as piecewise constant, piecewise linear, trapezoidal, or Hermite-Simpson approximations;
+  \item \textbf{Global or high-order polynomial approximations}, such as pseudospectral methods based on Legendre or Chebyshev nodes.
+\end{enumerate}
+
+Local approximations are usually easier to refine near nonsmooth behavior. Global high-order methods can converge extremely rapidly for smooth solutions, but a single global polynomial may perform poorly near discontinuities.
+
+\subsection{Control parameterization}
+
+Common control representations include:
+\begin{align}
+\text{piecewise constant:} \quad & \uvec(t)=\uvec_k, \quad t\in[t_k,t_{k+1}),\\
+\text{piecewise linear:} \quad & \uvec(t)=\left(1-\alpha\right)\uvec_k+\alpha\uvec_{k+1}, \\
+& \alpha=\frac{t-t_k}{h_k},\\
+\text{basis expansion:} \quad & \uvec(t)=\sum_{j=1}^{n_b}\vect{a}_j\phi_j(t).
+\end{align}
+
+Piecewise-constant controls are natural for sampled systems and zero-order-hold actuators. Piecewise-linear controls often provide smoother approximations and better compatibility with higher-order collocation.
+
+\section{Direct Shooting}
+
+\subsection{Basic formulation}
+
+Direct shooting parameterizes the control trajectory with a finite vector $\vect{q}$:
+\begin{equation}
+\uvec(t)=\uvec(t;\vect{q}).
+\end{equation}
+The optimizer chooses $\vect{q}$, $\xp$, and possibly $\xc$. A numerical integrator then simulates
+\begin{equation}
+\dot{\xstate}=\fvec(\xstate,\uvec,\xp,\xc,t), \qquad \xstate(t_0)=\xstate_0.
+\end{equation}
+The simulation returns the objective and constraints to the optimizer.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp7_3.png}
+\caption{Direct shooting embeds a forward simulation inside every optimization evaluation.}
+\label{fig:direct-shooting}
+\end{figure}
+
+The finite problem is
+\begin{align}
+\min_{\vect{q},\xp,\xc} \quad & J\big(\xstate(\cdot;\vect{q},\xp,\xc),\vect{q},\xp,\xc\big),\\
+\text{subject to} \quad & \text{path, boundary, and design constraints evaluated from the simulation.}
+\end{align}
+
+\subsection{Advantages}
+
+Direct shooting is attractive because:
+\begin{itemize}[leftmargin=1.4em]
+  \item it is straightforward to connect an existing simulation and optimizer;
+  \item the simulated state trajectory satisfies the integration scheme automatically;
+  \item relatively few optimization variables may be required;
+  \item mature ODE and DAE solvers can be reused.
+\end{itemize}
+
+\subsection{Sensitivity propagation}
+
+The main difficulty is the sensitivity of the final trajectory to early control decisions. Let
+\begin{equation}
+\vect{S}(t)=\frac{\partial \xstate(t)}{\partial \vect{q}}.
+\end{equation}
+Then the sensitivity satisfies
+\begin{equation}
+\dot{\vect{S}}(t)=\fvec_x\vect{S}(t)+\fvec_u\frac{\partial\uvec}{\partial\vect{q}},
+\qquad \vect{S}(t_0)=\vect{0}.
+\end{equation}
+For unstable or long-horizon systems, $\vect{S}(t)$ may grow or decay dramatically. The NLP then becomes poorly conditioned: a small change in one control parameter can cause a very large or very small change in the terminal state.
+
+\subsection{Path and terminal constraints}
+
+Terminal constraints are especially challenging in shooting because the optimizer must adjust the control parameters so that a simulation lands on a target. Path constraints also require evaluating the full trajectory and may be violated between the output points returned by the integrator.
+
+\subsection{When shooting is appropriate}
+
+Direct shooting is often effective when:
+\begin{itemize}[leftmargin=1.4em]
+  \item the system is stable or mildly unstable;
+  \item the horizon is short;
+  \item the control parameterization is low dimensional;
+  \item terminal constraints are not extremely tight;
+  \item a reliable simulation model already exists.
+\end{itemize}
+
+\warningbox{A successful simulation does not imply a well-conditioned optimization problem. Direct shooting may remain numerically fragile even when every forward simulation is accurate.}
+
+\section{Multiple Shooting}
+
+\subsection{Motivation}
+
+Multiple shooting reduces long-range sensitivity propagation by splitting the time horizon into $M$ segments. Each segment has its own initial state variable,
+\begin{equation}
+\vect{X}_0,\vect{X}_1,\ldots,\vect{X}_{M-1},
+\end{equation}
+and is simulated independently over a shorter interval.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp7_4.png}
+\caption{Multiple shooting divides the horizon into local simulations and reconnects them with continuity constraints.}
+\label{fig:multiple-shooting}
+\end{figure}
+
+\subsection{Continuity constraints}
+
+Let $\Phi_k(\vect{X}_k,\vect{q}_k,\xp,\xc)$ denote the state obtained by simulating segment $k$ from $t_k$ to $t_{k+1}$. The continuity constraint is
+\begin{equation}
+\vect{r}_k=\vect{X}_{k+1}-\Phi_k(\vect{X}_k,\vect{q}_k,\xp,\xc)=\vect{0}.
+\label{eq:multiple-shooting-continuity}
+\end{equation}
+These residuals reconnect the segment trajectories into one continuous trajectory.
+
+\subsection{Benefits}
+
+Multiple shooting:
+\begin{itemize}[leftmargin=1.4em]
+  \item limits sensitivity propagation to shorter intervals;
+  \item can handle unstable dynamics better than single shooting;
+  \item allows state initial guesses at internal nodes;
+  \item produces a structured sparse Jacobian for the continuity constraints.
+\end{itemize}
+
+\subsection{Costs}
+
+The method introduces additional state variables and continuity constraints. Each NLP evaluation may require several segment simulations. The user must also provide consistent or at least reasonable initial guesses for the internal node states.
+
+\subsection{Relation to direct transcription}
+
+Multiple shooting is an intermediate method. Like shooting, it uses numerical integration inside the NLP. Like direct transcription, it includes state variables at multiple times and enforces algebraic continuity constraints. The difference is that multiple shooting integrates the dynamics within each segment, whereas direct transcription replaces integration with algebraic defect equations at the mesh level.
+
+\section{Direct Transcription}
+
+\subsection{Discretize, then optimize}
+
+Direct transcription treats the node values of states and controls as decision variables. The dynamics are replaced by algebraic equality constraints. The resulting finite-dimensional NLP is solved all at once.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp7_5.png}
+\caption{Direct transcription converts the continuous problem into a sparse nonlinear program.}
+\label{fig:direct-transcription}
+\end{figure}
+
+Define the decision vector
+\begin{equation}
+\zvec=\begin{bmatrix}
+\xp\\
+\xc\\
+\xstate_0\\
+\uvec_0\\
+\xstate_1\\
+\uvec_1\\
+\vdots\\
+\xstate_N\\
+\uvec_N
+\end{bmatrix}.
+\end{equation}
+Other orderings are possible. The best ordering depends on the sparse linear algebra used by the NLP solver.
+
+A generic direct-transcription problem is
+\begin{align}
+\min_{\zvec} \quad &
+\widehat{\Phi}(\zvec)+\sum_{k=0}^{N}w_k
+L(\xstate_k,\uvec_k,\xp,\xc,t_k),
+\label{eq:dt-objective}\\
+\text{subject to} \quad &
+\vect{\zeta}_k(\xstate_k,\uvec_k,\xstate_{k+1},\uvec_{k+1},\xp,\xc)=\vect{0},
+\label{eq:dt-defects}\\
+& \cvec(\xstate_k,\uvec_k,\xp,\xc,t_k)\leq\vect{0},\\
+& \vect{b}(\xstate_0,\xstate_N,\xp,\xc)=\vect{0},\\
+& \zvec^L\leq\zvec\leq\zvec^U.
+\end{align}
+Here $w_k$ are quadrature weights and $\vect{\zeta}_k$ are defect constraints.
+
+\subsection{Why direct transcription is important for CCD}
+
+Direct transcription is especially useful in CCD because it can handle:
+\begin{itemize}[leftmargin=1.4em]
+  \item nonlinear dynamics that depend on plant variables;
+  \item state, control, and mixed path constraints;
+  \item terminal constraints and free endpoint variables;
+  \item unstable dynamics;
+  \item large plant-control coupling;
+  \item sparse derivatives generated by local time dependence.
+\end{itemize}
+
+Herber's dissertation emphasizes that transcription converts infinite-dimensional quantities into a mathematical program and that the resulting structure can be exploited for efficient solution of repeated control subproblems in nested co-design.
+
+\section{Collocation and Defect Constraints}
+
+\subsection{What is a defect?}
+
+A defect measures the disagreement between the discrete state variables and the state change predicted by the differential equation. A zero defect means the local polynomial approximation is dynamically consistent according to the selected numerical scheme.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp7_6.png}
+\caption{Collocation points and representative defect constraints. Higher-order methods use more information within each interval.}
+\label{fig:collocation-defects}
+\end{figure}
+
+\subsection{Euler forward defect}
+
+For
+\begin{equation}
+\dot{\xstate}=\fvec(\xstate,\uvec,\xp,\xc,t),
+\end{equation}
+the Euler forward approximation is
+\begin{equation}
+\xstate_{k+1}\approx\xstate_k+h_k\fvec_k.
+\end{equation}
+The defect is
+\begin{equation}
+\vect{\zeta}_k^{\mathrm{EF}}=
+\xstate_{k+1}-\xstate_k-h_k\fvec_k=\vect{0}.
+\label{eq:euler-defect}
+\end{equation}
+Euler forward is first-order accurate globally. It is simple but usually requires a fine mesh.
+
+\subsection{Trapezoidal defect}
+
+The trapezoidal rule uses both interval endpoints:
+\begin{equation}
+\vect{\zeta}_k^{\mathrm{TR}}=
+\xstate_{k+1}-\xstate_k-\frac{h_k}{2}\left(\fvec_k+\fvec_{k+1}\right)=\vect{0}.
+\label{eq:trap-defect}
+\end{equation}
+It is second-order accurate globally and implicit because $\fvec_{k+1}$ depends on $\xstate_{k+1}$ and $\uvec_{k+1}$. In direct transcription, implicitness is not a major difficulty: the NLP solver solves the state and defect equations simultaneously.
+
+\subsection{Hermite-Simpson collocation}
+
+Hermite-Simpson uses endpoint and midpoint information. Define
+\begin{align}
+\xstate_{k+1/2} &=
+\frac{\xstate_k+\xstate_{k+1}}{2}
++\frac{h_k}{8}\left(\fvec_k-\fvec_{k+1}\right),
+\label{eq:hs-midstate}\\
+\uvec_{k+1/2} &= \frac{\uvec_k+\uvec_{k+1}}{2},\\
+\fvec_{k+1/2} &=
+\fvec\left(\xstate_{k+1/2},\uvec_{k+1/2},\xp,\xc,t_{k+1/2}\right).
+\end{align}
+The defect is
+\begin{equation}
+\vect{\zeta}_k^{\mathrm{HS}}=
+\xstate_{k+1}-\xstate_k-\frac{h_k}{6}
+\left(\fvec_k+4\fvec_{k+1/2}+\fvec_{k+1}\right)=\vect{0}.
+\label{eq:hs-defect}
+\end{equation}
+Hermite-Simpson is widely used because it offers high accuracy with local sparsity and modest implementation complexity.
+
+\subsection{Runge-Kutta and zero-order-hold defects}
+
+Other local integration formulas can be written as defects. Classical fourth-order Runge-Kutta uses four stage evaluations. For linear time-invariant systems with piecewise-constant control, an exact discrete-time mapping can be obtained:
+\begin{equation}
+\xstate_{k+1}=A_d\xstate_k+B_d\uvec_k+\vect{d}_d,
+\end{equation}
+where
+\begin{equation}
+A_d=e^{Ah_k}, \qquad
+B_d=\int_0^{h_k}e^{A(h_k-\tau)}B\,d\tau.
+\end{equation}
+The corresponding zero-order-hold defect is exact for the assumed linear model and piecewise-constant input.
+
+\subsection{Pseudospectral collocation}
+
+Pseudospectral methods approximate a trajectory over an interval with a high-order polynomial,
+\begin{equation}
+\xstate(\tau)\approx\sum_{j=0}^{N}\xstate_j\ell_j(\tau),
+\end{equation}
+where $\ell_j$ are Lagrange interpolation polynomials and $\tau\in[-1,1]$ is scaled time. Differentiating the interpolant gives
+\begin{equation}
+\frac{d\xstate}{dt}\bigg|_{\tau_i}
+\approx \frac{2}{t_f-t_0}\sum_{j=0}^{N}D_{ij}\xstate_j.
+\end{equation}
+The defect at collocation point $i$ is
+\begin{equation}
+\frac{2}{t_f-t_0}\sum_{j=0}^{N}D_{ij}\xstate_j
+-\fvec(\xstate_i,\uvec_i,\xp,\xc,t_i)=\vect{0}.
+\end{equation}
+Legendre-Gauss-Radau, Legendre-Gauss-Lobatto, and Chebyshev-Gauss-Lobatto schemes differ in their node sets and endpoint treatment.
+
+\subsection{Local versus global collocation}
+
+\begin{table}[H]
+\centering
+\caption{Qualitative comparison of local and global collocation approaches.}
+\begin{tabular}{>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}p{4.6cm} >{\raggedright\arraybackslash}p{4.6cm}}
+\toprule
+Feature & Local methods & Global or pseudospectral methods \\
+\midrule
+Approximation & Low-order polynomial on each interval & High-order polynomial over one or more large intervals \\
+Sparsity & Strong local band structure & Denser coupling within each polynomial interval \\
+Smooth solutions & Algebraic convergence with mesh refinement & Potentially spectral or exponential-like convergence \\
+Nonsmooth solutions & Handled by local refinement and phase boundaries & Require multiple intervals or careful mesh adaptation \\
+Implementation & Relatively direct & More specialized differentiation and quadrature matrices \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Quadrature and Path Constraints}
+
+\subsection{Approximating the integral objective}
+
+The running cost must also be discretized. Common formulas include:
+\begin{align}
+\text{rectangle:} \quad &
+\int_{t_k}^{t_{k+1}}L(t)dt\approx h_kL_k,\\
+\text{trapezoidal:} \quad &
+\int_{t_k}^{t_{k+1}}L(t)dt\approx\frac{h_k}{2}(L_k+L_{k+1}),\\
+\text{Simpson:} \quad &
+\int_{t_k}^{t_{k+1}}L(t)dt\approx\frac{h_k}{6}(L_k+4L_{k+1/2}+L_{k+1}).
+\end{align}
+The quadrature rule should be consistent with the trajectory approximation. Using a high-order defect scheme with a very low-order objective quadrature can limit overall accuracy.
+
+\subsection{Path constraints at nodes}
+
+A path constraint is usually imposed at nodes or collocation points:
+\begin{equation}
+\cvec(\xstate_k,\uvec_k,\xp,\xc,t_k)\leq\vect{0}.
+\end{equation}
+This does not automatically guarantee feasibility between nodes. A polynomial or control trajectory may overshoot a bound even when all sampled values are feasible.
+
+Practical remedies include:
+\begin{itemize}[leftmargin=1.4em]
+  \item checking reconstructed trajectories on a dense verification grid;
+  \item enforcing constraints at additional points;
+  \item adding a safety margin;
+  \item refining intervals near active constraints;
+  \item using methods with reliable interpolation error estimates.
+\end{itemize}
+
+\subsection{Boundary constraints}
+
+Boundary constraints depend only on selected node values, such as
+\begin{equation}
+\xstate_0=\xstate_{\mathrm{initial}}, \qquad
+\xstate_N=\xstate_{\mathrm{target}}.
+\end{equation}
+They do not create the between-node feasibility issue associated with path constraints.
+
+\section{Sparse Nonlinear Programming}
+
+\subsection{Why the NLP is large}
+
+With $N+1$ nodes, the number of state and control variables grows linearly with $N$. A problem with 30 states, 10 controls, and 500 intervals contains roughly
+\begin{equation}
+501(30+10)=20{,}040
+\end{equation}
+trajectory variables, before adding plant variables, controller variables, midpoint variables, or slack variables.
+
+Large dimension alone does not make the problem impossible. The decisive property is sparsity.
+
+\subsection{Local dependence and Jacobian sparsity}
+
+A local defect constraint $\vect{\zeta}_k$ usually depends only on
+\begin{equation}
+\xstate_k,\uvec_k,\xstate_{k+1},\uvec_{k+1},\xp,\xc.
+\end{equation}
+Therefore, each defect row touches only a small portion of the full decision vector. The Jacobian has a banded block structure.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig_chp7_7.png}
+\caption{Representative sparsity patterns. Direct-transcription defects produce local coupling, whereas long-horizon shooting can produce cumulative dense sensitivity dependence.}
+\label{fig:sparsity}
+\end{figure}
+
+\subsection{Sparse NLP solvers}
+
+Large CCD transcription problems are normally solved with sparse sequential quadratic programming or sparse interior-point methods. These methods repeatedly solve structured linear systems involving the constraint Jacobian and the Hessian of the Lagrangian.
+
+A sparse solver should receive:
+\begin{itemize}[leftmargin=1.4em]
+  \item the exact Jacobian sparsity pattern;
+  \item sparse gradient and Jacobian values;
+  \item exact or approximate Hessian information;
+  \item sensible variable and constraint scaling;
+  \item bounds separated from general nonlinear constraints when possible.
+\end{itemize}
+
+\subsection{Variable ordering}
+
+Two common decision-vector orderings are:
+\begin{align}
+\text{by time:} \quad & [\xstate_0,\uvec_0,\xstate_1,\uvec_1,\ldots],\\
+\text{by variable type:} \quad & [\xstate_0,\ldots,\xstate_N,\uvec_0,\ldots,\uvec_N].
+\end{align}
+The ordering changes the apparent sparsity and fill-in of the linear systems. Modern modeling frameworks often handle this automatically, but the user should still understand the structure.
+
+\subsection{Condensing}
+
+In some formulations, state variables can be eliminated algebraically, producing a smaller problem in controls and design variables. This process is called condensing. Full condensing may destroy sparsity and create dense long-range coupling. Partial condensing offers a compromise between problem dimension and sparsity.
+
+\section{Derivative Computation}
+
+Gradient-based optimization is usually essential for large CCD problems. The optimizer needs:
+\begin{itemize}[leftmargin=1.4em]
+  \item the objective gradient $\nabla F$;
+  \item the equality-constraint Jacobian $\partial\gvec_e/\partial\zvec$;
+  \item the inequality-constraint Jacobian $\partial\gvec_i/\partial\zvec$;
+  \item sometimes the Hessian of the Lagrangian.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp7_8.png}
+\caption{Major derivative-computation options for nonlinear programming.}
+\label{fig:derivatives}
+\end{figure}
+
+\subsection{Finite differences}
+
+A forward finite difference is
+\begin{equation}
+\frac{\partial F}{\partial z_i}\approx
+\frac{F(\zvec+h\vect{e}_i)-F(\zvec)}{h}.
+\end{equation}
+A central difference is
+\begin{equation}
+\frac{\partial F}{\partial z_i}\approx
+\frac{F(\zvec+h\vect{e}_i)-F(\zvec-h\vect{e}_i)}{2h}.
+\end{equation}
+Finite differences are easy to implement but require a compromise between truncation error and floating-point cancellation. They can be expensive because each variable perturbation may require a new function evaluation.
+
+Sparse finite differences use graph coloring to perturb structurally independent columns together. This can reduce the number of evaluations substantially when the Jacobian sparsity pattern is known.
+
+\subsection{Complex-step differentiation}
+
+For an analytic implementation,
+\begin{equation}
+\frac{\partial F}{\partial z_i}
+\approx \frac{\operatorname{Im}\left[F(\zvec+i h\vect{e}_i)\right]}{h}.
+\end{equation}
+Complex-step differentiation avoids subtractive cancellation and can use extremely small $h$. It is excellent for derivative verification, but the code must propagate complex numbers correctly and avoid nonanalytic operations such as certain absolute-value or conditional implementations.
+
+\subsection{Analytic derivatives}
+
+Analytic derivatives can be extremely efficient and accurate. For the trapezoidal defect,
+\begin{equation}
+\vect{\zeta}_k=
+\xstate_{k+1}-\xstate_k-\frac{h_k}{2}(\fvec_k+\fvec_{k+1}),
+\end{equation}
+representative Jacobian blocks are
+\begin{align}
+\frac{\partial\vect{\zeta}_k}{\partial\xstate_k}
+&=-I-\frac{h_k}{2}\fvec_{x,k},\\
+\frac{\partial\vect{\zeta}_k}{\partial\xstate_{k+1}}
+&=I-\frac{h_k}{2}\fvec_{x,k+1},\\
+\frac{\partial\vect{\zeta}_k}{\partial\uvec_k}
+&=-\frac{h_k}{2}\fvec_{u,k},\\
+\frac{\partial\vect{\zeta}_k}{\partial\uvec_{k+1}}
+&=-\frac{h_k}{2}\fvec_{u,k+1}.
+\end{align}
+These blocks reveal the local sparse structure directly.
+
+\subsection{Automatic differentiation}
+
+Automatic differentiation (AD) applies the chain rule to the program that computes the objective and constraints. It produces derivatives accurate to machine precision without symbolic manipulation. AD may use:
+\begin{itemize}[leftmargin=1.4em]
+  \item forward mode, efficient when the number of independent variables is small;
+  \item reverse mode, efficient for gradients of scalar outputs with many inputs;
+  \item sparse Jacobian and Hessian techniques for large NLPs.
+\end{itemize}
+
+For direct transcription, AD is especially powerful because the algebraic problem is explicit and structurally sparse.
+
+\subsection{Direct and adjoint sensitivities}
+
+In shooting methods, derivatives often come from state sensitivities. Direct sensitivities propagate one sensitivity system for each parameter. Adjoint methods propagate a costate-like system backward and can be more efficient when there are many design variables but few scalar outputs.
+
+\subsection{Derivative verification}
+
+Before trusting an optimizer, compare the implemented gradient or Jacobian against complex-step or carefully chosen finite differences at several random points. Report a normalized discrepancy such as
+\begin{equation}
+E_D=\frac{\normtwo{\vect{d}_{\mathrm{implemented}}-\vect{d}_{\mathrm{reference}}}}
+{\max\left(1,\normtwo{\vect{d}_{\mathrm{reference}}}\right)}.
+\end{equation}
+A derivative error can produce false convergence, slow convergence, or convergence to an incorrect point.
+
+\section{Scaling, Initialization, and Continuation}
+
+\subsection{Scaling variables and constraints}
+
+Optimization algorithms behave best when variables and constraint residuals are of similar magnitude. Define scaled variables
+\begin{equation}
+\widehat{z}_i=\frac{z_i-z_i^{\mathrm{ref}}}{s_i},
+\end{equation}
+where $s_i$ is a characteristic range or magnitude. Similarly, scale a constraint $g_j$ by a representative magnitude $r_j$:
+\begin{equation}
+\widehat{g}_j=\frac{g_j}{r_j}.
+\end{equation}
+
+Dynamic defects require special care because their units and magnitudes can differ among states. A position defect measured in meters and a rotational-rate defect measured in radians per second should not necessarily be given the same raw numerical tolerance.
+
+\subsection{Initial guesses}
+
+Direct transcription requires initial guesses for state and control samples. Useful strategies include:
+\begin{itemize}[leftmargin=1.4em]
+  \item simulate a baseline controller and interpolate its trajectories;
+  \item use a simple linear or polynomial connection between boundary states;
+  \item initialize control at zero or at a known feasible operating value;
+  \item solve a simplified problem first;
+  \item use the solution from a nearby parameter case.
+\end{itemize}
+
+An infeasible initial guess is acceptable for many NLP solvers, but a wildly inconsistent guess can make convergence difficult.
+
+\subsection{Continuation and homotopy}
+
+Continuation solves a sequence of related problems. Examples include gradually:
+\begin{itemize}[leftmargin=1.4em]
+  \item tightening a terminal constraint;
+  \item increasing disturbance magnitude;
+  \item reducing a regularization weight;
+  \item activating nonlinear plant physics;
+  \item moving from a coarse to a fine mesh.
+\end{itemize}
+The previous solution provides a warm start for the next problem.
+
+\section{Mesh Refinement and Convergence Verification}
+
+A numerical solution on one mesh is not sufficient evidence. The mesh defines an approximation, and the reported optimum may change when the approximation changes.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp7_9.png}
+\caption{Mesh refinement and convergence verification. The convergence curves illustrate the expected first- and second-order behavior for a simple integration test.}
+\label{fig:mesh-refinement}
+\end{figure}
+
+\subsection{$h$-refinement}
+
+$h$-refinement reduces interval lengths by adding mesh points. It is natural for local methods and nonsmooth trajectories. Refinement can be global or concentrated in intervals with large error.
+
+\subsection{$p$-refinement}
+
+$p$-refinement increases the polynomial degree within an interval. It is effective for smooth solutions and forms the basis of spectral and pseudospectral accuracy.
+
+\subsection{$hp$-refinement}
+
+$hp$-refinement combines both strategies: use higher-order polynomials where the solution is smooth and smaller intervals near discontinuities, switching points, or active-set changes.
+
+\subsection{Error indicators}
+
+Useful indicators include:
+\begin{itemize}[leftmargin=1.4em]
+  \item mismatch between the reconstructed trajectory derivative and the model derivative;
+  \item difference between low- and high-order integration estimates;
+  \item discontinuity in high-order polynomial coefficients;
+  \item path-constraint activity or overshoot between nodes;
+  \item independent simulation error;
+  \item change in objective and design variables after refinement.
+\end{itemize}
+
+\subsection{Convergence quantities}
+
+For mesh level $r$, monitor:
+\begin{align}
+E_J^{(r)} &=\frac{|J^{(r)}-J^{(r-1)}|}{\max(1,|J^{(r)}|)},\\
+E_z^{(r)} &=\frac{\normtwo{\zvec_d^{(r)}-\zvec_d^{(r-1)}}}
+{\max(1,\normtwo{\zvec_d^{(r)}})},\\
+E_{\mathrm{def}}^{(r)} &=\max_k\normtwo{\vect{\zeta}_k},\\
+E_c^{(r)} &=\max_t\max_i\left[c_i(t)\right]_+,
+\end{align}
+where $\zvec_d$ denotes the plant and controller design variables and $[a]_+=\max(a,0)$.
+
+Convergence should be judged using several quantities, not the objective alone.
+
+\subsection{Independent simulation}
+
+After solving a transcription problem, reconstruct the control and simulate the original dynamics with a separate high-accuracy integrator. Compare the simulated trajectory with the optimized node values. This test can reveal:
+\begin{itemize}[leftmargin=1.4em]
+  \item insufficient mesh resolution;
+  \item an incorrect defect implementation;
+  \item inconsistent interpolation of the controls;
+  \item hidden path-constraint violation;
+  \item integration error or modeling mismatch.
+\end{itemize}
+
+\subsection{KKT and solver residuals}
+
+Also inspect:
+\begin{itemize}[leftmargin=1.4em]
+  \item primal infeasibility;
+  \item dual infeasibility or stationarity residual;
+  \item complementarity residual;
+  \item step size and trust-region behavior;
+  \item regularization or restoration-phase warnings.
+\end{itemize}
+A solver may terminate because it cannot make progress, not because a high-quality optimum has been found.
+
+\warningbox{A small defect on the optimization mesh does not guarantee a small continuous-time error. Verification must evaluate the reconstructed trajectory between the mesh points.}
+
+\section{Worked Example: Mass-Spring-Damper CCD by Direct Transcription}
+
+Consider
+\begin{equation}
+m\ddot{q}+c\dot{q}+kq=u(t)+d(t),
+\end{equation}
+where $k$ and $c$ are plant variables. Define
+\begin{equation}
+\xstate=\begin{bmatrix}q\\v\end{bmatrix}, \qquad
+\dot{\xstate}=\begin{bmatrix}
+v\\
+-\frac{k}{m}q-\frac{c}{m}v+\frac{1}{m}(u+d)
+\end{bmatrix}.
+\end{equation}
+Suppose the objective is
+\begin{equation}
+J=\int_0^T\left(w_q q^2+w_v v^2+w_u u^2\right)dt+w_k k+w_c c,
+\end{equation}
+with constraints
+\begin{align}
+|q(t)|&\leq q_{\max},\\
+|u(t)|&\leq u_{\max},\\
+k_L\leq k&\leq k_U,\\
+c_L\leq c&\leq c_U.
+\end{align}
+
+\subsection{Decision variables}
+
+Using node variables,
+\begin{equation}
+\zvec=[k,c,q_0,v_0,u_0,q_1,v_1,u_1,\ldots,q_N,v_N,u_N]^T.
+\end{equation}
+
+\subsection{Trapezoidal defects}
+
+For interval $k$, define
+\begin{align}
+f_{q,k}&=v_k,\\
+f_{v,k}&=-\frac{k}{m}q_k-\frac{c}{m}v_k+\frac{1}{m}(u_k+d_k).
+\end{align}
+The defects are
+\begin{align}
+0&=q_{k+1}-q_k-\frac{h_k}{2}(v_k+v_{k+1}),\\
+0&=v_{k+1}-v_k-\frac{h_k}{2}(f_{v,k}+f_{v,k+1}).
+\end{align}
+The second defect is nonlinear because the plant variables multiply state variables.
+
+\subsection{Objective quadrature}
+
+A trapezoidal objective approximation is
+\begin{align}
+J_h=&\sum_{k=0}^{N-1}\frac{h_k}{2}\bigg[
+ w_q(q_k^2+q_{k+1}^2)
++w_v(v_k^2+v_{k+1}^2)\\
+&\hspace{4.0cm}+w_u(u_k^2+u_{k+1}^2)\bigg]+w_k k+w_c c.
+\end{align}
+
+\subsection{Path constraints}
+
+At each node,
+\begin{align}
+-q_{\max}\leq q_k\leq q_{\max},\\
+-u_{\max}\leq u_k\leq u_{\max}.
+\end{align}
+After solution, $q(t)$ and $u(t)$ must be checked between nodes.
+
+\subsection{Verification plan}
+
+A credible result should include:
+\begin{enumerate}[leftmargin=1.5em]
+  \item solutions on at least three successively refined meshes;
+  \item objective and design-variable convergence;
+  \item maximum path-constraint violation on a dense grid;
+  \item independent simulation with reconstructed $u(t)$;
+  \item derivative checks for objective and defect Jacobians;
+  \item multiple initial guesses for $k$, $c$, and the trajectory.
+\end{enumerate}
+
+\section{Numerical Implementation Workflow}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp7_10.png}
+\caption{A complete numerical implementation workflow for CCD. The loop from mesh refinement back to formulation and method selection is intentional.}
+\label{fig:numerical-workflow}
+\end{figure}
+
+\subsection{Step 1: formulate the continuous problem}
+
+Write the continuous dynamics, objective, path constraints, boundary constraints, and plant/controller bounds before discretizing. Separate modeling decisions from numerical decisions.
+
+\subsection{Step 2: scale variables and residuals}
+
+Choose characteristic scales for states, controls, design variables, objective terms, and constraints. Record the scaling so the final physical values can be reconstructed unambiguously.
+
+\subsection{Step 3: select the numerical method}
+
+Use direct shooting for simple, stable, low-dimensional problems. Use multiple shooting when simulation is desirable but long-range sensitivity is problematic. Use direct transcription or collocation for general path-constrained CCD problems and unstable dynamics.
+
+\subsection{Step 4: define the initial mesh and trajectory representation}
+
+Select interval locations, polynomial order, control interpolation, and quadrature. The choice should reflect anticipated smoothness and switching behavior.
+
+\subsection{Step 5: assemble sparse objective, constraints, and derivatives}
+
+Exploit local dependence. Supply sparse structures and exact derivatives where practical. Unit-test every defect formula on a known trajectory.
+
+\subsection{Step 6: solve and inspect diagnostics}
+
+Do not look only at the objective. Inspect feasibility, stationarity, active constraints, step acceptance, iteration history, and warnings.
+
+\subsection{Step 7: refine and warm start}
+
+Refine the mesh or polynomial order, interpolate the previous solution, and solve again. Continue until relevant quantities stabilize.
+
+\subsection{Step 8: verify independently}
+
+Use an independent high-accuracy simulation and a dense path-constraint check. Compare state trajectories, terminal values, and integral quantities.
+
+\subsection{Step 9: test nonconvexity}
+
+Use multiple initial guesses, continuation paths, and possibly alternative methods or meshes. A converged local solution should not be reported as a global optimum without evidence.
+
+\subsection{Step 10: report numerical evidence}
+
+A reproducible numerical report should state:
+\begin{itemize}[leftmargin=1.4em]
+  \item method and collocation scheme;
+  \item number and distribution of mesh points;
+  \item scaling;
+  \item NLP solver and tolerances;
+  \item derivative method;
+  \item initial guesses and warm starts;
+  \item convergence and refinement results;
+  \item maximum constraint and defect residuals;
+  \item independent simulation results.
+\end{itemize}
+
+\section{Practical Method-Selection Guide}
+
+\begin{table}[H]
+\centering
+\caption{Qualitative method-selection guide.}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.7cm} >{\raggedright\arraybackslash}p{3.6cm} >{\raggedright\arraybackslash}p{3.5cm} >{\raggedright\arraybackslash}p{3.3cm}}
+\toprule
+Method & Best suited for & Main strength & Main limitation \\
+\midrule
+Direct shooting & Stable systems, short horizons, few control parameters & Simple connection to simulation & Poor conditioning for unstable or long-horizon problems \\
+Multiple shooting & Moderately unstable systems and tight terminal constraints & Shorter sensitivity propagation & Additional state variables and continuity constraints \\
+Local direct collocation & General nonlinear CCD with path constraints & Sparse, robust, locally refinable & Large NLP and need for trajectory initialization \\
+Pseudospectral transcription & Smooth trajectories and high-accuracy solutions & Very rapid convergence for smooth problems & Less natural near discontinuities without multiple intervals \\
+Indirect method & Problems with known active-set structure and strong theoretical analysis & High accuracy and costate information & Difficult initialization and path-constraint handling \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Common Numerical Mistakes}
+
+\begin{enumerate}[leftmargin=1.5em]
+  \item \textbf{Using one mesh and reporting the result as final.} The solution may be a discretization artifact.
+  \item \textbf{Checking path constraints only at nodes.} Violations can occur between nodes.
+  \item \textbf{Using inaccurate finite differences for a large sparse problem.} The optimizer may stop falsely or converge very slowly.
+  \item \textbf{Ignoring scaling.} Raw physical units can create Jacobians and Hessians with extreme condition numbers.
+  \item \textbf{Using inconsistent control interpolation.} The transcription and independent simulation must use the same assumed control representation.
+  \item \textbf{Treating NLP feasibility as dynamic accuracy.} Small algebraic defects do not automatically prove accurate continuous trajectories.
+  \item \textbf{Comparing methods on different formulations.} A fair comparison uses consistent variables, constraints, tolerances, and control representations.
+  \item \textbf{Trusting one initial guess.} Most nonlinear CCD problems are nonconvex.
+  \item \textbf{Failing to report solver diagnostics.} The reader cannot assess whether the result is numerically credible.
+\end{enumerate}
+
+\section{Chapter Summary}
+
+Numerical CCD methods approximate continuous states and controls with finite decision vectors. Direct shooting parameterizes the controls and simulates the system inside the optimizer. It is simple but can be poorly conditioned for long horizons and unstable systems. Multiple shooting divides the horizon into local simulations and enforces continuity between them, improving conditioning at the cost of additional variables and constraints.
+
+Direct transcription and collocation optimize state and control samples simultaneously. Defect constraints replace the differential equations with algebraic equalities. Euler, trapezoidal, Hermite-Simpson, Runge-Kutta, zero-order-hold, and pseudospectral methods provide different accuracy and sparsity trade-offs. Direct-transcription NLPs can be large, but their local time structure produces sparse Jacobians that modern solvers can exploit.
+
+Derivative computation is central to efficiency and reliability. Finite differences are convenient but sensitive to step size. Complex-step differentiation is valuable for verification. Analytic and automatic derivatives are usually preferable for large CCD problems. Scaling, initialization, and continuation often determine whether the solver succeeds.
+
+Finally, numerical credibility requires mesh refinement, independent simulation, dense path-constraint checks, derivative verification, multiple starts, and transparent reporting. A solver success message is not enough.
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item time discretization
+  \item computational mesh
+  \item mesh interval
+  \item control parameterization
+  \item direct shooting
+  \item multiple shooting
+  \item direct transcription
+  \item direct collocation
+  \item defect constraint
+  \item quadrature
+  \item Euler forward
+  \item trapezoidal rule
+  \item Hermite-Simpson
+  \item pseudospectral method
+  \item differentiation matrix
+  \item sparse NLP
+  \item Jacobian sparsity
+  \item automatic differentiation
+  \item complex-step differentiation
+  \item mesh refinement
+  \item $h$-refinement
+  \item $p$-refinement
+  \item $hp$-refinement
+  \item warm start
+  \item continuation
+  \item independent simulation
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Conceptual problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item Why is a continuous-time optimal-control problem infinite-dimensional?
+  \item Explain the difference between a sequential direct method and a simultaneous direct method.
+  \item Why can a large direct-transcription problem be computationally manageable despite having thousands of variables?
+  \item What is the physical meaning of a defect constraint?
+  \item Why does path-constraint satisfaction at mesh nodes not guarantee continuous-time feasibility?
+\end{enumerate}
+
+\subsection*{Time-discretization problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Construct a uniform mesh for $t\in[0,10]$ with 20 intervals. State the number of nodes and the interval length.
+  \item Propose a nonuniform mesh for a problem with a fast transient near $t=0$ and smooth behavior afterward.
+  \item A problem has 12 states, 4 controls, 200 intervals, 8 plant variables, and 6 controller parameters. Estimate the number of direct-transcription variables when only node states and controls are used.
+  \item Explain when piecewise-constant control is more physically appropriate than piecewise-linear control.
+  \item Explain why a global high-order polynomial may struggle with bang-bang control.
+\end{enumerate}
+
+\subsection*{Shooting problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Write a direct-shooting formulation for $\dot{x}=ax+bu$ with a piecewise-constant control over five intervals.
+  \item Explain why tight terminal constraints can be difficult for single shooting.
+  \item Derive the state-sensitivity equation for $\dot{x}=f(x,q,t)$ with respect to parameter $q$.
+  \item Formulate the continuity constraints for a three-segment multiple-shooting method.
+  \item Compare the decision variables in single shooting and multiple shooting.
+\end{enumerate}
+
+\subsection*{Defect-constraint problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Derive the Euler-forward defect for $\dot{x}=-2x+u$.
+  \item Derive the trapezoidal defect for the same system.
+  \item For a vector system $\dot{\xstate}=A\xstate+B\uvec$, write the trapezoidal defect in matrix form.
+  \item Write the Hermite-Simpson midpoint state and defect formulas.
+  \item Explain why implicit integration formulas are convenient in direct transcription even if they are inconvenient in explicit forward simulation.
+\end{enumerate}
+
+\subsection*{Sparse-NLP and derivative problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Sketch the Jacobian sparsity pattern for trapezoidal defects over six intervals with one state and one control.
+  \item Explain how sparse finite-difference coloring reduces derivative evaluations.
+  \item Compare forward finite differences and complex-step differentiation.
+  \item Derive the Jacobian blocks of the Euler defect with respect to $x_k$, $x_{k+1}$, and $u_k$.
+  \item Explain when reverse-mode automatic differentiation is attractive.
+\end{enumerate}
+
+\subsection*{Mesh and verification problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Define objective convergence and design-variable convergence metrics for a mesh-refinement study.
+  \item Explain the difference among $h$-, $p$-, and $hp$-refinement.
+  \item List five quantities that should be checked after an NLP solver reports success.
+  \item Describe an independent-simulation verification procedure for a direct-transcription solution.
+  \item Explain why multiple initial guesses are still necessary after mesh convergence is demonstrated.
+\end{enumerate}
+
+\subsection*{Computational and mini-project problems}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Implement Euler and trapezoidal integration for $\dot{x}=-x$, $x(0)=1$, and verify their convergence orders.
+  \item Implement a direct-shooting problem for a double integrator that moves from rest to a specified final position with minimum control effort.
+  \item Implement a trapezoidal direct transcription for the same double-integrator problem and compare the solution with shooting.
+  \item Perform a mesh-refinement study using at least four mesh sizes. Plot objective error, terminal error, and maximum defect.
+  \item Verify a hand-coded Jacobian using complex-step differentiation.
+  \item Choose a small CCD problem and compare two numerical methods using the same formulation, bounds, objective, and tolerances.
+  \item Mini-project: solve a nonlinear CCD problem with plant variables and a control trajectory. Submit a report documenting formulation, scaling, mesh, transcription method, derivative method, solver settings, refinement, independent simulation, and engineering interpretation.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable SVG figure files are supplied separately:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp7\_1.svg}
+  \item \texttt{fig\_chp7\_2.svg}
+  \item \texttt{fig\_chp7\_3.svg}
+  \item \texttt{fig\_chp7\_4.svg}
+  \item \texttt{fig\_chp7\_5.svg}
+  \item \texttt{fig\_chp7\_6.svg}
+  \item \texttt{fig\_chp7\_7.svg}
+  \item \texttt{fig\_chp7\_8.svg}
+  \item \texttt{fig\_chp7\_9.svg}
+  \item \texttt{fig\_chp7\_10.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{herber2017}
+D. R. Herber, \emph{Advances in Combined Architecture, Plant, and Control Design}. Ph.D. dissertation, University of Illinois at Urbana-Champaign, 2017. See especially Chapter 5 and Appendix C.
+
+\bibitem{betts}
+J. T. Betts, \emph{Practical Methods for Optimal Control and Estimation Using Nonlinear Programming}. 2nd ed., SIAM, 2010.
+
+\bibitem{biegler}
+L. T. Biegler, \emph{Nonlinear Programming: Concepts, Algorithms, and Applications to Chemical Processes}. SIAM, 2010.
+
+\bibitem{kelly}
+M. Kelly, ``An introduction to trajectory optimization: How to do your own direct collocation,'' \emph{SIAM Review}, vol. 59, no. 4, pp. 849--904, 2017.
+
+\bibitem{rao}
+A. V. Rao, ``A survey of numerical methods for optimal control,'' \emph{Advances in the Astronautical Sciences}, vol. 135, pp. 497--528, 2009.
+
+\bibitem{pattersonrao}
+M. A. Patterson and A. V. Rao, ``GPOPS-II: A MATLAB software for solving multiple-phase optimal control problems using hp-adaptive Gaussian quadrature collocation methods and sparse nonlinear programming,'' \emph{ACM Transactions on Mathematical Software}, vol. 41, no. 1, 2014.
+
+\bibitem{nocedal}
+J. Nocedal and S. J. Wright, \emph{Numerical Optimization}. 2nd ed., Springer, 2006.
+
+\bibitem{allisonherber}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\bibitem{herberallison}
+D. R. Herber and J. T. Allison, ``Nested and simultaneous solution strategies for general combined plant and control design problems,'' \emph{Journal of Mechanical Design}, vol. 141, no. 1, 011402, 2019.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 7
+\end{center}
+
+\end{document}

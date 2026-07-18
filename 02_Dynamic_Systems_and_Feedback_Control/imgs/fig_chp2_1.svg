@@ -1,0 +1,121 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="960" viewBox="0 0 2400 960">
+  <defs>
+    <marker id="arrow" markerWidth="20" markerHeight="20"
+            refX="16" refY="10" orient="auto"
+            markerUnits="userSpaceOnUse">
+      <path d="M2,2 L16,10 L2,18"
+            fill="none"
+            stroke="#5B6573"
+            stroke-width="3.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="2400" height="960" fill="#FFFFFF"/>
+
+  <!-- Title -->
+  <rect x="300" y="28" width="1800" height="128" rx="28"
+        fill="#FFFFFF" stroke="#123B63" stroke-width="6"/>
+  <text x="1200" y="108" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="66" font-weight="700" fill="#123B63">
+    From Physical System to State-Space Model
+  </text>
+
+  <!-- Top labels: centered over their corresponding bottom blocks -->
+  <g font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700">
+    <rect x="70" y="205" width="400" height="74" rx="18"
+          fill="#FFFFFF" stroke="#123B63" stroke-width="4"/>
+    <text x="270" y="251" text-anchor="middle" fill="#123B63" font-size="27">
+      geometry, masses, physics
+    </text>
+
+    <rect x="590" y="205" width="320" height="74" rx="18"
+          fill="#FFFFFF" stroke="#5B6573" stroke-width="4"/>
+    <text x="750" y="253" text-anchor="middle" fill="#5B6573">simplify</text>
+
+    <rect x="1070" y="205" width="320" height="74" rx="18"
+          fill="#FFFFFF" stroke="#5B6573" stroke-width="4"/>
+    <text x="1230" y="253" text-anchor="middle" fill="#5B6573">derive</text>
+
+    <rect x="1550" y="205" width="320" height="74" rx="18"
+          fill="#FFFFFF" stroke="#2D6A9F" stroke-width="4"/>
+    <text x="1710" y="253" text-anchor="middle" fill="#2D6A9F">define</text>
+
+    <rect x="2010" y="205" width="300" height="74" rx="18"
+          fill="#FFFFFF" stroke="#D97706" stroke-width="4"/>
+    <text x="2160" y="253" text-anchor="middle" fill="#D97706">analyze</text>
+  </g>
+
+  <!-- Vertical connectors: centered -->
+  <g stroke="#D5DCE5" stroke-width="8">
+    <line x1="270" y1="279" x2="270" y2="366"/>
+    <line x1="750" y1="279" x2="750" y2="366"/>
+    <line x1="1230" y1="279" x2="1230" y2="366"/>
+    <line x1="1710" y1="279" x2="1710" y2="366"/>
+    <line x1="2160" y1="279" x2="2160" y2="366"/>
+  </g>
+
+  <!-- Main process boxes -->
+  <g font-family="Arial, Helvetica, sans-serif" fill="#1F2933">
+    <rect x="70" y="365" width="400" height="250" rx="30"
+          fill="#EAF2F8" stroke="#123B63" stroke-width="7"/>
+    <text x="270" y="478" text-anchor="middle" font-size="48" font-weight="700">
+      <tspan x="270" dy="0">Physical</tspan>
+      <tspan x="270" dy="62">system</tspan>
+    </text>
+
+    <rect x="550" y="365" width="400" height="250" rx="30"
+          fill="#FFFFFF" stroke="#5B6573" stroke-width="7"/>
+    <text x="750" y="478" text-anchor="middle" font-size="46">
+      <tspan x="750" dy="0">Modeling</tspan>
+      <tspan x="750" dy="62">assumptions</tspan>
+    </text>
+
+    <rect x="1030" y="365" width="400" height="250" rx="30"
+          fill="#FFFFFF" stroke="#5B6573" stroke-width="7"/>
+    <text x="1230" y="478" text-anchor="middle" font-size="46">
+      <tspan x="1230" dy="0">Differential</tspan>
+      <tspan x="1230" dy="62">equations</tspan>
+    </text>
+
+    <rect x="1510" y="365" width="400" height="250" rx="30"
+          fill="#EBF2F8" stroke="#2D6A9F" stroke-width="7"/>
+    <text x="1710" y="478" text-anchor="middle" font-size="43">
+      <tspan x="1710" dy="0">States, inputs,</tspan>
+      <tspan x="1710" dy="62">outputs</tspan>
+    </text>
+
+    <rect x="1990" y="365" width="340" height="250" rx="30"
+          fill="#F7EFE1" stroke="#D97706" stroke-width="7"/>
+    <text x="2160" y="478" text-anchor="middle" font-size="45" font-weight="700">
+      <tspan x="2160" dy="0">State-space</tspan>
+      <tspan x="2160" dy="62">model</tspan>
+    </text>
+  </g>
+
+  <!-- Horizontal arrows -->
+  <g stroke="#5B6573" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arrow)">
+    <line x1="480" y1="490" x2="530" y2="490"/>
+    <line x1="960" y1="490" x2="1010" y2="490"/>
+    <line x1="1440" y1="490" x2="1490" y2="490"/>
+    <line x1="1920" y1="490" x2="1970" y2="490"/>
+  </g>
+
+  <!-- Equation panel -->
+  <rect x="350" y="685" width="1700" height="150" rx="24"
+        fill="#FFFFFF" stroke="#2D6A9F" stroke-width="6"/>
+  <text x="1200" y="780" text-anchor="middle"
+        font-family="Times New Roman, Georgia, serif"
+        font-size="72" font-style="italic" fill="#123B63">
+    ẋ = f(x, u, d),  y = h(x, u, d)
+  </text>
+
+  <!-- Caption -->
+  <text x="1200" y="900" text-anchor="middle"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="34" fill="#5B6573">
+    Dynamic model form used throughout CCD analysis and control design
+  </text>
+</svg>

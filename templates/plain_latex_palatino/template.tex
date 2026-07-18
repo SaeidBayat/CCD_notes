@@ -1,0 +1,303 @@
+\documentclass[11pt,oneside,openany]{book}
+\usepackage[letterpaper,margin=0.58in,top=0.68in,bottom=0.78in,headheight=15pt,headsep=12pt,footskip=20pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{datetime}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{newpxtext}
+\usepackage{newpxmath}
+\usepackage[svgnames,table]{xcolor}
+\usepackage{amsmath}
+% newpxmath and amssymb both define \Bbbk in older TeX Live releases.
+\let\Bbbk\relax
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{url}
+\usepackage{xurl}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\bibliographystyle{abbrvnat}
+
+[-IMPORTS-]
+
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}%
+  \setlength{\parskip}{0pt}%
+}
+
+\definecolor{MichiganBlue}{HTML}{00274C}
+\definecolor{MichiganMaize}{HTML}{FFCB05}
+\definecolor{NoteBg}{HTML}{EFF6FF}
+\definecolor{NoteBorder}{HTML}{2563EB}
+\definecolor{TipBg}{HTML}{ECFDF5}
+\definecolor{TipBorder}{HTML}{059669}
+\definecolor{SeeAlsoBg}{HTML}{F0FDFA}
+\definecolor{SeeAlsoBorder}{HTML}{0F766E}
+\definecolor{WarnBg}{HTML}{FFFBEB}
+\definecolor{WarnBorder}{HTML}{D97706}
+\definecolor{AttentionBg}{HTML}{FFF7ED}
+\definecolor{AttentionBorder}{HTML}{EA580C}
+\definecolor{GenericBg}{HTML}{F8FAFC}
+\definecolor{GenericBorder}{HTML}{475569}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=MichiganBlue,
+  urlcolor=MichiganBlue,
+  citecolor=MichiganBlue
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.35em}
+\setlist{itemsep=0.15em,topsep=0.25em}
+\raggedbottom
+
+\makeatletter
+\renewcommand\tagform@[1]{}
+\renewcommand\theequation{}
+\makeatother
+\setcounter{secnumdepth}{0}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\nouppercase{\leftmark}}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.3pt}
+
+\titleformat{\chapter}[display]
+  {\normalfont}
+  {}
+  {0pt}
+  {\color{MichiganBlue}\bfseries\fontsize{26}{30}\selectfont}
+\titlespacing*{\chapter}{0pt}{0pt}{1.0em}
+
+\titleformat{\section}
+  {\normalfont\bfseries\Large\color{MichiganBlue}}
+  {}
+  {0pt}
+  {}
+\titlespacing*{\section}{0pt}{0.85em}{0.3em}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\large}
+  {}
+  {0pt}
+  {}
+\titlespacing*{\subsection}{0pt}{0.7em}{0.25em}
+
+\titleformat{\paragraph}[runin]
+  {\normalfont\bfseries}
+  {}
+  {0pt}
+  {}
+  [.]
+
+\newtcolorbox{mystnote}[1]{
+  enhanced,
+  breakable,
+  boxrule=0.8pt,
+  sharp corners,
+  opacityback=1,
+  opacityframe=1,
+  opacitytext=1,
+  opacitybacktitle=1,
+  colback=NoteBg,
+  colframe=NoteBorder,
+  colbacktitle=NoteBorder,
+  coltitle=white,
+  coltext=black,
+  colupper=black,
+  fontupper=\color{black},
+  fonttitle=\bfseries,
+  title={#1},
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{mysttip}[1]{
+  enhanced,
+  breakable,
+  boxrule=0.8pt,
+  sharp corners,
+  opacityback=1,
+  opacityframe=1,
+  opacitytext=1,
+  opacitybacktitle=1,
+  colback=TipBg,
+  colframe=TipBorder,
+  colbacktitle=TipBorder,
+  coltitle=white,
+  coltext=black,
+  colupper=black,
+  fontupper=\color{black},
+  fonttitle=\bfseries,
+  title={#1},
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{mystseealso}[1]{
+  enhanced,
+  boxrule=0.8pt,
+  sharp corners,
+  opacityback=1,
+  opacityframe=1,
+  opacitytext=1,
+  opacitybacktitle=1,
+  colback=SeeAlsoBg,
+  colframe=SeeAlsoBorder,
+  colbacktitle=SeeAlsoBorder,
+  coltitle=white,
+  coltext=black,
+  colupper=black,
+  fontupper=\color{black},
+  fonttitle=\bfseries,
+  title={#1},
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{mystwarning}[1]{
+  enhanced,
+  breakable,
+  boxrule=0.8pt,
+  sharp corners,
+  opacityback=1,
+  opacityframe=1,
+  opacitytext=1,
+  opacitybacktitle=1,
+  colback=WarnBg,
+  colframe=WarnBorder,
+  colbacktitle=WarnBorder,
+  coltitle=white,
+  coltext=black,
+  colupper=black,
+  fontupper=\color{black},
+  fonttitle=\bfseries,
+  title={#1},
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{mystattention}[1]{
+  enhanced,
+  breakable,
+  boxrule=0.8pt,
+  sharp corners,
+  opacityback=1,
+  opacityframe=1,
+  opacitytext=1,
+  opacitybacktitle=1,
+  colback=AttentionBg,
+  colframe=AttentionBorder,
+  colbacktitle=AttentionBorder,
+  coltitle=white,
+  coltext=black,
+  colupper=black,
+  fontupper=\color{black},
+  fonttitle=\bfseries,
+  title={#1},
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{mystgeneric}[1]{
+  enhanced,
+  breakable,
+  boxrule=0.8pt,
+  sharp corners,
+  opacityback=1,
+  opacityframe=1,
+  opacitytext=1,
+  opacitybacktitle=1,
+  colback=GenericBg,
+  colframe=GenericBorder,
+  colbacktitle=GenericBorder,
+  coltitle=white,
+  coltext=black,
+  colupper=black,
+  fontupper=\color{black},
+  fonttitle=\bfseries,
+  title={#1},
+  left=8pt,
+  right=8pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newcommand{\lastcommitdate}{%%LAST_COMMIT%%}
+
+\title{[-doc.title-]}
+\author{[-doc.authors|join(" \\and ", "name")-]}
+\newdate{articleDate}{[-doc.date.day-]}{[-doc.date.month-]}{[-doc.date.year-]}
+\date{\displaydate{articleDate}}
+
+\makeatletter
+\renewcommand{\maketitle}{
+  \thispagestyle{empty}
+  \begingroup
+  \centering
+  \vspace*{0.06\textheight}
+  \begin{tcolorbox}[
+    enhanced,
+    sharp corners,
+    boxrule=0pt,
+    colback=MichiganBlue,
+    left=22pt,
+    right=22pt,
+    top=26pt,
+    bottom=26pt
+  ]
+    {\color{MichiganMaize}\bfseries\Large COURSE NOTES}\par
+    \vspace{0.75em}
+    {\color{white}\bfseries\fontsize{30}{34}\selectfont \@title\par}
+    \vspace{1.25em}
+    \vspace{2.25em}
+    {\color{white}\normalsize Compiled on \displaydate{articleDate}\par}
+    {\color{white}\normalsize Last repo commit: \lastcommitdate\par}
+  \end{tcolorbox}
+  \vspace{1.1em}
+  {\color{red}\bfseries\small Note: Interactive elements may be simplified or omitted in this PDF export.\par}
+  \vfill
+  {\Large \@author\par}
+  \endgroup
+  \clearpage
+}
+\makeatother
+
+\begin{document}
+\maketitle
+
+[# if parts.abstract #]\begin{abstract}[-parts.abstract-]\end{abstract}[# endif #]
+
+[# if options.link #]
+\newcommand{\documentnote}[1]{{%
+  \let\thempfn\relax%
+  \footnotetext[0]{\emph{#1}}%
+}}
+\documentnote{Available online at:\\ \href{[-options.link-]}{[-options.link-]}}
+[# endif #]
+
+[-CONTENT-]
+
+[# if doc.bibliography #]
+\bibliography{[- doc.bibliography | join(", ") -]}
+[# endif #]
+\end{document}

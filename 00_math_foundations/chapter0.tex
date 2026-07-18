@@ -1,0 +1,984 @@
+\documentclass[11pt]{article}
+
+\usepackage[letterpaper,margin=0.9in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsfonts,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{titlesec}
+\usepackage{tikz}
+\usepackage{longtable}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{setspace}
+\usepackage{bm}
+\usepackage{listings}
+\usepackage{courier}
+
+\definecolor{CCDdark}{RGB}{17,57,96}
+\definecolor{CCDaccent}{RGB}{217,119,6}
+\definecolor{CCDgreen}{RGB}{47,133,90}
+\definecolor{CCDlight}{RGB}{234,242,248}
+\definecolor{CCDsoft}{RGB}{244,244,245}
+\definecolor{CCDgray}{RGB}{90,100,112}
+\definecolor{CCDpurple}{RGB}{124,58,237}
+\definecolor{CCDred}{RGB}{178,58,72}
+\definecolor{codebg}{RGB}{248,248,248}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=CCDdark,
+  urlcolor=CCDdark,
+  citecolor=CCDdark,
+  pdftitle={Chapter 0: Mathematical Prerequisites},
+  pdfauthor={Saeid Bayat}
+}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{black!20},
+  keywordstyle=\color{CCDdark}\bfseries,
+  commentstyle=\color{CCDgreen},
+  stringstyle=\color{CCDred},
+  showstringspaces=false,
+  columns=fullflexible,
+  keepspaces=true
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{CCDgray}Control Co-Design}
+\fancyhead[R]{\small\color{CCDgray}Chapter 0: Foundations}
+\fancyfoot[C]{\thepage}
+\setlength{\headheight}{14pt}
+
+\titleformat{\section}{\Large\bfseries\color{CCDdark}}{\thesection}{0.5em}{}
+\titleformat{\subsection}{\large\bfseries\color{CCDdark}}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{CCDdark}}{\thesubsubsection}{0.5em}{}
+
+\newcommand{\vect}[1]{\boldsymbol{#1}}
+\newcommand{\xp}{\vect{x}_p}
+\newcommand{\xc}{\vect{x}_c}
+\newcommand{\xstate}{\vect{x}}
+\newcommand{\uvec}{\vect{u}}
+\newcommand{\yvec}{\vect{y}}
+\newcommand{\R}{\mathbb{R}}
+
+\newenvironment{learningobjectives}{%
+\begin{quote}\textbf{Learning objectives.} After completing this chapter, you should be able to:
+\begin{enumerate}[leftmargin=1.4em,itemsep=0.35em,topsep=0.5em]
+}{\end{enumerate}\end{quote}}
+
+\newcommand{\keyideabox}[1]{%
+\begin{center}
+\fcolorbox{CCDgreen}{white}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+\end{center}}
+
+\begin{document}
+
+% Cover
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[CCDdark] (current page.north west) rectangle ([yshift=-2.6in]current page.north east);
+  \fill[CCDaccent] ([yshift=-2.65in]current page.north west) rectangle ([yshift=-2.75in]current page.north east);
+  \fill[blue!8] (current page.south west) rectangle ([yshift=0.35in]current page.south east);
+\end{tikzpicture}
+
+\vspace*{0.7in}
+{\color{white}\fontsize{18}{20}\selectfont CONTROL CO-DESIGN\par}
+\vspace{0.18in}
+{\color{white}\Large Integrated Optimization of Plants and Controllers\par}
+
+\vspace{2.0in}
+{\fontsize{28}{32}\selectfont\bfseries\color{CCDdark} Chapter 0\par}
+\vspace{0.18in}
+\noindent\begin{minipage}{0.92\linewidth}
+\raggedright
+{\fontsize{22}{26}\selectfont\bfseries\color{black!85} Mathematical Prerequisites\par}
+\end{minipage}
+\vspace{0.20in}
+\par\noindent{\large\color{CCDgray} Essential notation, calculus, linear algebra, differential equations, optimization language, discretization, and coding tools\par}
+
+\vspace{0.55in}
+\noindent\fcolorbox{CCDgreen}{white}{%
+\begin{minipage}{0.84\linewidth}
+\large This prerequisite chapter gives the minimum mathematical and computational background needed to read, formulate, and solve the CCD problems developed in the rest of the course.
+\end{minipage}}
+
+\vfill
+{\large Saeid Bayat\par}
+\vspace{0.12in}
+{\normalsize Draft course chapter for senior undergraduate and beginning graduate students\par}
+\vspace{0.12in}
+{\normalsize July 2026\par}
+\newpage
+
+\tableofcontents
+\newpage
+
+\section*{Chapter Overview}
+\addcontentsline{toc}{section}{Chapter Overview}
+
+Control co-design (CCD) combines physical-system design and controller design into one integrated problem. To understand CCD, students need a modest but reliable toolkit: how to read mathematical notation, how to think about derivatives and integrals, how vectors and matrices are used, how dynamic systems are represented with differential equations, how optimization problems are written, how continuous-time functions become finite decision vectors, and how simple computational scripts are organized.
+
+This chapter does \emph{not} attempt to replace a full course in calculus, linear algebra, dynamics, or programming. Instead, it gives a focused foundation that prepares students to follow the remainder of the course. Every topic is presented from the viewpoint of later CCD use.
+
+Figure~\ref{fig:ch0-foundation-map} shows the main ideas. The chapter begins with notation and engineering variables, then reviews derivatives, integrals, matrices, differential equations, state-space notation, optimization language, discretization, and simple coding workflows.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig_chp0_1.png}
+\caption{The main mathematical and computational foundations needed before starting a course on control co-design.}
+\label{fig:ch0-foundation-map}
+\end{figure}
+
+\begin{learningobjectives}
+  \item read and use the notation that appears throughout the course;
+  \item interpret derivatives, partial derivatives, gradients, Jacobians, and Hessians at an introductory level;
+  \item interpret definite integrals and basic numerical integration formulas;
+  \item perform basic vector and matrix operations relevant to dynamic-system modeling;
+  \item convert a second-order differential equation into first-order state-space form;
+  \item read and write a basic optimization problem with variables, objectives, and constraints;
+  \item explain how continuous trajectories become finite-dimensional decision vectors;
+  \item understand the minimal programming workflow used in simulation and optimization studies.
+\end{learningobjectives}
+
+\section{Mathematical Notation and Engineering Variables}
+
+\subsection{Why notation matters}
+
+CCD formulations often look intimidating at first, not because the ideas are impossible, but because the notation is compact. A student who can read the notation comfortably will find later chapters much easier to understand.
+
+We will use the following conventions throughout the course:
+\begin{itemize}[leftmargin=1.4em]
+  \item italic lowercase letters such as $m$, $k$, and $t$ denote \textbf{scalars};
+  \item bold lowercase letters such as $\xstate$ and $\uvec$ denote \textbf{vectors};
+  \item uppercase letters such as $A$, $B$, and $C$ denote \textbf{matrices};
+  \item time-varying variables are written explicitly, such as $x(t)$ or $u(t)$.
+\end{itemize}
+
+Figure~\ref{fig:ch0-notation} summarizes the main categories.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp0_2.png}
+\caption{Basic notation categories used throughout the course.}
+\label{fig:ch0-notation}
+\end{figure}
+
+\subsection{Common variables in CCD}
+
+The following symbols appear frequently in later chapters:
+\begin{itemize}[leftmargin=1.4em]
+  \item $\xp$: vector of plant design variables;
+  \item $\xc$: vector of control design variables or controller parameters;
+  \item $\xstate(t)$: state vector;
+  \item $\uvec(t)$: control input vector;
+  \item $\yvec(t)$: output vector or measured signals;
+  \item $J$: objective function or performance index;
+  \item $g(\cdot)$: inequality constraints;
+  \item $h(\cdot)$: equality constraints.
+\end{itemize}
+
+For example, a plant-variable vector might be
+\begin{equation}
+\xp = \begin{bmatrix} m & k & c \end{bmatrix}^{T},
+\end{equation}
+while a controller-parameter vector might be
+\begin{equation}
+\xc = \begin{bmatrix} K_p & K_i & K_d \end{bmatrix}^{T}.
+\end{equation}
+
+\subsection{Subscripts and superscripts}
+
+Subscripts usually index components, samples, or categories. For instance:
+\begin{equation}
+\xstate = \begin{bmatrix} x_1 & x_2 & \cdots & x_n \end{bmatrix}^{T}
+\end{equation}
+means that the vector $\xstate$ contains $n$ components. In time-discretized problems, $x_i$ may also mean ``the value of a variable at the $i$th time node.'' Context will tell you which meaning is intended.
+
+Superscripts often indicate powers, iterations, or labels. For example:
+\begin{equation}
+\xstate^{(k)}
+\end{equation}
+usually means the value of the vector $\xstate$ at iteration $k$ of an algorithm.
+
+\subsection{Summation notation}
+
+Summation notation is common in discrete approximations and finite-dimensional optimization problems:
+\begin{equation}
+\sum_{i=1}^{N} a_i = a_1 + a_2 + \cdots + a_N.
+\end{equation}
+
+For example, if the control effort is sampled at $N$ points, a simple discrete measure may be
+\begin{equation}
+J = \sum_{i=1}^{N} u_i^2.
+\end{equation}
+
+\subsection{Sets, bounds, and intervals}
+
+Bounds are often written componentwise:
+\begin{equation}
+\vect{x}^{L} \le \vect{x} \le \vect{x}^{U},
+\end{equation}
+where $\vect{x}^{L}$ and $\vect{x}^{U}$ denote lower and upper bounds. The notation $t\in[t_0,t_f]$ means that time belongs to the interval from $t_0$ to $t_f$.
+
+\section{Functions and Engineering Relationships}
+
+A function maps one quantity to another. In engineering, functions describe relationships among design variables, states, inputs, and outputs.
+
+\subsection{Single-variable and multivariable functions}
+
+A single-variable function has the form
+\begin{equation}
+ y=f(x),
+\end{equation}
+while a multivariable function may have the form
+\begin{equation}
+J = f(x_1,x_2,\ldots,x_n).
+\end{equation}
+
+Example:
+\begin{equation}
+J(k,c)=k^2+2c^2-kc.
+\end{equation}
+Here $J$ depends on two design variables: stiffness $k$ and damping $c$.
+
+\subsection{Explicit and implicit relationships}
+
+An explicit relationship directly gives one variable as a function of others, such as
+\begin{equation}
+ y = 3x+2.
+\end{equation}
+An implicit relationship mixes variables in one equation, such as
+\begin{equation}
+ x^2+y^2=1.
+\end{equation}
+Both forms occur in engineering modeling.
+
+\subsection{Linear and nonlinear relationships}
+
+A function is linear in a variable if doubling the variable doubles the output and adding variables adds outputs. For example,
+\begin{equation}
+ y = ax+b
+\end{equation}
+is affine, while
+\begin{equation}
+ y=x^2+\sin(x)
+\end{equation}
+is nonlinear. Most CCD problems are nonlinear because real engineering behavior involves nonlinear dynamics, nonlinear constraints, and nonlinear performance measures.
+
+\subsection{Time-dependent functions}
+
+Dynamic systems are described by time-dependent functions such as $x(t)$ and $u(t)$. These are not just numbers; they are trajectories. Understanding the difference between a scalar, a vector, and a time-dependent trajectory is essential for later chapters.
+
+\section{Derivatives and Partial Derivatives}
+
+\subsection{Single-variable derivative}
+
+The derivative of a scalar function $f(x)$ with respect to $x$ is written
+\begin{equation}
+\frac{df}{dx}.
+\end{equation}
+It measures the rate of change of $f$ when $x$ changes. In optimization, the derivative tells us how the objective or constraint changes when we adjust a variable.
+
+If
+\begin{equation}
+f(x)=x^2,
+\end{equation}
+then
+\begin{equation}
+\frac{df}{dx}=2x.
+\end{equation}
+
+\subsection{Second derivative}
+
+The second derivative
+\begin{equation}
+\frac{d^2 f}{dx^2}
+\end{equation}
+measures how the slope itself changes. It is related to curvature and is important in numerical optimization.
+
+\subsection{Partial derivatives}
+
+If a function depends on several variables, we differentiate with respect to one variable while holding the others fixed. This produces a partial derivative:
+\begin{equation}
+\frac{\partial f}{\partial x_i}.
+\end{equation}
+
+For the example
+\begin{equation}
+J(k,c)=k^2+2c^2-kc,
+\end{equation}
+we have
+\begin{equation}
+\frac{\partial J}{\partial k}=2k-c,
+\qquad
+\frac{\partial J}{\partial c}=4c-k.
+\end{equation}
+
+\subsection{Gradient}
+
+The gradient collects all first partial derivatives into one vector:
+\begin{equation}
+\nabla J(\vect{x}) =
+\begin{bmatrix}
+\dfrac{\partial J}{\partial x_1} \\
+\dfrac{\partial J}{\partial x_2} \\
+\vdots \\
+\dfrac{\partial J}{\partial x_n}
+\end{bmatrix}.
+\end{equation}
+
+For the function $J(k,c)$ above,
+\begin{equation}
+\nabla J(k,c)=
+\begin{bmatrix}
+2k-c \\
+4c-k
+\end{bmatrix}.
+\end{equation}
+
+Figure~\ref{fig:ch0-gradient} illustrates the meaning of derivative and gradient.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp0_3.png}
+\caption{Derivatives and gradients are central because optimization algorithms need change information.}
+\label{fig:ch0-gradient}
+\end{figure}
+
+\subsection{Chain rule}
+
+If one variable depends on another, the chain rule allows us to propagate derivatives. If
+\begin{equation}
+z=f(y), \qquad y=g(x),
+\end{equation}
+then
+\begin{equation}
+\frac{dz}{dx}=\frac{dz}{dy}\frac{dy}{dx}.
+\end{equation}
+
+This idea is fundamental in automatic differentiation and sensitivity analysis.
+
+\subsection{Jacobian and Hessian}
+
+If a vector-valued function is written as
+\begin{equation}
+\vect{r}(\vect{x})=
+\begin{bmatrix}
+r_1(\vect{x})\\
+r_2(\vect{x})\\
+\vdots\\
+r_m(\vect{x})
+\end{bmatrix},
+\end{equation}
+its Jacobian is the matrix of first derivatives:
+\begin{equation}
+\frac{\partial \vect{r}}{\partial \vect{x}} =
+\begin{bmatrix}
+\dfrac{\partial r_1}{\partial x_1} & \cdots & \dfrac{\partial r_1}{\partial x_n} \\
+\vdots & \ddots & \vdots \\
+\dfrac{\partial r_m}{\partial x_1} & \cdots & \dfrac{\partial r_m}{\partial x_n}
+\end{bmatrix}.
+\end{equation}
+
+The Hessian of a scalar function is the matrix of second partial derivatives. Later chapters will use these quantities in optimization algorithms and numerical methods.
+
+\subsection{Worked Example 0.1: gradient of a design objective}
+
+Let
+\begin{equation}
+J(m,k)=m^2+0.5k^2-mk.
+\end{equation}
+Then
+\begin{equation}
+\frac{\partial J}{\partial m}=2m-k,
+\qquad
+\frac{\partial J}{\partial k}=k-m.
+\end{equation}
+Therefore,
+\begin{equation}
+\nabla J(m,k)=
+\begin{bmatrix}
+2m-k \\
+k-m
+\end{bmatrix}.
+\end{equation}
+This kind of calculation is the basic language of gradient-based optimization.
+
+\section{Integration and Numerical Integration}
+
+\subsection{Definite integrals as accumulated quantity}
+
+A definite integral accumulates a quantity over an interval:
+\begin{equation}
+\int_{t_0}^{t_f} q(t)\,dt.
+\end{equation}
+In engineering, integrals often represent accumulated energy, work, fuel, or tracking error.
+
+For example,
+\begin{equation}
+J=\int_0^T u(t)^2\,dt
+\end{equation}
+is a standard measure of control effort.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth]{figures/fig_chp0_4.png}
+\caption{A definite integral measures accumulated area. In numerical work, the continuous integral is approximated using sampled data.}
+\label{fig:ch0-integral}
+\end{figure}
+
+\subsection{Numerical integration}
+
+Computers cannot manipulate arbitrary continuous functions exactly. Therefore, continuous integrals are often approximated numerically.
+
+If time is discretized at points $t_0,t_1,\ldots,t_N$, then a simple rectangle approximation is
+\begin{equation}
+\int_{t_0}^{t_f} q(t)\,dt \approx \sum_{i=0}^{N-1} q_i\Delta t_i,
+\end{equation}
+where $q_i\approx q(t_i)$ and $\Delta t_i=t_{i+1}-t_i$.
+
+A better approximation is the trapezoidal rule:
+\begin{equation}
+\int_{t_0}^{t_f} q(t)\,dt \approx \sum_{i=0}^{N-1} \frac{\Delta t_i}{2}(q_i+q_{i+1}).
+\end{equation}
+
+\subsection{Worked Example 0.2: discretized control effort}
+
+If the control effort objective is
+\begin{equation}
+J=\int_{0}^{T} u(t)^2\,dt,
+\end{equation}
+then with the trapezoidal rule,
+\begin{equation}
+J \approx \sum_{i=0}^{N-1} \frac{\Delta t_i}{2}\left(u_i^2+u_{i+1}^2\right).
+\end{equation}
+This form appears often in direct transcription methods developed later in the course.
+
+\section{Linear Algebra}
+
+\subsection{Vectors and matrices}
+
+A vector is an ordered list of numbers, and a matrix is a rectangular array of numbers. For example,
+\begin{equation}
+\vect{x} = \begin{bmatrix} x_1 \\ x_2 \\ x_3 \end{bmatrix},
+\qquad
+A = \begin{bmatrix}
+1 & 0 \\
+2 & 3
+\end{bmatrix}.
+\end{equation}
+
+\subsection{Matrix dimensions}
+
+If $A\in\R^{m\times n}$, then $A$ has $m$ rows and $n$ columns. A matrix-vector product $A\vect{x}$ is defined only if the number of columns of $A$ matches the number of components of $\vect{x}$.
+
+\subsection{Basic operations}
+
+Important operations include:
+\begin{itemize}[leftmargin=1.4em]
+  \item vector addition: $\vect{a}+\vect{b}$,
+  \item scalar multiplication: $\alpha \vect{x}$,
+  \item matrix addition: $A+B$,
+  \item matrix multiplication: $AB$,
+  \item transpose: $A^T$,
+  \item inverse: $A^{-1}$ (when it exists).
+\end{itemize}
+
+\subsection{Identity matrix and solving linear systems}
+
+The identity matrix $I$ satisfies
+\begin{equation}
+I\vect{x}=\vect{x}.
+\end{equation}
+A linear system
+\begin{equation}
+A\vect{x}=\vect{b}
+\end{equation}
+can be solved for $\vect{x}$ if $A$ is square and nonsingular:
+\begin{equation}
+\vect{x}=A^{-1}\vect{b}.
+\end{equation}
+In computation, one rarely forms the inverse directly; instead, one uses linear-system solvers.
+
+\subsection{Norms}
+
+A norm measures vector size. A common example is the Euclidean norm:
+\begin{equation}
+\|\vect{x}\|_2 = \sqrt{x_1^2+x_2^2+\cdots+x_n^2}.
+\end{equation}
+Norms appear in convergence tests, regularization, and performance measures.
+
+\subsection{Eigenvalues and eigenvectors}
+
+An eigenvalue-eigenvector pair satisfies
+\begin{equation}
+A\vect{v}=\lambda\vect{v}.
+\end{equation}
+Later, in state-space models, eigenvalues help characterize dynamic behavior and stability.
+
+\subsection{Positive definiteness}
+
+A symmetric matrix $Q$ is positive definite if
+\begin{equation}
+\vect{z}^{T}Q\vect{z}>0 \qquad \text{for all nonzero } \vect{z}.
+\end{equation}
+Positive-definite matrices are common in quadratic objectives and Lyapunov analysis.
+
+\section{Ordinary Differential Equations}
+
+\subsection{What is a differential equation?}
+
+A differential equation relates a function to its derivatives. Dynamic systems are modeled this way because the current rate of change depends on the present state and inputs.
+
+A first-order ODE has the form
+\begin{equation}
+\dot{x}=f(x,u,t),
+\end{equation}
+while a second-order ODE has the form
+\begin{equation}
+\ddot{x}=g(x,\dot{x},u,t).
+\end{equation}
+
+\subsection{Mass-spring-damper example}
+
+A standard model used throughout engineering is the mass-spring-damper system:
+\begin{equation}
+ m\ddot{x}+c\dot{x}+kx=u(t).
+\end{equation}
+The parameters are:
+\begin{itemize}[leftmargin=1.4em]
+  \item $m$: mass,
+  \item $c$: damping coefficient,
+  \item $k$: spring stiffness,
+  \item $u(t)$: external force or control input.
+\end{itemize}
+
+\subsection{Initial conditions}
+
+To solve a dynamic system, we need initial conditions. For a second-order system, that usually means both displacement and velocity at the initial time:
+\begin{equation}
+ x(0)=x_0,
+ \qquad
+ \dot{x}(0)=v_0.
+\end{equation}
+
+\subsection{Converting higher-order ODEs into first-order form}
+
+First-order state-space form is central in CCD. Define
+\begin{equation}
+ x_1=x,
+ \qquad
+ x_2=\dot{x}.
+\end{equation}
+Then
+\begin{equation}
+ \dot{x}_1=x_2,
+\end{equation}
+and, from the original differential equation,
+\begin{equation}
+\dot{x}_2 = -\frac{k}{m}x_1-\frac{c}{m}x_2+\frac{1}{m}u.
+\end{equation}
+
+Figure~\ref{fig:ch0-state-conversion} shows the conversion process.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/fig_chp0_5.png}
+\caption{Second-order engineering models are often rewritten as first-order state equations.}
+\label{fig:ch0-state-conversion}
+\end{figure}
+
+\subsection{Worked Example 0.3: state conversion}
+
+For the mass-spring-damper system,
+\begin{equation}
+\vect{x}=
+\begin{bmatrix}
+ x_1 \\ x_2
+\end{bmatrix}
+=
+\begin{bmatrix}
+ x \\ \dot{x}
+\end{bmatrix}.
+\end{equation}
+Then the dynamics become
+\begin{equation}
+\dot{\vect{x}}=
+\begin{bmatrix}
+ x_2 \\
+ -\dfrac{k}{m}x_1-\dfrac{c}{m}x_2+\dfrac{1}{m}u
+\end{bmatrix}.
+\end{equation}
+This representation will reappear in Chapter 2 and in later optimal-control formulations.
+
+\section{Introductory State-Space Notation}
+
+\subsection{Nonlinear state-space form}
+
+A general nonlinear system is often written as
+\begin{equation}
+\dot{\xstate}=\vect{f}(\xstate,\uvec,t),
+\qquad
+\yvec=\vect{h}(\xstate,\uvec,t).
+\end{equation}
+
+Here,
+\begin{itemize}[leftmargin=1.4em]
+  \item $\xstate$ is the state vector,
+  \item $\uvec$ is the input vector,
+  \item $\yvec$ is the output vector,
+  \item $\vect{f}$ describes the state dynamics,
+  \item $\vect{h}$ maps states and inputs to outputs.
+\end{itemize}
+
+\subsection{Linear state-space form}
+
+For linear time-invariant systems, the state-space model is often written as
+\begin{equation}
+\dot{\xstate}=A\xstate+B\uvec,
+\qquad
+\yvec=C\xstate + D\uvec.
+\end{equation}
+
+State-space notation is compact and works naturally with vector and matrix operations. Because it handles multiple states and multiple inputs systematically, it is widely used in control theory and CCD.
+
+\section{Basic Optimization Language}
+
+\subsection{Optimization problem structure}
+
+A basic optimization problem can be written as
+\begin{align}
+\min_{\vect{x}} \quad & f(\vect{x}) \\
+\text{subject to} \quad & g_i(\vect{x})\le 0, \quad i=1,\ldots,n_g, \\
+& h_j(\vect{x})=0, \quad j=1,\ldots,n_h, \\
+& \vect{x}^{L}\le \vect{x}\le \vect{x}^{U}.
+\end{align}
+
+Figure~\ref{fig:ch0-optimization} identifies the main pieces.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp0_7.png}
+\caption{A compact summary of the parts of an optimization problem.}
+\label{fig:ch0-optimization}
+\end{figure}
+
+\subsection{Core terms}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{decision variables}: quantities the optimizer is allowed to change;
+  \item \textbf{objective function}: the quantity being minimized or maximized;
+  \item \textbf{constraints}: conditions that the solution must satisfy;
+  \item \textbf{feasible point}: a point that satisfies all constraints;
+  \item \textbf{feasible region}: the set of all feasible points;
+  \item \textbf{optimal point}: the feasible point with the best objective value.
+\end{itemize}
+
+\subsection{Example optimization statement}
+
+A simple engineering design problem might be
+\begin{align}
+\min_{m,k} \quad & J(m,k)=m^2+0.5k^2 \\
+\text{subject to} \quad & m\ge 0.1, \\
+& 10\le k\le 1000.
+\end{align}
+
+This statement says exactly what is being chosen, what is being improved, and what bounds must hold.
+
+\subsection{How CCD builds on this}
+
+A CCD problem uses the same optimization language but adds more structure. The variables include both plant and controller quantities, and the constraints usually include system dynamics over time.
+
+\section{Discretization and Sampled Variables}
+
+\subsection{Why discretization is needed}
+
+Many CCD problems are naturally continuous in time. However, numerical optimization methods operate on finite-dimensional vectors, not directly on arbitrary continuous functions. Therefore, continuous trajectories must be represented by samples or coefficients.
+
+\subsection{Time mesh}
+
+A time interval is divided into nodes:
+\begin{equation}
+ t_0 < t_1 < \cdots < t_N.
+\end{equation}
+The spacing is
+\begin{equation}
+\Delta t_i=t_{i+1}-t_i.
+\end{equation}
+
+\subsection{Sampled states and controls}
+
+At each node we approximate the state and control as
+\begin{equation}
+\xstate_i\approx \xstate(t_i),
+\qquad
+\uvec_i\approx \uvec(t_i).
+\end{equation}
+
+If the control is scalar, the full sampled control sequence becomes
+\begin{equation}
+\mathbf{U}=\begin{bmatrix} u_0 & u_1 & \cdots & u_N \end{bmatrix}^{T}.
+\end{equation}
+
+Figure~\ref{fig:ch0-discretization} illustrates this idea.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp0_6.png}
+\caption{A continuous trajectory becomes a finite vector when sampled on a time mesh.}
+\label{fig:ch0-discretization}
+\end{figure}
+
+\subsection{Why this matters later}
+
+This idea is the basis of direct shooting, multiple shooting, direct transcription, and collocation. Once students are comfortable with the conversion from continuous-time functions to sampled vectors, Chapter 7 becomes much easier.
+
+\section{Basic MATLAB or Python Preparation}
+
+\subsection{Minimal skills}
+
+Students in this course should be able to:
+\begin{itemize}[leftmargin=1.4em]
+  \item define scalars, vectors, and matrices;
+  \item write a simple function;
+  \item evaluate a formula;
+  \item simulate an ODE numerically;
+  \item plot a result;
+  \item compute a discrete objective function.
+\end{itemize}
+
+\subsection{Simple computational workflow}
+
+Figure~\ref{fig:ch0-workflow} shows a basic coding workflow. The same structure later expands into larger numerical CCD workflows.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.96\textwidth]{figures/fig_chp0_8.png}
+\caption{A simple computational workflow used in modeling, simulation, and later optimization.}
+\label{fig:ch0-workflow}
+\end{figure}
+
+\subsection{Python example}
+
+The script below defines a mass-spring-damper model and integrates it numerically. It is not a full CCD code; it is only a simple preparation exercise.
+
+\begin{lstlisting}[language=Python,caption={Simple Python example for simulating a mass-spring-damper system.}]
+import numpy as np
+from scipy.integrate import solve_ivp
+import matplotlib.pyplot as plt
+
+m = 1.0
+c = 0.4
+k = 4.0
+
+def model(t, x):
+    u = 1.0
+    x1, x2 = x
+    dx1 = x2
+    dx2 = -(k/m)*x1 - (c/m)*x2 + (1/m)*u
+    return [dx1, dx2]
+
+sol = solve_ivp(model, [0, 10], [0, 0], max_step=0.02)
+plt.plot(sol.t, sol.y[0, :])
+plt.xlabel('time')
+plt.ylabel('displacement')
+plt.show()
+\end{lstlisting}
+
+\subsection{MATLAB example}
+
+An analogous MATLAB version is shown below.
+
+\begin{lstlisting}[language=Matlab,caption={Simple MATLAB example for simulating a mass-spring-damper system.}]
+m = 1.0;
+c = 0.4;
+k = 4.0;
+
+f = @(t,x) [x(2);
+           -(k/m)*x(1) - (c/m)*x(2) + 1/m];
+
+[t,x] = ode45(f,[0 10],[0;0]);
+plot(t,x(:,1))
+xlabel('time')
+ylabel('displacement')
+\end{lstlisting}
+
+\subsection{Computing a discrete performance measure}
+
+Suppose we want to approximate the control-effort objective
+\begin{equation}
+J = \int_0^T u(t)^2\,dt.
+\end{equation}
+After sampling $u_i$ on a time grid, a basic discrete approximation may be coded using a sum or a trapezoidal formula. This simple task will later reappear in optimal-control solvers.
+
+\section{A Readiness Mini-Project}
+
+Before moving to Chapter 1, a useful readiness exercise is to model and simulate a mass-spring-damper system and then identify the quantities that would become part of a CCD formulation.
+
+For example:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{plant variables}: $m$, $c$, $k$;
+  \item \textbf{control variables}: force input history or controller gains;
+  \item \textbf{states}: displacement and velocity;
+  \item \textbf{objective}: vibration suppression or control effort;
+  \item \textbf{constraints}: actuator limits or displacement bounds.
+\end{itemize}
+
+This exercise helps students see how the mathematics of this chapter turns directly into a CCD problem statement.
+
+\keyideabox{\textbf{Readiness checkpoint.} If you can read vectors and matrices, compute simple derivatives and integrals, convert a second-order ODE to first-order form, understand the parts of an optimization problem, and follow a short simulation script, then you are ready for the main body of the course.}
+
+\section{Chapter Summary}
+
+This prerequisite chapter introduced the mathematical and computational foundations needed for the rest of the course. We reviewed notation for scalars, vectors, matrices, and trajectories; explained functions, derivatives, gradients, Jacobians, Hessians, and integrals; summarized the essential ideas of linear algebra; converted a second-order differential equation to first-order state-space form; introduced basic optimization language; showed how continuous trajectories become finite decision vectors; and reviewed the minimal coding workflow required for simulation and optimization studies.
+
+The point of this chapter was not to teach full courses in calculus, linear algebra, or programming. Instead, it established the vocabulary and tools needed to study control co-design clearly and efficiently. The next chapter builds from this foundation and introduces the central idea of the course itself: why physical-system design and control design should often be optimized together rather than separately.
+
+\section{Key Terms}
+
+\begin{multicols}{2}
+\begin{itemize}[leftmargin=1.4em,itemsep=0.25em]
+  \item scalar
+  \item vector
+  \item matrix
+  \item trajectory
+  \item summation
+  \item derivative
+  \item partial derivative
+  \item gradient
+  \item Jacobian
+  \item Hessian
+  \item definite integral
+  \item trapezoidal rule
+  \item ordinary differential equation
+  \item initial condition
+  \item state-space model
+  \item decision variable
+  \item objective function
+  \item equality constraint
+  \item inequality constraint
+  \item feasible point
+  \item time discretization
+  \item sampled variable
+  \item simulation
+  \item computational workflow
+\end{itemize}
+\end{multicols}
+
+\section{Problems}
+
+\subsection*{Notation and basic interpretation}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.}]
+  \item State whether each of the following is naturally viewed as a scalar, vector, matrix, or trajectory: $m$, $\xstate$, $A$, $u(t)$.
+  \item Write a vector containing the three variables $k$, $c$, and $m$.
+  \item Explain the difference between $x_2$ and $x^{(2)}$.
+  \item Expand the summation $\sum_{i=1}^{4} i^2$.
+  \item Give one example of a plant design variable and one example of a controller parameter in a CCD problem.
+\end{enumerate}
+
+\subsection*{Derivatives and gradients}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Compute $df/dx$ if $f(x)=3x^2-5x+1$.
+  \item Compute $d^2f/dx^2$ for the same function.
+  \item For $J(k,c)=k^2+2c^2-kc$, compute $\partial J/\partial k$ and $\partial J/\partial c$.
+  \item Write the gradient of $J(k,c)=k^2+2c^2-kc$.
+  \item If $z=f(y)$ and $y=g(x)$, state the chain rule for $dz/dx$.
+\end{enumerate}
+
+\subsection*{Integration and discretization}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item What physical meaning could the integral $\int_0^T u(t)^2\,dt$ have?
+  \item Write a rectangle-rule approximation of $\int_{t_0}^{t_f} q(t)\,dt$.
+  \item Write a trapezoidal-rule approximation of the same integral.
+  \item If $u=[1,2,3]$ is sampled at equal spacing $\Delta t=0.5$, compute the trapezoidal approximation of $\int u(t)^2 dt$ over the two subintervals.
+  \item Explain why numerical integration is necessary in computation.
+\end{enumerate}
+
+\subsection*{Linear algebra}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Let $\vect{x}=\begin{bmatrix}1 & 2\end{bmatrix}^{T}$ and $\vect{y}=\begin{bmatrix}3 & 4\end{bmatrix}^{T}$. Compute $\vect{x}+\vect{y}$.
+  \item Let $A=\begin{bmatrix}1 & 2\\0 & 3\end{bmatrix}$ and $\vect{x}=\begin{bmatrix}2\\1\end{bmatrix}$. Compute $A\vect{x}$.
+  \item What is the dimension of a matrix in $\R^{3\times 2}$?
+  \item Define an eigenvalue-eigenvector pair in words.
+  \item What does it mean for a matrix to be positive definite?
+\end{enumerate}
+
+\subsection*{Differential equations and state-space form}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Identify the order of the equation $m\ddot{x}+c\dot{x}+kx=u$.
+  \item For the same equation, define states that convert it to first-order form.
+  \item Write the corresponding first-order state equations.
+  \item What additional information is needed, beyond the equation itself, to solve an initial-value problem?
+  \item Write a generic nonlinear state-space model and explain the meaning of each term.
+\end{enumerate}
+
+\subsection*{Optimization language}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item In your own words, define decision variable, objective, and constraint.
+  \item Write a small optimization problem with one variable, one objective, and one bound constraint.
+  \item What is a feasible point?
+  \item Explain the difference between equality and inequality constraints.
+  \item Why is a clear optimization formulation important in engineering design?
+\end{enumerate}
+
+\subsection*{Coding and mini-project exercises}
+\begin{enumerate}[leftmargin=1.5em,label=\textbf{P\arabic*.},resume]
+  \item Write pseudocode for simulating a dynamic system from a given initial condition.
+  \item In Python or MATLAB, create a short script that defines a vector of equally spaced times and a sampled control vector.
+  \item Using sampled data, compute a discrete approximation to an integral objective.
+  \item For a mass-spring-damper system, list which quantities could be plant variables, states, control inputs, and outputs in a CCD formulation.
+  \item Mini-project: Simulate a mass-spring-damper system, compute a performance metric, and explain how the problem could be turned into a control co-design study.
+\end{enumerate}
+
+\section{Figure Files Supplied with This Chapter}
+
+The following editable figure files are supplied separately as SVG files:
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{fig\_chp0\_1.svg}
+  \item \texttt{fig\_chp0\_2.svg}
+  \item \texttt{fig\_chp0\_3.svg}
+  \item \texttt{fig\_chp0\_4.svg}
+  \item \texttt{fig\_chp0\_5.svg}
+  \item \texttt{fig\_chp0\_6.svg}
+  \item \texttt{fig\_chp0\_7.svg}
+  \item \texttt{fig\_chp0\_8.svg}
+\end{itemize}
+
+\section{References and Further Reading}
+
+\begin{thebibliography}{99}
+
+\bibitem{martinsning}
+J. R. R. A. Martins and A. Ning, \emph{Engineering Design Optimization}. Cambridge University Press, 2021.
+
+\bibitem{boyd}
+S. Boyd and L. Vandenberghe, \emph{Introduction to Applied Linear Algebra}. Cambridge University Press, 2018.
+
+\bibitem{betts}
+J. T. Betts, \emph{Practical Methods for Optimal Control and Estimation Using Nonlinear Programming}. 2nd ed., SIAM, 2010.
+
+\bibitem{allisonherber}
+J. T. Allison and D. R. Herber, ``Multidisciplinary design optimization of dynamic engineering systems,'' \emph{AIAA Journal}, vol. 52, no. 4, pp. 691--710, 2014.
+
+\end{thebibliography}
+
+\vfill
+\begin{center}
+\small\color{CCDgray}
+End of Chapter 0
+\end{center}
+
+\end{document}

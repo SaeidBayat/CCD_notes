@@ -1,0 +1,57 @@
+jtex: v1
+title: Control Co-Design PDF
+description: A Palatino book-style PDF template for the mathematical-foundations notes
+version: 1.0.0
+license: CC-BY-4.0
+authors:
+  - name: Steve Purves
+    github: curvenote
+    twitter: curvenote
+    affiliations:
+      - Curvenote
+tags:
+  - book
+  - palatino
+  - course-notes
+parts:
+  - id: abstract
+    description: >
+      An abstract is a short summary of your research paper or report.
+doc:
+  - id: title
+    required: true
+  - id: authors
+    required: true
+  - id: date
+  - id: bibliography
+options:
+  - id: link
+    type: string
+    title: Footnote Link
+    description: >
+      This will add a footnote containing a link back to online version of your article
+  - id: logo
+    type: boolean
+    default: false
+    title: Curvenote Logo
+    description: >
+      Disabled for this course notes export.
+files:
+  - template.tex
+packages:
+  - datetime
+  - graphicx
+  - hyperref
+  - natbib
+  - xcolor
+  - amsmath
+  - amssymb
+  - mathtools
+  - booktabs
+  - array
+  - longtable
+  - microtype
+  - titlesec
+  - fancyhdr
+  - enumitem
+  - tcolorbox
