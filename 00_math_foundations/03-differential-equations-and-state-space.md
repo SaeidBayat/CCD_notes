@@ -79,7 +79,7 @@ $$
 \dot{x}_2=-\frac{k}{m}x_1-\frac{c}{m}x_2+\frac{1}{m}u.
 $$
 
-```{figure} imgs/fig_chp0_5.svg
+```{figure} imgs/fig_chp0_5.png
 :alt: A mass-spring-damper equation is converted into two coupled first-order state equations.
 :width: 95%
 :align: center

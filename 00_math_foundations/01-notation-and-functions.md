@@ -17,7 +17,7 @@ These notes use the following conventions:
 - Uppercase letters such as $A$, $B$, and $C$ denote **matrices**.
 - Time-varying quantities are written explicitly, such as $x(t)$, $\mathbf{x}(t)$, or $u(t)$; these functions of time are **trajectories**.
 
-```{figure} imgs/fig_chp0_2.svg
+```{figure} imgs/fig_chp0_2.png
 :alt: Scalars are single numbers, vectors are ordered lists, matrices are rectangular arrays, and trajectories change with time.
 :width: 96%
 :align: center

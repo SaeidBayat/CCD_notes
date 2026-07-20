@@ -1,0 +1,77 @@
+\documentclass[tikz, border=10pt]{standalone}
+\usepackage{amsmath}
+\usetikzlibrary{positioning, arrows.meta, fit}
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily,
+    node distance=5mm and 8mm,
+    panel/.style={text width=6.2cm, align=center, minimum height=2.7cm,
+        rounded corners=4pt, thick, inner sep=8pt},
+]
+
+\node[font=\sffamily\bfseries\LARGE, anchor=north west] (title) at (0,0)
+    {Integral as accumulated performance and discrete approximation};
+
+% ---- Right column: three stacked panels, fixed height each ----
+\node[below=6mm of title.west, anchor=north west, panel, xshift=8.9cm,
+      draw=blue!45!black, fill=blue!5]
+    (cont) {\textcolor{blue!30!black}{\bfseries Continuous area}\\[4pt]
+    {\itshape $\displaystyle\int_0^T q(t)\,dt$}\\[4pt]
+    \footnotesize\textcolor{blue!30!black}{Area under the smooth curve represents accumulated quantity over time.}};
+
+\node[below=5mm of cont.south west, anchor=north west, panel,
+      draw=orange!55!black, fill=orange!6]
+    (disc) {\textcolor{orange!55!black}{\bfseries Discrete approximation}\\[4pt]
+    {\itshape $\displaystyle\sum_k q(t_k)\,\Delta t$}\\[4pt]
+    \footnotesize\textcolor{orange!55!black}{Sampled values form rectangles that approximate the continuous integral.}};
+
+\node[below=5mm of disc.south west, anchor=north west, panel,
+      draw=green!40!black, fill=green!5]
+    (opt) {\textcolor{green!25!black}{\bfseries Optimization meaning}\\[4pt]
+    {\itshape $J = $ accumulated performance}\\[4pt]
+    \footnotesize\textcolor{green!25!black}{In CCD, integrals often measure energy, tracking error, cost, or fatigue.}};
+
+% ---- Left: framed, gridded plot, height matched to the right column (cont+disc+opt+2 gaps) ----
+\node[below=6mm of title.west, anchor=north west, inner sep=0pt] (plotbox) {
+\begin{tikzpicture}[x=0.80cm, y=1.782cm]
+    \draw[gray!55] (0,0) rectangle (10,4.3);
+
+    \foreach \y/\ylab in {0/0.0, 0.5/0.5, 1/1.0, 1.5/1.5, 2/2.0, 2.5/2.5, 3/3.0, 3.5/3.5, 4/4.0}{
+        \draw[gray!20] (0,\y) -- (10,\y);
+        \node[left, font=\scriptsize, text=black!55] at (-0.15,\y) {\ylab};
+    }
+    \foreach \x in {0,2,4,6,8,10}
+        \node[below, font=\scriptsize, text=black!55] at (\x,-0.08) {\x};
+
+    \node[below, font=\footnotesize, text=black!70] at (5,-0.5) {time};
+    \node[rotate=90, font=\footnotesize, text=black!70] at (-1.0,2.15) {quantity};
+
+    \def\datapoints{(0,0.55) (1,1.10) (2.3,1.60) (3.4,2.05) (4.5,2.40) (5.6,2.35) (6.7,1.70) (7.8,0.85) (9,0.28)}
+    \def\samplelist{(0,0.55),(1,1.10),(2.3,1.60),(3.4,2.05),(4.5,2.40),(5.6,2.35),(6.7,1.70),(7.8,0.85),(9,0.28)}
+
+    \fill[blue!10] plot[smooth] coordinates {\datapoints} -- (9,0) -- (0,0) -- cycle;
+
+    \draw[gray!65]
+        (0,0.55) rectangle (1,0)     (1,1.10) rectangle (2.3,0)
+        (2.3,1.60) rectangle (3.4,0) (3.4,2.05) rectangle (4.5,0)
+        (4.5,2.40) rectangle (5.6,0) (5.6,2.35) rectangle (6.7,0)
+        (6.7,1.70) rectangle (7.8,0) (7.8,0.85) rectangle (9,0);
+
+    \draw[thick, blue!25!black] plot[smooth] coordinates {\datapoints};
+
+    \foreach \p in \samplelist
+        \fill[orange!85!black] \p circle (1.6pt);
+\end{tikzpicture}
+};
+
+% ---- Invisible node spanning both columns, to anchor the banner safely below both ----
+\node[fit=(plotbox)(opt), inner sep=0pt] (bottomref) {};
+
+% ---- Bottom banner spanning full width, below both columns ----
+\node[below=6mm of bottomref.south west, anchor=north west,
+      text width=15.1cm, align=center,
+      draw=red!55!black, thick, rounded corners=4pt, fill=red!5, inner sep=7pt]
+    {\footnotesize\bfseries\textcolor{red!55!black}{Key idea: a time-dependent performance measure can be converted into a finite numerical sum for optimization.}};
+
+\end{tikzpicture}
+\end{document}

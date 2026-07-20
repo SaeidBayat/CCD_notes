@@ -84,7 +84,7 @@ $$
 \end{bmatrix}.
 $$
 
-```{figure} imgs/fig_chp0_3.svg
+```{figure} imgs/fig_chp0_3.png
 :alt: A derivative gives a single-variable slope, while a gradient collects partial derivatives and points toward steepest increase.
 :width: 95%
 :align: center
@@ -181,7 +181,7 @@ $$
 
 is a common measure of control effort.
 
-```{figure} imgs/fig_chp0_4.svg
+```{figure} imgs/fig_chp0_4.png
 :alt: A continuous curve and sampled values illustrate an integral and its numerical approximation.
 :width: 90%
 :align: center

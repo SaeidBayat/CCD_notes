@@ -27,7 +27,7 @@ A basic modeling study follows a repeatable sequence:
 4. Evaluate one or more performance measures.
 5. Refine the model, parameters, or numerical settings.
 
-```{figure} imgs/fig_chp0_8.svg
+```{figure} imgs/fig_chp0_8.png
 :alt: Define parameters, write model equations, simulate and plot, evaluate performance, and refine.
 :width: 96%
 :align: center

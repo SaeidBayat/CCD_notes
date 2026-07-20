@@ -22,7 +22,7 @@ $$
 \end{aligned}
 $$
 
-```{figure} imgs/fig_chp0_7.svg
+```{figure} imgs/fig_chp0_7.png
 :alt: Decision variables enter an objective and constraints to produce a feasible optimization solution.
 :width: 96%
 :align: center
@@ -104,7 +104,7 @@ u_0&u_1&\cdots&u_N
 \end{bmatrix}^{T}.
 $$
 
-```{figure} imgs/fig_chp0_6.svg
+```{figure} imgs/fig_chp0_6.png
 :alt: Values of a continuous control trajectory sampled at time nodes form a finite decision vector.
 :width: 96%
 :align: center
