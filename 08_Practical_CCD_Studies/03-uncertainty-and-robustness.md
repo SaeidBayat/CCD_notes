@@ -28,6 +28,27 @@ Suspension scenarios might combine bump, rough-road, pothole, and sinusoidal inp
 
 ![Common uncertainty-aware CCD strategies.](imgs/fig_chp8_6.svg)
 
+## A taxonomy of uncertain CCD formulations
+
+Uncertainty can be represented in three fundamentally different ways: probabilistically, when a distribution is known or can be estimated; crisply, as a bounded set with no probability measure attached; or possibilistically, through a fuzzy membership function, for cases where even the shape and size of a bounding set are not well known. This representation choice interacts with a second distinction: aleatory uncertainty is irreducible variability inherent to the phenomenon itself (manufacturing variation across nominally identical parts cannot be reduced by acquiring more knowledge), while epistemic uncertainty reflects limited knowledge that could in principle be reduced by more data, more testing, or a better model (an unvalidated model-form assumption is epistemic).
+
+Crossing these representations with risk attitude yields several specialized uncertain-CCD (UCCD) formulations, all built from the same nominal, all-at-once CCD problem. A **stochastic-expectation** formulation minimizes the expected objective subject to expected-value constraints and is risk-neutral. A **stochastic chance-constrained** formulation instead requires each constraint to be satisfied with at least a target probability, $\mathbb{P}[g_i\le0]\ge1-\mathbb{P}_{f,i}$, generalizing the chance constraint above. A **probabilistic robust** formulation penalizes both the expected value and the standard deviation of the objective and constraints together, trading multiobjective weight for reduced sensitivity — the mean–variance idea generalized to constraints as well as the objective. A **worst-case robust** formulation replaces the probabilistic description entirely with a bounded uncertainty set and requires feasibility for every realization in that set. **Fuzzy expected-value** and **possibilistic chance-constrained** formulations use possibility measures instead of probability measures when only vague, expert-elicited information about the uncertainty is available, such as linguistic descriptions of an expected operating range.
+
+The worst-case robust formulation (WCR-UCCD) is structurally a bi-level, min–max problem. The outer level chooses plant, control, and state variables to minimize a deterministic objective, while an inner-level maximization searches the uncertainty set for the worst-case realization of each constraint,
+
+$$
+\Phi_i=\max_{\boldsymbol\theta\in\Theta}\ g_i(\mathbf{x}_p,\mathbf{x}_c;\boldsymbol\theta),
+$$
+
+and the outer problem enforces $\Phi_i\le0$ for every constraint $i$. Because uncertain objectives and constraints play an interchangeable role in a UCCD formulation, an uncertain objective can always be moved into the constraint set through an **epigraph reformulation**: introduce a new scalar decision variable $v$ and the constraint $o(\cdot)-v\le0$, then minimize $v$. This lets every complication introduced by uncertainty be handled uniformly within the inequality constraints, rather than requiring separate machinery for the objective.
+
+Two further distinctions are useful when formulating a UCCD problem. Uncertainty that acts through the same channel as the control input is called *matched* (or lumped); uncertainty that enters the dynamics through a different channel is called *mismatched*, and generally cannot be compensated by feedback in the same direct way. Equality constraints also split into two types under uncertainty: *Type I* constraints describe the physics of the system (the dynamics and any algebraic relations) and must be satisfied at every point in the uncertainty space considered; *Type II* constraints describe a design requirement that cannot be strictly satisfied once its arguments are uncertain, and so must instead be relaxed — typically to a statement about its expected value while its variance is minimized.
+
+```{admonition} Choosing an uncertainty representation is a modeling decision
+:class: tip
+The representation is not fixed by the physics alone. When the risk associated with a specific criterion is severe enough that no constraint violation can be tolerated, a worst-case robust formulation may be preferable even when distributional information is available — the choice reflects how much conservatism the design can afford, not only how much is known about the uncertainty.
+```
+
 ## Verification under uncertainty
 
 Even a nominal optimization should be tested with Monte Carlo simulation or a structured validation set. Report mean and worst objective, constraint-violation probability, percentiles of key outputs, sensitivities, and observed failure modes. Keep validation scenarios independent from those used to tune the design whenever possible.

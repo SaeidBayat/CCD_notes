@@ -55,7 +55,7 @@ $$
 
 The important result is not only the lower objective. The optimized **plant is different**. The CCD solution uses less passive stiffness and damping and relies more on active control. The sequential plant was optimized to perform well without control and retained passive properties that were no longer optimal after the controller was added.
 
-```{figure} imgs/performance-surface.svg
+```{figure} imgs/performance-surface.png
 :alt: Coupled objective landscape over a plant variable and a controller variable.
 :width: 82%
 :align: center

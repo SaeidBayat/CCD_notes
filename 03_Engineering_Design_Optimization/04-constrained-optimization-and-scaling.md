@@ -43,6 +43,17 @@ A multiplier measures the local value of relaxing its constraint. A large multip
 
 Modern nonlinear-programming solvers often use SQP or interior-point methods. CCD users should understand the required inputs and returned diagnostics even if they do not implement these solvers.
 
+## Gradient-based and gradient-free solvers in CCD practice
+
+SQP and interior-point methods are gradient-based: they exploit derivative information and typically converge in far fewer function evaluations than derivative-free alternatives, but they converge to the local optimum nearest the initial guess. Gradient-free algorithms—such as covariance matrix adaptation evolution strategy (CMA-ES), genetic algorithms (GA), and particle swarm optimization (PSO)—require only function evaluations, tolerate noisy or discontinuous objectives, and search more globally, but the number of evaluations they need tends to grow rapidly with the number of design variables, so they scale poorly to high-dimensional problems even after they have located a promising region.
+
+A recent review of wind-turbine control co-design practice illustrates how these families are actually combined rather than chosen exclusively. Because CCD problems often combine a low-dimensional, potentially multimodal plant-design search with a much higher-dimensional control-trajectory search, a common hybrid strategy assigns a gradient-free optimizer (CMA-ES, GA, or PSO) to the plant-design variables and a gradient-based optimizer (SQP or an interior-point method) to the control-design variables, matching each discipline to the solver family best suited to its dimensionality and smoothness. Widely used implementations include CMA-ES and COBYLA on the gradient-free side, and SNOPT (a sparse SQP implementation) and IPOPT (an interior-point implementation) on the gradient-based side.
+
+```{admonition} Key idea
+:class: tip
+Solver choice is itself a CCD design decision. It should follow from the dimensionality and smoothness of the plant and control subproblems, not from habit or default settings.
+```
+
 ## Why scaling matters
 
 Mathematically equivalent formulations can behave very differently numerically. A solver may handle variables near $10^{-6}$ and $10^6$ unevenly, especially when using common step and convergence tolerances.
@@ -81,7 +92,7 @@ Scaling improves algorithm behavior but cannot remove genuine physical ill-condi
 
 Solver tolerances operate in the provided coordinates. A residual tolerance of $10^{-6}$ has a different meaning for a normalized constraint than for a dimensional force balance. Scale first, then select tolerances.
 
-## Worked example 3.3: poorly scaled quadratic
+## Example 3.3: poorly scaled quadratic
 
 For
 

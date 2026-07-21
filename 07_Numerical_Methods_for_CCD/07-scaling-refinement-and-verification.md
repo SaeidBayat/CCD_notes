@@ -14,6 +14,13 @@ so typical magnitudes are comparable. Dynamic defects need state-specific scales
 
 Useful initial guesses come from baseline simulation, simple boundary interpolation, known operating controls, simplified problems, and nearby parameter cases. Continuation gradually tightens constraints, increases disturbances, activates nonlinear physics, reduces regularization, or refines the mesh while warm-starting from the previous solution.
 
+```{admonition} Why scaling changes what "feasible" means
+:class: warning
+Consider the scalar linear system $\dot y=ay$, $y(0)=y_0$, discretized with a trapezoidal defect. Most NLP solvers accept an equality defect once its *absolute* value falls within a solver tolerance $\epsilon$ (a common default is $\epsilon=10^{-6}$). Because the defect is linear in $y$, the *relative* error that this absolute tolerance permits scales with $1/y_0$: for a state with $y_0=10^{-6}$, a defect within $\epsilon$ can correspond to a relative error of order unity, while rescaling $y$ to unit initial magnitude drives the same absolute tolerance down to a relative error of order $\epsilon$. Two systems that are mathematically equivalent up to a change of units can therefore behave completely differently under the same solver settings — scaling state, control, and time to be $O(1)$ is what makes the solver's tolerance mean what it appears to mean.
+```
+
+A practical automatic-scaling recipe applies an affine map to each variable so that it lies in a fixed reference interval (for example $[-1/2,1/2]$), then scales each constraint by approximately the reciprocal of its gradient norm sampled at a few candidate points, so that both the scaled variables and the scaled Jacobian entries are $O(1)$ before the NLP solver ever sees them. Defect constraints inherit the scale factor of the state they enforce, so that dynamic consistency is checked in the same relative terms across states with very different physical units.
+
 ## Mesh refinement
 
 One mesh is not enough evidence.
@@ -27,6 +34,8 @@ One mesh is not enough evidence.
 - **$hp$-refinement:** combine both based on local smoothness.
 
 Error indicators include model-versus-reconstruction derivative mismatch, low- versus high-order estimates, coefficient decay, constraint overshoot, independent-simulation error, and changes in objective and design.
+
+Production pseudospectral codes automate $hp$-refinement as an explicit decision rule rather than trial and error. One published strategy compares the ratio of maximum to mean curvature of the state solution within a mesh interval against a user-specified threshold: exceeding the threshold increases the polynomial degree in that interval, while staying below it subdivides the interval into more, lower-degree intervals. A related strategy instead exploits the (near-)exponential convergence of orthogonal collocation directly: it estimates the polynomial degree needed to reach the target accuracy within an interval, raises the degree toward a user-specified upper limit $N_{\max}$ if that estimate is attainable, and otherwise subdivides. Software exposing this kind of combined interval-count/degree adaptation commonly labels the configuration $hp$-$(N_{\min},N_{\max})$, naming the allowed minimum and maximum polynomial degree per mesh interval. Either rule automates exactly the "add intervals near nonsmooth behavior, add degree in smooth regions" heuristic above, driven by a re-solve-and-re-estimate loop around the current mesh.
 
 Monitor several convergence quantities:
 

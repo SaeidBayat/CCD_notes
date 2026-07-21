@@ -2,7 +2,7 @@
 
 ## Summary
 
-A CCD formulation identifies plant and controller decisions, state and control trajectories, performance objectives, physical equality constraints, time-dependent path constraints, endpoint boundary constraints, and variable bounds. Lagrange objectives measure accumulated behavior, Mayer objectives measure terminal behavior, and Bolza objectives combine both. The resulting continuous-time problem is infinite-dimensional and must later be transcribed into a finite nonlinear program.
+A CCD formulation identifies plant and controller decisions, state and control trajectories, performance objectives, physical equality constraints, time-dependent path constraints, endpoint boundary constraints, and variable bounds. When algebraic equalities accompany the state derivatives, the dynamics form a differential-algebraic equation, and an active inequality path constraint can raise its index by converting a state or control into a dependent algebraic variable. Physical-design limits such as stress, fatigue, and packaging are often collected in a dedicated physical-constraint function, separate from operating limits such as actuator saturation. Lagrange objectives measure accumulated behavior, Mayer objectives measure terminal behavior, and Bolza objectives combine both. The resulting continuous-time problem is infinite-dimensional and must later be transcribed into a finite nonlinear program.
 
 ```{admonition} Central lesson
 :class: important
@@ -11,72 +11,35 @@ Formulation bridges engineering intuition and numerical computation. It states p
 
 ## Key terms
 
-Plant design variables; control design variables; state trajectory; control trajectory; equality constraint; path constraint; boundary constraint; running cost; terminal cost; Lagrange objective; Mayer objective; Bolza objective; feasible trajectory; bounds; formulation; dynamic optimization.
+Plant design variables; control design variables; control parameters; open-loop control (OLC) variables; state trajectory; control trajectory; equality constraint; path constraint; boundary constraint; physical-constraint function; differential-algebraic equation (DAE); algebraic variable; algebraic constraint; index-1; running cost; terminal cost; Lagrange objective; Mayer objective; Bolza objective; feasible trajectory; bounds; formulation; dynamic optimization.
 
-## Conceptual problems
+## Problems
 
-1. Explain why a CCD problem needs a mathematical formulation before numerical solution.
-2. Give three plant and three control variables for a robot manipulator.
-3. Explain the difference between $\mathbf{x}_c$ and $u(t)$.
-4. Why are state trajectories necessary in dynamic but not simple static optimization?
-5. Describe a situation where a path constraint is more appropriate than a boundary constraint.
+1. **Canonical continuous-time CCD formulation.** An active oscillator satisfies $m\ddot x+c\dot x+kx=u+w$, where $(m,k,c)$ are bounded plant variables and $u(\cdot)$ is the control trajectory. Formulate a complete Bolza CCD problem that minimizes mass, vibration, and control energy while enforcing displacement, velocity, force, terminal-state, and passive-failure constraints.
 
-## Formulation problems
+2. **Nondimensional CCD model.** For the oscillator in Problem 1, use $t_0=\sqrt{m_0/k_0}$, $x_0$, and $F_0=k_0x_0$ to derive a dimensionless state equation, objective, design bounds, and path constraints, identifying every independent dimensionless group.
 
-6. Formulate a mass–spring–damper CCD problem with $k$ and $K_p$ as decisions, one objective, and one path constraint.
-7. For cruise control with state $v(t)$ and traction force $F_t(t)$, write an equality, path, and boundary constraint.
-8. A manipulator moves from $q_0$ to $q_f$ in fixed time $t_f$. Write its boundary constraints.
-9. Write a Lagrange objective penalizing tracking error $e(t)$ and effort $u(t)$.
-10. Write a Mayer objective minimizing $x_3(t_f)$.
+3. **Variable-final-time formulation.** A point mass obeys $\dot r=v$, $m\dot v=u-c_dv|v|$ and must travel from $(0,0)$ to $(L,0)$. Transform a free-final-time CCD problem over $[0,t_f]$ to the fixed domain $\tau\in[0,1]$ and derive the transformed dynamics and objective when $m$, actuator rating, and $t_f$ are decisions.
 
-## Classification problems
+4. **Path-constraint tangency.** For $\dot x_1=x_2$ and $\dot x_2=f(x)+bu$, impose the state-only path constraint $x_1(t)\le x_{\max}$. Derive its relative degree, boundary-control law, and entry tangency conditions required for a nonzero-duration constrained arc.
 
-11. Classify actuator torque limit, rotor speed, pitch gain, wave elevation, and buoy radius as plant variables, control variables, states, disturbances, or constraints.
-12. Classify maximum motor temperature, desired final position, maximum suspension travel, periodicity, and minimum final battery energy as path or boundary constraints.
-13. Identify the Lagrange and Mayer terms in
+5. **Index-one DAE co-design.** A circuit model has $E(p)\dot x=A(p)x+Bu$ with singular $E(p)$ and algebraic variables embedded in $x$. Formulate a CCD problem that preserves the DAE rather than eliminating it and state regularity conditions on the matrix pencil $sE-A$ and initial conditions that ensure a unique admissible trajectory.
 
-    ```{math}
-    J=5x_1(t_f)^2+\int_0^{10}\left(x_2(t)^2+0.3u(t)^2\right)dt.
-    ```
+6. **Hybrid architecture dynamics.** A powertrain switches between modes $q\in\{1,2\}$ with $\dot x=f_q(x,u,p)$ and reset $x^+=R_{12}(x^-,p)$ at switching time $t_s$. Formulate the hybrid CCD problem with $p$, $u(\cdot)$, and $t_s$ as decisions and derive the interior transversality condition at $t_s$.
 
-14. Is $x(0)=x_0$ a dynamic equation, path constraint, or boundary constraint? Explain.
-15. Explain why $|u(t)|\leq2$ for all $t$ is not a simple bound on $\mathbf{x}_c$ unless control is already parameterized.
+7. **Integral versus pointwise requirements.** For actuator temperature $\dot T=-a(p)(T-T_a)+b(p)u^2$, prove by counterexample that an energy constraint $\int_0^{t_f}u^2dt\le E_{\max}$ does not generally enforce $T(t)\le T_{\max}$, then formulate the correct thermal path constraint within a CCD problem.
 
-## Modeling problems
+8. **Uncertain CCD formulation.** The dynamics are $\dot x=f(x,u,p,\theta)$ with random, time-invariant parameter $\theta\sim\mathcal N(\bar\theta,\Sigma)$. Construct a chance-constrained CCD formulation requiring $\mathbb P[g(x(t),u(t),p,\theta)\le0\ \forall t]\ge1-\epsilon$ and derive a conservative finite-grid deterministic approximation using first-order propagation and risk allocation.
 
-16. Write a generic continuous-time active-suspension CCD formulation with plant variables, controller variables, states, and input.
-17. Write a Bolza objective for wind-turbine design that values power while penalizing tower loading and control activity.
-18. Write constraints for a marine energy device with a PTO-force limit, pitch-angle limit, and required final stored energy.
-19. Give an algebraic equality constraint that could appear in CCD.
-20. For a fixed initial state and free final state, write a general boundary-condition statement.
+9. **Feedback-policy parameterization.** Replace an open-loop trajectory by $u(t)=\pi(x(t),t;c)$ in a nonlinear CCD problem. Derive the closed-loop state and design sensitivities with respect to $(p,c)$ and show exactly where the controller Jacobian $\partial\pi/\partial x$ enters.
 
-## Analytical problems
-
-21. Show how a Bolza objective reduces to Lagrange form.
-22. Show how a Bolza objective reduces to Mayer form.
-23. Why is the continuous-time CCD problem infinite-dimensional?
-24. Explain how plant variables in the dynamics change the feasible trajectory set.
-25. A student says, “The simulator already knows the dynamics, so they are not constraints.” Explain why this is incorrect from an optimization viewpoint.
-
-## Computational and mini-project problems
-
-26. Choose a system and list plant variables, control variables, states, disturbances, an objective, a path constraint, and a boundary constraint.
-27. Write a one-page CCD formulation memo from your research area, explaining every decision, objective, and constraint.
-28. Simulate a simple system and approximate
-
-    ```{math}
-    J=\int_0^T(x(t)^2+u(t)^2)dt
-    ```
-
-    on successively refined time grids. Report convergence of the approximation.
-29. For $u(t)=Kx(t)$, compare the optimization variable set with one in which $u(t)$ is optimized directly.
-30. Formulate a complete CCD problem for a suspension, robot, wind turbine, or marine-energy device, justifying the plant variables, controller variables, states, objective, and constraints.
+10. **First-order necessary conditions for CCD.** For a general Bolza problem with plant vector $p$, dynamics $\dot x=f(x,u,p)$, equality path constraints $h=0$, inequality path constraints $g\le0$, and endpoint constraint $\Psi=0$, derive the augmented Hamiltonian system and the stationarity condition with respect to the time-invariant plant variables.
 
 ## References and further reading
 
 1. Allison, J. T., & Herber, D. R. (2014). Multidisciplinary design optimization of dynamic engineering systems. *AIAA Journal, 52*(4), 691–710. DOI: 10.2514/1.J052182
 
-2. Allison, J. T., Guo, T., & Han, Z. (2014). Co-design of an active suspension using simultaneous dynamic optimization. *Journal of Mechanical Design, 136*(8), Article 081003.
+2. Allison, J. T., Guo, T., & Han, Z. (2014). Co-design of an active suspension using simultaneous dynamic optimization. *Journal of Mechanical Design, 136*(8), Article 081003. DOI: 10.1115/1.4027335
 
 3. Herber, D. R., & Allison, J. T. (2019). Nested and simultaneous solution strategies for general combined plant and control design problems. *Journal of Mechanical Design, 141*(1), Article 011402. DOI: 10.1115/1.4040705
 

@@ -2,7 +2,7 @@
 
 Two groups of decisions are **coupled** when changing one group changes the best choice in the other. In CCD, the plant changes dynamics, actuator requirements, sensor signals, and achievable performance; the controller changes loads, motions, energy flow, fatigue, and the value of alternative plant designs.
 
-```{figure} imgs/bidirectional-coupling.svg
+```{figure} imgs/bidirectional-coupling.png
 :alt: Circular dependence between plant design and controller design.
 :width: 85%
 :align: center
@@ -34,7 +34,7 @@ Passive stiffness $k$ and proportional feedback $K_p$ both contribute to effecti
 
 If $k$ is chosen before $K_p$ is considered, the design may contain more passive stiffness than needed once active control becomes available. If $K_p$ is chosen without plant cost or actuator limits, the controller may demand unrealistic force or energy.
 
-## Worked allocation example
+## Allocation example
 
 Suppose the design requires an effective stiffness
 
@@ -57,6 +57,27 @@ Setting $dC/dk=0$ yields $k=1.2$ and $K_p=4.8$, with
 $$C_{\mathrm{CCD}}=0.08(1.2)^2+0.02(4.8)^2=0.576.$$
 
 The numbers are deliberately simple. The lesson is general: when passive and active decisions contribute to the same system property, the least-cost allocation may be invisible to a one-pass sequential workflow.
+
+## Five ways a plant objective can misrepresent the system
+
+The example above hides an important, more general question: when a plant subproblem is optimized on its own, exactly *which* objective is it optimizing—and how faithfully does that objective represent the true, complete system objective $\phi(\xi(t),u(t),x_p)$? Plant-design objectives used in practice fall into five cases, and only two of them are trustworthy:
+
+| Case | Accounts for control? | Uses full dynamics? | Objective used |
+|---|---|---|---|
+| 1 | No | Yes (passive dynamics) | Exact system objective $\phi(\xi(t),x_p)$ |
+| 2 | No | Yes (passive dynamics) | Approximation $\hat\phi(\xi(t),x_p)$ |
+| 3 | No | No (static analysis) | Approximation $\hat\phi(x_p)$ |
+| 4 | Yes | Yes | Exact system objective $\phi(\xi(t),u(t),x_p)$ |
+| 5 | Yes | Yes | Approximation $\hat\phi(\xi(t),u(t),x_p)$ |
+
+Case 1 is what "sequential design" means when it is done as well as it can be done without control: the plant is optimized using the real system objective, honestly evaluated with passive dynamics ($u\equiv0$). Case 4 is the true co-design objective: the same real system objective, now evaluated with active control included—this is the objective $J$ inside the compact CCD statement introduced earlier in this chapter. Cases 2, 3, and 5 substitute an *approximation* $\hat\phi$ for the true objective $\phi$, most often because building a coupled dynamic model is expensive. Case 3 is the most severe simplification and the most common one in practice: it drops dynamics altogether and uses a static or steady-state proxy—mass, a gravity-balance condition, a frequency-domain margin—standing in for the real, time-dependent performance metric.
+
+```{admonition} Why this matters
+:class: important
+Nothing prevents a Case 2, 3, or 5 plant objective from producing a feasible, defensible-looking design. The problem is invisible from inside the plant subproblem: $\hat\phi$ has no mechanism for reporting how far it has drifted from $\phi$. Coupling strength determines how much this drift costs. When coupling is weak, $\hat\phi\approx\phi$ and the approximation is nearly harmless. When coupling is strong—exactly the systems this course is about—the plant that minimizes $\hat\phi$ can be far from the plant that minimizes $\phi$, which is the mathematical reason a feasible sequential design can be system-suboptimal.
+```
+
+In the worked allocation example, the passive-first design implicitly used a Case-3-style objective: it optimized $k$ using a proxy that assumed $K_p=0$, never evaluating what $K_p$ would eventually need to be. A genuine CCD solution requires a Case 1 or Case 4 objective—the real system objective, honestly evaluated, whether or not active control is present in it.
 
 ## Common forms of coupling
 

@@ -74,3 +74,13 @@ There are two common control representations:
 2. **Direct trajectory optimization:** the function $u(t)$ itself is a time-varying decision.
 
 Either can be used in CCD. The appropriate choice depends on the problem structure, intended controller implementation, and numerical method.
+
+## Partitioning the control-variable set
+
+It is often useful to be explicit about which part of $\mathbf{x}_c$ is time-independent and which is a genuine trajectory. Writing
+
+```{math}
+\mathbf{x}_c=\begin{bmatrix}\mathbf{p}\\\mathbf{u}\end{bmatrix},
+```
+
+separates **control parameters** $\mathbf{p}$—time-independent quantities such as feedback gains, weighting-matrix entries, or a prediction horizon—from **open-loop control (OLC) variables** $\mathbf{u}(\cdot)$, the time-varying trajectory itself. A formulation may include only $\mathbf{p}$ (a fully parameterized feedback law), only $\mathbf{u}(\cdot)$ (direct trajectory optimization with no parametric structure), or both at once, for example a parameterized feedback law whose reference trajectory is itself optimized. The general continuous-time CCD formulation developed later in this chapter accommodates all three cases without change; only the content of $\mathbf{x}_c$ differs.

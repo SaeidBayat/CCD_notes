@@ -34,6 +34,10 @@ Validation is not a single score. Small average error can hide critical peaks or
 Do not repeatedly tune a model or surrogate on the cases used to claim independent validation. Preserve a final test set or use additional high-fidelity and experimental cases not used during model construction.
 ```
 
+## The standardization gap in practice
+
+The reproducibility and validation demands described above are not yet routine practice in every CCD subfield. A recent review of wind turbine CCD found that industrial adoption remains limited in part because CCD studies rarely report enough information for one study to be compared against another: quantitative performance metrics, sensitivity analyses, and computational cost are inconsistently documented, and there is no standardized way to quantify how strongly a given system's plant and control disciplines actually couple. The review identified this as a distinct research gap from model fidelity or uncertainty treatment — even a numerically well-verified individual study can fail to accumulate into transferable engineering knowledge if each published study uses different objectives, different constraint sets, and different reporting conventions. The remedy the review proposed for the field is exactly the reproducibility package emphasized in this chapter: standard, reproducible benchmark problems that let independent groups reproduce a claimed result and directly compare coordination strategies on identical terms, rather than reproducing only the qualitative conclusion that "coordination helps."
+
 :::{tip} Activity 8.6: Independent Reproduction and Validation Audit
 :class: dropdown
 

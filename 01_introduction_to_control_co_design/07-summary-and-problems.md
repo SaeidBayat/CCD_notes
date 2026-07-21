@@ -3,11 +3,15 @@
 ## Chapter summary
 
 - Active engineering systems combine a plant, sensors, controller, actuators, and environment.
-- Sequential design fixes the plant before the final controller is known and can eliminate better plant-controller combinations.
-- CCD coordinates physical and control decisions through shared dynamics, objectives, information assumptions, and constraints.
-- Plant-control coupling exists when changing the plant changes the best controller and changing control capability changes the best plant.
+- Architecture, plant, and control are three distinct design domains—which components exist and how they connect, their continuous sizing, and how control action is generated—and the same premature-fixing hazard that motivates CCD at the plant-control level applies one level up, to architecture.
+- Sequential design fixes the plant before the final controller is known and can eliminate better plant-controller combinations; the Millennium Bridge and combine-harvester header-height cases show this is a documented engineering failure mode, not a hypothetical one.
+- CCD coordinates physical and control decisions through shared dynamics, objectives, information assumptions, and constraints, and is a specialization of the broader MDSDO/MDO landscape.
+- CCD itself spans three complementary methodologies—control-inspired reasoning, mathematical co-optimization, and co-simulation—that this course develops primarily through co-optimization.
+- Plant-control coupling exists when changing the plant changes the best controller and changing control capability changes the best plant; the five plant-objective cases explain precisely how an incomplete objective can hide this dependence.
+- Iterated sequential design is a block-coordinate-descent algorithm; it can reach the CCD optimum only when both subproblems use a consistent, complete objective, and even then convergence slows as plant-control coupling strengthens.
 - Passive and active elements can substitute for or complement one another, but differ in reliability, information, energy, and implementation requirements.
 - CCD is especially valuable when dynamic performance is central, control authority is meaningful, constraints depend on trajectories, and architecture remains flexible.
+- Open-loop optimal control gives a performance benchmark, not a deliverable; the gap to an implementable, limited-information controller can be an order of magnitude and is governed by how much information the controller is assumed to have (complete, instantaneous, or limited horizon).
 - A lower objective value is meaningful only within a credible model, formulation, numerical solution, and implementation pathway.
 
 ## Key terms
@@ -15,8 +19,9 @@
 | Term | Meaning |
 |---|---|
 | Active system | A physical system whose behavior is modified using sensing, computation, and actuation. |
+| Architecture | The elements (components) contained in a system and the relationships among them; a discrete decision distinct from, and prior to, plant sizing and control design. Not to be confused with "CCD architecture" (nested, simultaneous), a numerical solution strategy. |
 | Plant | The physical object or process being controlled. |
-| Plant design variable | A decision describing physical form, parameters, components, or architecture. |
+| Plant design variable | A decision describing physical form, parameters, or components, given a fixed architecture. |
 | Control design variable | A decision describing how control action is generated. |
 | State | A variable needed to describe the internal dynamic condition. |
 | Control input | A commanded physical action applied by an actuator. |
@@ -28,47 +33,32 @@
 | System-level objective | A performance measure representing the mission and tradeoffs of the complete system. |
 | Feasible design | A design satisfying all stated constraints. |
 | System-suboptimal | Feasible, but not optimal for the complete integrated problem. |
+| MDSDO | Multidisciplinary dynamic system design optimization: MDO specialized to systems whose time-evolving state is critical to performance. CCD is an MDSDO problem that also treats the controller as a first-class design object. |
+| Plant-objective case | One of five ways a plant-design objective can (mis)represent the true system objective, ranging from exact (Cases 1 and 4) to static or approximate (Cases 2, 3, and 5). |
+| Block coordinate descent (BCD) | An optimization algorithm that alternates optimizing disjoint blocks of variables; iterated sequential design is a BCD instance and converges to the CCD optimum only under specific conditions. |
+| Information horizon | The span of time over which a controller has usable information when it acts: complete (offline, full foresight), instantaneous (classical feedback), or limited (MPC-style receding horizon). |
 
-## Conceptual problems
+## Problems
 
-1. **System anatomy.** For a quadrotor, an active-mass-damper building, and a battery-electric vehicle, identify the plant, actuator, sensor, controller, disturbance, and one system-level objective.
-2. **Sequential versus integrated design.** Explain why optimizing the plant and then the controller generally differs from optimizing both together. Give one case where the answers might be nearly identical.
-3. **Feasibility and optimality.** Construct two feasible designs where one is system-suboptimal. State the objective and constraints.
-4. **Coupling directions.** For an active wind turbine, give two plant-to-control and two control-to-plant coupling mechanisms.
-5. **What CCD is not.** A team evaluates ten fixed robot arms and tunes a controller for each. Is this CCD? What additional coordination would strengthen the study?
+1. **Quantifying plant--control coupling.** An actively controlled oscillator satisfies $m\ddot x+c\dot x+kx=u+w$ and uses $u=-K_px-K_d\dot x$. For $J=\int_0^\infty(q_xx^2+q_v\dot x^2+r u^2)\,dt+\gamma_m m+gamma_k k$, derive a local cross-sensitivity measure that quantifies coupling between $(m,k)$ and $(K_p,K_d)$ at a stable design and explain how it predicts the potential value of CCD.
 
-## Analytical problems
+2. **Sequential versus simultaneous design.** For the static surrogate $J(p,c)=\tfrac12a(p-p_0)^2+bpc+\tfrac12d(c-c_0)^2$ with $a,d>0$ and $ad>b^2$, derive the exact simultaneous optimizer and the optimizer produced by one plant-then-control sequential pass, then obtain a closed-form expression for their objective gap.
 
-6. **Effective dynamics.** For the mass-spring-damper system with PD control, derive the closed-loop equation. Find natural frequency and damping ratio in terms of $m$, $c$, $k$, $K_p$, and $K_d$.
-7. **Allocation under a target.** Minimize
+3. **Control-authority allocation.** A positioning system has effective stiffness $k+K_p=q>0$ and cost $C(k,K_p)=a k^2+bK_p^2+\gamma kK_p$, with $k\ge0$ and $0\le K_p\le\bar K_p$. Derive the globally optimal passive--active allocation as a piecewise function of $(a,b,\gamma,q,\bar K_p)$.
 
-   $$C(k,K_p)=ak^2+bK_p^2$$
+4. **A system-level objective from physical units.** A battery-electric vehicle has longitudinal dynamics $m\dot v=F_t-\tfrac12\rho C_dA v^2-C_rm g-mg\sin\theta$ and battery power $P_b=F_tv/(\eta_d\eta_m)$. Construct one dimensionally consistent Bolza objective that trades trip time, electrical energy, battery mass, and terminal-speed error, and justify a normalization that makes its weights interpretable.
 
-   subject to $k+K_p=q$, where $a,b,q>0$. Derive $k^*$ and $K_p^*$ and interpret the effect of making active control more expensive.
-8. **Actuator limit.** Add $0\le K_p\le\bar K_p$ to Problem 7. Derive the constrained solution.
-9. **A coupled constraint.** Suppose $|kx(t)|\le F_s^{\max}$ for all $t\in[0,t_f]$. Explain why this plant constraint depends on control design.
-10. **System-level objective.** Propose a Bolza-type objective for an actively controlled robot arm balancing tracking error, actuator energy, terminal accuracy, and link mass. State the units of every term.
+5. **Architecture screening under common assumptions.** Compare passive, semi-active, and fully active suspension architectures for $m_s\ddot z_s=-k_s(z_s-z_u)-c_s(\dot z_s-\dot z_u)+F_a$ under the same road input, packaging envelope, ride metric, and actuator-power model by formulating a single mixed-discrete CCD problem whose feasible sets make the comparison fair.
 
-## Computational and design problems
+6. **Failure of an incomplete plant objective.** Let the true objective be $J(p,c)=(p-1)^2+(c-p)^2+\rho c^2$, while a plant team minimizes only $J_p(p)=(p-1)^2$ before the control team selects $c$. Derive the resulting sequential design and the simultaneous CCD design, then determine for which $\rho>0$ the relative performance loss exceeds ten percent.
 
-11. **Reproduce the teaching example.** Implement the model and objective, reproduce both workflows, plot $x(t)$ and $u(t)$, and report solver settings and initial guesses.
-12. **Effort sensitivity.** Replace the control-effort coefficient with $\rho_u$. Solve for at least six logarithmically spaced values and plot the optimal design variables versus $\rho_u$.
-13. **Passive safety.** Require passive damping ratio $\zeta_{\mathrm{passive}}\ge0.25$ with the actuator disabled. Re-solve and interpret the performance penalty.
-14. **Preview information.** Explain how forward road preview might change the optimal passive suspension and identify two practical costs of additional preview.
-15. **Application screening.** Choose a new active system, complete the screening checklist, and write a one-page recommendation on whether CCD is justified.
+7. **Passive safety as a coupled requirement.** The actuator in $m\ddot x+c\dot x+kx=u$ may fail at an unknown time, after which $u=0$. Formulate a CCD problem that minimizes nominal closed-loop performance while guaranteeing a prescribed exponential decay rate after failure, expressing the passive-safety condition as a constraint on the plant parameters.
 
-## Mini-project: from a conventional design to CCD
+8. **Information as a design variable.** A vehicle suspension controller receives a preview $w(t+\tau)$ of road displacement at sensing cost $C_s(\tau)=c_0+c_1\tau^2$, while the best achievable closed-loop cost is $J^*(p,\tau)$. Formulate a value-of-information test based on $\partial J^*/\partial\tau$ that determines whether the optimal design uses zero, finite, or maximum available preview.
 
-Prepare a 3–5 page concept report for one actively controlled system containing:
+9. **Iterated sequential design.** For a twice continuously differentiable strongly convex objective $J(p,c)$, represent alternating exact minimization over $p$ and $c$ as block coordinate descent and derive a local linear convergence factor in terms of the Hessian blocks $H_{pp}$, $H_{pc}$, and $H_{cc}$.
 
-1. a diagram identifying plant, sensors, controller, actuators, and environment;
-2. at least four plant variables and four control or information variables;
-3. a state-space or differential-equation model;
-4. one system-level objective and at least five constraints;
-5. the conventional sequential workflow;
-6. a plant-control coupling map;
-7. proposed sequential and CCD studies; and
-8. model limitations, implementation risks, and validation needs.
+10. **CCD study definition.** For a two-link robot with $M(q,p)\ddot q+C(q,\dot q,p)\dot q+g(q,p)=B(p)u$, formulate a reproducible control co-design study with link dimensions as plant variables and a feedback policy as the control design, giving one complete objective, physically meaningful constraints, an information pattern, and a sequential baseline in one unified mathematical statement.
 
 ## References and further reading
 
@@ -81,6 +71,12 @@ Prepare a 3–5 page concept report for one actively controlled system containin
 4. Herber, D. R., & Allison, J. T. (2019). Nested and simultaneous solution strategies for general combined plant and control design problems. *Journal of Mechanical Design, 141*(1), Article 011402. DOI: 10.1115/1.4040705
 
 5. Bayat, S., Peterson, C., Lee, Y. H., Iori, J., & Allison, J. T. (2026). Advancing wind turbines through control co-design: An integrative review. *Applied Energy, 416*, Article 127951. [ScienceDirect article](https://www.sciencedirect.com/science/article/pii/S0306261926006033)
+
+6. Deshmukh, A. P., Herber, D. R., & Allison, J. T. (2015). Bridging the gap between open-loop and closed-loop control in co-design: A framework for complete optimal plant and control architecture design. In *2015 American Control Conference (ACC)* (pp. 4916–4922).
+
+7. Bayat, S., & Allison, J. T. (2026). Control co-design with varying available information applied to vehicle suspensions. *ASME Journal of Dynamic Systems, Measurement, and Control, 148*(1), Article 011013. DOI: 10.1115/1.4069918
+
+8. Herber, D. R. (2017). *Advances in Combined Architecture, Plant, and Control Design* (Doctoral dissertation). University of Illinois at Urbana-Champaign.
 
 
 ```{admonition} Completion checkpoint

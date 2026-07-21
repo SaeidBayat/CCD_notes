@@ -11,65 +11,29 @@ Controllers do not act on abstract equations; they act on physical systems with 
 
 ## Key terms
 
-Dynamic system; state; control input; output; disturbance; differential equation; state-space representation; linearization; open-loop system; closed-loop system; feedback; equilibrium; stability; asymptotic stability; eigenvalue; natural frequency; damping ratio; closed-loop poles.
+Dynamic system; state; control input; output; disturbance; differential equation; multidisciplinary analysis (MDA); differential-algebraic equation (DAE); index-1 DAE; algebraic constraint; state-space representation; linearization; open-loop system; closed-loop system; feedback; equilibrium; stability; asymptotic stability; eigenvalue; natural frequency; damping ratio; closed-loop poles.
 
-## Conceptual problems
+## Problems
 
-1. Explain why dynamic-system models are especially important in control co-design.
-2. Give one state, input, output, and disturbance for each system: (a) active suspension, (b) robot arm, and (c) wind turbine.
-3. A student says, “If a system is stable, then it is well designed.” Explain why this statement is incomplete.
-4. Describe one situation in which open-loop control may be acceptable and one in which closed-loop control is essential.
-5. Why can it be dangerous to optimize a plant assuming a fixed controller that will later be replaced?
+1. **Nonlinear modeling and local dynamics.** A torque-actuated pendulum satisfies $ml^2\ddot\theta+b\dot\theta+mgl\sin\theta=u$. Derive its nonlinear state-space model and the exact linearization about the upright equilibrium, then determine the state-feedback gains that place the linearized poles at a prescribed stable conjugate pair.
 
-## Modeling and derivation problems
+2. **Plant design and controllability.** A flexible two-mass system obeys $M(p)\ddot q+C\dot q+K(p)q=b(r_a)u$, where $p$ changes stiffness and $r_a$ is actuator location. Derive a modal controllability metric and use it to state a quantitative co-design criterion that prevents any retained mode from becoming weakly actuated.
 
-6. For the mass–spring–damper system, derive a state-space model when the output is acceleration rather than displacement.
-7. A rotational inertia $J$ is connected to a torsional spring $k_t$ and damper $c_t$, and torque $\tau$ acts on the shaft. Derive a state-space model using angular displacement and angular velocity as states.
-8. Derive a state-space model of
+3. **LQR-dependent plant selection.** For $\dot x=\begin{bmatrix}0&1\\-k/m&-c/m\end{bmatrix}x+\begin{bmatrix}0\\1/m\end{bmatrix}u$ and $J=\int_0^\infty(x^TQx+ru^2)dt+\gamma m$, derive the algebraic-Riccati sensitivity equations needed to compute the total derivative of the optimized closed-loop cost with respect to $m$.
 
-   ```{math}
-   m\dot{v}=F_t-c_rv-mg\sin\theta
-   ```
+4. **Robust stability over a design family.** The closed-loop matrix is $A_{cl}(p)=A_0+pA_1-BK$ for $p\in[p_-,p_+]$. Formulate and justify a common quadratic Lyapunov inequality that certifies a uniform exponential decay rate over the entire interval, reducing the infinite family to finitely many matrix inequalities when the dependence is affine.
 
-   using $v$ as the state, $F_t$ as the control input, and $\theta$ as the disturbance.
-9. For the DC motor model, choose shaft speed as the only output. Write the corresponding $C$ and $D$ matrices.
-10. For the nonlinear pendulum
+5. **Observer--plant interaction.** A sensor placement variable $s$ changes the output matrix $C(s)$ in $\dot x=A(p)x+Bu$, $y=C(s)x+v$. Derive the observability Gramian and formulate a joint placement--estimator design constraint that bounds the worst-direction state-estimation uncertainty over a finite horizon.
 
-    ```{math}
-    ml^2\ddot{\theta}+b\dot{\theta}+mgl\sin\theta=\tau,
-    ```
+6. **Sampled-data feedback.** For $\dot x=Ax+Bu$ with zero-order-hold control $u(t)=-Kx(kh)$ on $kh\le t<(k+1)h$, derive the exact discrete closed-loop matrix and determine the largest sampling period $h$ that preserves asymptotic stability for a specified numerical pair $(A,B,K)$.
 
-    define states and write the nonlinear state-space model.
+7. **Disturbance attenuation.** The quarter-car model is $M\ddot q+C\dot q+Kq=B_uu+B_ww$, with performance output $z=C_zx+D_zu$. Derive the bounded-real linear matrix inequality that certifies $\|T_{w\to z}\|_\infty<\gamma$ and identify which matrix terms change when suspension stiffness is a design variable.
 
-## Analysis problems
+8. **Region of attraction under actuator saturation.** For $\dot x=Ax+B\operatorname{sat}(-Kx,u_{\max})$, derive an invariant ellipsoidal inner approximation $\mathcal E(P)=\{x:x^TPx\le1\}$ by combining a Lyapunov inequality with constraints ensuring the feedback remains unsaturated inside $\mathcal E(P)$.
 
-11. For
+9. **Unmodeled flexible dynamics.** A nominal rigid-body plant $G_0(s)=1/(Js^2)$ is augmented by a flexible mode $G_f(s)=\omega_f^2/(s^2+2\zeta_f\omega_fs+\omega_f^2)$. Derive a robust-stability restriction on controller bandwidth using multiplicative uncertainty and show how increasing structural stiffness can enlarge the admissible bandwidth.
 
-    ```{math}
-    \dot{\mathbf{x}}=\begin{bmatrix}0&1\\-5&-2\end{bmatrix}\mathbf{x},
-    ```
-
-    compute the eigenvalues and determine whether the origin is asymptotically stable.
-12. For Problem 11, compute the natural frequency and damping ratio if the system is interpreted as a second-order mechanical model.
-13. Show that the closed-loop matrix under state feedback $u=-Kx$ is $A-BK$. Why is this central to feedback control?
-14. For $m=1$, $c=0.6$, and $k=2.5$, compute the open-loop poles of the mass–spring–damper model.
-15. Suppose $m$ is doubled while $c$ and $k$ remain unchanged. How do the natural frequency and damping ratio change?
-
-## Control and design interaction problems
-
-16. Explain physically what $K_p$ and $K_d$ in {eq}`eq-ch2-pd-law` do to effective stiffness and damping.
-17. Identify a tradeoff between making a mass–spring–damper plant stiffer and making its controller more aggressive.
-18. Describe how changing actuator placement on a flexible structure could alter the plant model and feedback effectiveness.
-19. A marine energy device is redesigned with a larger buoy. List at least four ways this might alter the dynamic model relevant to control design.
-20. A robot joint is made lighter but less stiff. Explain qualitatively how that might affect bandwidth, vibration, and controller tuning.
-
-## Computational and mini-project problems
-
-21. Use MATLAB or Python to simulate mass–spring–damper responses for at least three values of $c$ while holding $m$ and $k$ fixed. Plot and explain the trends.
-22. Plot the system poles as stiffness $k$ varies over a wide range. What trend do you observe?
-23. Choose an engineering system and identify at least three plant design variables and three control design variables. Explain why it is a good CCD candidate.
-24. Build a first- or second-order state-space model from your research area or engineering interests. Define its states, inputs, outputs, and disturbances.
-25. Select an actively controlled system and prepare a 3–4 page modeling memo containing: (a) a system diagram, (b) assumptions, (c) differential equations, (d) a state-space representation, (e) a stability discussion, and (f) an explanation of how plant design could change the model and control problem.
+10. **Dynamic feasibility of an index-one DAE.** An electromechanical actuator satisfies $L\dot i+Ri+k_e\omega=v$, $J\dot\omega=k_ti-\tau_L$, and the algebraic saturation law $0=i-\operatorname{sat}(i_c,i_{\max}(T))$. Formulate a consistent state--algebraic representation and derive the conditions under which an equilibrium and its local linearization are well defined.
 
 ## References and further reading
 
@@ -84,3 +48,5 @@ Dynamic system; state; control input; output; disturbance; differential equation
 5. Martins, J. R. R. A., & Ning, A. (2021). *Engineering design optimization*. Cambridge University Press.
 
 6. Franklin, G. F., Powell, J. D., & Emami-Naeini, A. (2019). *Feedback control of dynamic systems* (8th ed.). Pearson.
+
+7. Herber, D. R. (2017). *Advances in Combined Architecture, Plant, and Control Design* (Doctoral dissertation). University of Illinois at Urbana-Champaign.

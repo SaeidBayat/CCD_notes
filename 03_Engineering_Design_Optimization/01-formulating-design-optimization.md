@@ -95,7 +95,7 @@ g_\sigma(\mathbf{x})=\frac{\sigma(\mathbf{x})}{\sigma_{\max}}-1\leq0.
 
 Equality constraints $h_j(\mathbf{x})=0$ may represent conservation, compatibility, or coupled-analysis residuals. Bounds $x_{L,k}\leq x_k\leq x_{U,k}$ should be physically defensible: overly wide bounds expose invalid model regions, while narrow bounds can hide better designs.
 
-## Worked example 3.1: cylindrical pressure vessel
+## Example 3.1: cylindrical pressure vessel
 
 For a vessel with radius $r$, thickness $t$, and fixed length $L$, minimize material volume while meeting volume and thin-wall stress requirements:
 

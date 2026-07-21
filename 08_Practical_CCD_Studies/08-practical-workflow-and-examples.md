@@ -1,4 +1,4 @@
-# Practical CCD Workflow and Worked Examples
+# Practical CCD Workflow and Examples
 
 ![A complete workflow for practical CCD. Validation failures feed back to formulation, modeling, or numerical work.](imgs/fig_chp8_11.svg)
 
@@ -14,7 +14,7 @@
 8. **Realize controller and hardware.** Implement sampling, estimation, actuator dynamics, saturation logic, and real-time limits.
 9. **Publish a reproducible package.** Enable others to recreate the study and understand its limitations.
 
-## Worked Example 8.1: suspension architectures
+## Example 8.1: suspension architectures
 
 Using the suspension objective, compare:
 
@@ -24,7 +24,7 @@ Using the suspension objective, compare:
 
 Report total objective and every component, plant and controller values, peak travel and force, acceleration and tire-deflection trajectories, computation measures, mesh convergence, and independent simulation. Similar nested and simultaneous solutions support the theoretical equivalence and both implementations. Differences require investigation of inner convergence, local minima, feasibility, discretization, and controller representation.
 
-## Worked Example 8.2: robust suspension
+## Example 8.2: robust suspension
 
 For three road profiles and three payloads, define nine scenarios with probabilities $p_s$:
 
@@ -34,7 +34,7 @@ $$
 
 The first term rewards average performance; the second penalizes a weak worst case. Enforce actuator and travel limits in all scenarios. Compare nominal and robust designs on all cases, including the nominal penalty, worst-case improvement, violations, and design changes.
 
-## Worked Example 8.3: surrogate-assisted wind CCD
+## Example 8.3: surrogate-assisted wind CCD
 
 From high-fidelity histories of rotor speed, platform pitch, tower moment, generator power, and controller signals:
 

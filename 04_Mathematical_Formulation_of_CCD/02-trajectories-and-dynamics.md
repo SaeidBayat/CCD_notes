@@ -66,6 +66,21 @@ These equations define the feasible state trajectories for any candidate plant a
 
 CCD formulations may also contain algebraic equalities for kinematic loop closure, geometric compatibility, steady-state equations, periodicity, and actuator or sensor calibration. The equality set can therefore be larger than the state equations alone.
 
+## Differential-algebraic form
+
+When the dynamics contain algebraic equalities in addition to the state derivatives, the model is a **differential-algebraic equation (DAE)** rather than a plain ODE. In semi-explicit form,
+
+```{math}
+:label: eq-ch4-dae
+\dot{\mathbf{x}}(t)=\mathbf{f}(\mathbf{x}(t),\boldsymbol{\gamma}(t),\mathbf{u}(t),\mathbf{x}_p,\mathbf{x}_c,t),
+\qquad
+\mathbf{0}=\mathbf{f}_a(\mathbf{x}(t),\boldsymbol{\gamma}(t),\mathbf{u}(t),\mathbf{x}_p,\mathbf{x}_c,t),
+```
+
+where $\boldsymbol{\gamma}(t)$ is an **algebraic variable**: a quantity that must satisfy the algebraic constraint $\mathbf{f}_a(\cdot)=\mathbf{0}$ at every instant but has no derivative of its own appearing in the model. Solving the algebraic equation in Eq. {eq}`eq-ch4-dae` for $\boldsymbol{\gamma}(t)$ requires that the Jacobian $\partial\mathbf{f}_a/\partial\boldsymbol{\gamma}$ be nonsingular; a DAE with this property is called **index-1**, where the *index* counts how many times the algebraic equations must be differentiated before the system reduces to an ordinary differential equation. Index-1 DAEs are the most tractable case and the one nearly all CCD dynamic-optimization software targets.
+
+Algebraic variables arise naturally in CCD. Kinematic loop closure and geometric compatibility, mentioned above, are two sources; another is a path inequality constraint that becomes active during part of the trajectory. Every time an inequality constraint is pinned to its bound, one degree of freedom is lost: a state variable must become dependent on the others through the newly active algebraic equation. In actively controlled systems, the control input is the natural candidate to absorb this loss—an actuator command that saturates, for instance, stops behaving as a free trajectory and becomes an algebraic variable determined by the active bound—while the state variables continue to evolve according to the underlying physics. Each additional active inequality constraint can raise the DAE index and make the numerical solution correspondingly harder.
+
 :::{tip} Activity 4.1: Formulating Actuator Dynamics, Rate Limits, and Energy Limits
 :class: dropdown
 

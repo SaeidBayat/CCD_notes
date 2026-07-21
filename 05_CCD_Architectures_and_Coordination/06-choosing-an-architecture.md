@@ -34,6 +34,15 @@ No architecture is always best. Selection depends on coupling strength, simulati
 - accurate gradients and modern nonlinear-programming tools are available; and
 - unified model integration is feasible.
 
+## A sharper criterion: what derivatives can you actually get?
+
+A controlled comparison on an active-suspension co-design problem suggests a more specific, checkable version of "favor simultaneous when coupling is strong": ask first whether the dynamic model can supply symbolic or complex-step derivatives with respect to the plant and control variables. If it can, simultaneous CCD's coordination advantage tends to show up as a real computational advantage too, especially at fine time discretization. If only real-valued finite differences are available — common with legacy, black-box, or multiphysics simulation codes — nested CCD, using a tailored and reliable inner-loop solver (a closed-form LQR solve, or a quadratic program when the inner problem is linear-quadratic), can be faster by an order of magnitude despite its repeated inner solves. This turns the derivative-availability question already listed below from a soft preference into the single most decisive factor observed in a rigorous, implementation-controlled study.
+
+```{admonition} A companion checklist item
+:class: tip
+Before committing to nested CCD, check that the inner problem is feasible for every plant design the outer loop might propose, or add an explicit outer-loop feasibility constraint. In a documented case, uniform sampling within simple design bounds left 44% of candidate plants without a feasible inner solution.
+```
+
 ## Questions to ask before choosing
 
 1. How expensive is each simulation?

@@ -36,6 +36,18 @@ $$
 
 where $\mathbf{d}$ collects design and operating variables. The correction $\delta$ is useful only within a validated domain and must not conceal structural model errors.
 
+## Comparing data-driven low-fidelity approaches: a floating-wind example
+
+Not every surrogate needs a physics-based reduced-order structure. A recent comparison for a floating offshore wind turbine (the IEA-15MW reference turbine on a semisubmersible platform, simulated in OpenFAST through the WEIS toolbox with the open-source ROSCO controller) contrasted three data-driven ways of building a low-fidelity closed-loop "plant" for control optimization:
+
+- **Subspace system identification** (the n4sid/SSARX algorithm) fits a discrete-time linear time-invariant state-space model directly from input–output time series, with model order chosen by a sensitivity study.
+- **Deep learning** trains a recurrent network (an LSTM layer with a small number of cells and a fully connected output layer) to map inputs to outputs at each time step.
+- A **derivative function surrogate model (DFSM)** identifies a continuous-time state-space model whose states are physically meaningful turbine quantities (platform pitch, tower-top displacement, generator speed, and their time derivatives) rather than an abstract identified state, and schedules the state-space matrices on wind speed using a linear parameter-varying (LPV) structure, interpolating between per-wind-speed models identified from simulated time series.
+
+All three low-fidelity models ran far faster than the original high-fidelity simulation, which took nearly 20 minutes per load case: the n4sid model averaged around 2.5 seconds, the DFSM around 25 seconds, and the LSTM around 70 seconds. Simulation speed alone, however, was a poor guide to usefulness. The n4sid model was cheapest to evaluate but had the highest variance in closed-loop response accuracy across load cases — accurate for some, poor for others — partly because its identified states carry no direct physical meaning, which also makes it awkward to extend into a physically scheduled LPV surrogate. The LSTM had lower average error but still showed considerable case-to-case variance and no guaranteed stability. The DFSM balanced simulation time, accuracy, and consistency across load cases better than either alternative, and, unlike the subspace model, could be scheduled meaningfully on wind speed because its states correspond to physical turbine quantities that the LPV weighting can be built around.
+
+The value of a DFSM for control co-design specifically was tested with a small design of experiments over blade-pitch-controller natural frequency and damping ratio, $\mathbf{x}_c=[\omega_{\mathrm{PC}},\zeta_{\mathrm{PC}}]^T$: a full-factorial sample of 25 controller points, each evaluated at five wind speeds with several turbulent seeds, was run in both the high-fidelity simulator and the DFSM. The full high-fidelity sweep cost roughly 250 CPU-hours; the same sweep using the DFSM cost about 5 CPU-hours — close to a fifty-times speedup — and the DFSM's predicted tower-base damage-equivalent-load design space had the same qualitative shape and trends as the high-fidelity design space, even though the DFSM underpredicted the absolute load level and was evaluated at controller values it had not been trained on. For early-stage design-space screening, reproducing the *shape* of a response surface at a fraction of the cost can be more valuable than an unbiased absolute prediction, provided the bias is characterized before the model is trusted for a final decision.
+
 :::{tip} Activity 8.3: Surrogate-Assisted Wind-Turbine CCD with Adaptive Infill
 :class: dropdown
 

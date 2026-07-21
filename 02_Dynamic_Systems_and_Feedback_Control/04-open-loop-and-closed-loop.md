@@ -26,6 +26,12 @@ A **closed-loop controller** uses measurements to compare what is happening with
 
 *Open-loop and closed-loop structures. Closed-loop control feeds measured output back to the controller so commands can be corrected in real time.*
 
+## What is actually being designed: trajectories versus gains
+
+The open-loop/closed-loop distinction changes more than implementation detail — it changes what a "control design" even consists of. With no feedback mechanism, an open-loop control design is typically an entire time trajectory chosen in advance: for instance, the torque history commanded to a robotic-manipulator joint over a fixed motion, decided once and executed without regard to how the joint actually behaves along the way. With a feedback mechanism in place, a closed-loop control design instead consists of the parameters of that mechanism — gains, an observer, or another rule that maps the currently available information into an action — such as the gain matrix $K$ in the state-feedback law {eq}`eq-ch2-state-feedback`, or the gain matrices of an infinite-horizon linear-quadratic regulator using full-state feedback.
+
+This distinction carries directly into CCD problem formulations. An open-loop CCD problem optimizes a plant together with a control trajectory $\mathbf u(\cdot)$; a closed-loop CCD problem optimizes a plant together with a feedback rule (a gain matrix, or more generally the map $\mathcal K$ from available information to a command). The two are not interchangeable: a plant tuned around a fixed, precomputed trajectory can look very different from a plant tuned to work well under a feedback law that has to react to whatever the system actually does.
+
 ## Error-driven feedback
 
 A standard feedback idea is to compute an error

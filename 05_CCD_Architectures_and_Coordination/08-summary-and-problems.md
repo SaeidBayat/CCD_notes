@@ -4,59 +4,33 @@
 
 Single-pass design is simple and inexpensive but weakly coordinated. Iterative sequential design exchanges information repeatedly while preserving disciplinary subproblems. Nested CCD evaluates each plant through an inner optimal controller and can be computationally costly. Simultaneous CCD solves all coupled decisions in one problem and provides the strongest coordination, at the cost of numerical and software complexity.
 
-Architectures can target the same ideal solution yet behave differently because of initialization, local minima, derivative quality, scaling, approximate solves, and stopping criteria. Architecture choice should reflect both mathematical coupling and practical engineering constraints.
+Architectures can target the same ideal solution yet behave differently because of initialization, local minima, derivative quality, scaling, approximate solves, and stopping criteria. Architecture choice should reflect both mathematical coupling and practical engineering constraints. A controlled, implementation-fair comparison shows that two of these practical factors — derivative-method availability and inner-loop feasibility — can matter more than the choice of architecture itself, and that nested CCD's bi-level structure connects directly to the multidisciplinary feasible (MDF) formulation used more broadly in multidisciplinary design optimization.
 
 ## Key terms
 
-CCD architecture; coordination strategy; single-pass sequential design; iterative sequential design; nested CCD; simultaneous CCD; outer loop; inner loop; bi-level optimization; one-level optimization; mathematical equivalence; practical difference; coupling strength; computational tradeoff; legacy tools; derivative availability.
+CCD architecture; coordination strategy; single-pass sequential design; iterative sequential design; nested CCD; simultaneous CCD; outer loop; inner loop; bi-level optimization; one-level optimization; mathematical equivalence; practical difference; coupling strength; computational tradeoff; legacy tools; derivative availability; multidisciplinary feasible (MDF); individual disciplinary feasible (IDF); augmented Lagrangian coordination (ALC); analytical target cascading (ATC); induced region; outer-loop feasibility constraint; inner-loop feasibility; derivative method (symbolic, complex-step, finite difference); direct transcription; algebraic Riccati equation.
 
-## Conceptual problems
+## Problems
 
-1. Explain what is meant by a CCD architecture.
-2. What distinguishes single-pass from iterative sequential design?
-3. Why is nested CCD a bi-level architecture?
-4. Why is simultaneous CCD the most tightly coordinated architecture?
-5. Give a situation where single-pass design is acceptable.
+1. **Convergence of iterated sequential design.** Let $J(p,c)=\tfrac12p^TH_{pp}p+p^TH_{pc}c+\tfrac12c^TH_{cc}c-b_p^Tp-b_c^Tc$ with a positive-definite joint Hessian. Derive the exact iteration matrix for alternating plant and control minimization and prove the necessary and sufficient spectral condition for linear convergence.
 
-## Comparison problems
+2. **Nested value-function gradient.** The inner optimal-control problem defines $\psi(p)=\min_{x,u}J(p,x,u)$ subject to transcription constraints $c(p,x,u)=0$ and $g(p,x,u)\le0$. Under strong regularity, derive $\nabla_p\psi$ from the inner KKT multipliers and show its equivalence to simultaneous first-order stationarity.
 
-6. Compare iterative sequential and nested CCD in coordination and computational burden.
-7. Compare nested and simultaneous CCD in mathematical equivalence and practical behavior.
-8. Give one advantage and limitation of each architecture.
-9. Which architecture most naturally reuses separate legacy tools? Explain.
-10. Which architecture is most likely to require high-quality derivatives? Explain.
+3. **Failure of nested differentiability.** Consider $\psi(p)=\min_c(c^2-p)^2+\rho c^2$. Determine all lower-level minimizers and derive the points at which the value function or optimizer mapping loses differentiability, explaining the consequence for a gradient-based outer loop.
 
-## Formulation problems
+4. **Simultaneous transcription structure.** For $\dot x=f(x,u,p)$ transcribed by a one-step defect on $N$ intervals, order the NLP variables by time and derive the block sparsity pattern of its constraint Jacobian and Lagrangian Hessian, including the dense columns created by time-invariant plant variables.
 
-11. Write a single-pass mathematical process for $\mathbf{x}_p$ and $\mathbf{x}_c$.
-12. Write alternating updates for iterative sequential design.
-13. Write a nested CCD problem using an outer objective $\phi(\mathbf{x}_p)$.
-14. Write a generic simultaneous CCD problem.
-15. Explain how the decision sets differ among sequential, nested, and simultaneous methods.
+5. **Nested infeasibility restoration.** The inner problem is infeasible for some $p$ because $g(p,x,u)\le0$ cannot be satisfied. Construct an exact-penalty feasibility-restoration inner problem that defines a finite outer value for every bounded $p$, and derive a condition on the penalty weight under which feasible local minima of the original problem are preserved.
 
-## Interpretation problems
+6. **Fair comparison of coordination strategies.** For the active quarter-car equations $M(p)\ddot q+C(p)\dot q+K(p)q=B_uu+B_ww$, specify a numerical experiment that compares nested and simultaneous CCD under identical discretization, tolerances, derivatives, starts, bounds, and feasibility tests, reducing the comparison to one statistically defensible performance metric.
 
-16. “Nested CCD is always better because its controller is optimized exactly for every plant.” Explain why this is not always true.
-17. “Mathematically equivalent architectures must produce the same practical answer.” Explain why this is incomplete.
-18. Why does strong coupling make simple sequential design unattractive?
-19. Why might a company choose iterative sequential design even if simultaneous CCD could yield better performance?
-20. How can local minima lead different architectures to different results?
+7. **Augmented-Lagrangian coordination.** Split a CCD problem into plant and control subproblems coupled through a trajectory copy $y_p(t)=y_c(t)$. Derive an augmented-Lagrangian iteration with multiplier and penalty updates and state a residual-based stopping condition that certifies coupling consistency.
 
-## Application problems
+8. **Architecture selection as mixed-integer CCD.** A suspension may contain a passive spring, damper, active actuator, and tuned-mass absorber, each selected by a binary variable. Formulate a mixed-integer dynamic optimization problem with logical sizing bounds, a component-count penalty, common ride and handling metrics, and physically valid dynamics for every selected topology.
 
-21. Recommend and justify an architecture for active suspension.
-22. Recommend an architecture for wind-turbine CCD with strong load–control interaction.
-23. Which architecture should a small classroom project try first, and why?
-24. Which architecture might suit a marine energy device with expensive simulations but a reliable controller tuner?
-25. Which architecture would you investigate first for a research-grade maximum-performance study?
+9. **Computational break-even analysis.** A nested solve requires $n_o$ outer iterations and an average of $n_i$ inner NLP solves, whereas a simultaneous solve has $n_z$ variables and a sparse KKT factorization cost proportional to $n_z^\alpha$. Derive a break-even inequality that includes derivative cost, warm-start savings, parallelism, and the probability of inner infeasibility.
 
-## Mini-project problems
-
-26. Choose a system and outline how each of the four architectures would solve it.
-27. Compare expected modeling effort, simulation cost, and solution quality for those four approaches.
-28. Write a one-page architecture recommendation memo containing technical and organizational reasons.
-29. Sketch the information-flow diagram for your preferred architecture.
-30. Explain how your choice would change if simulation time increased by a factor of 100.
+10. **Architecture-selection rule.** Given estimates of coupling strength, inner-problem failure rate, derivative availability, transcription size, and required solution accuracy, construct a quantitative decision rule that selects single-pass sequential, iterated sequential, nested, or simultaneous CCD and justify the rule using conditioning and convergence arguments.
 
 ## References and further reading
 
@@ -69,3 +43,5 @@ CCD architecture; coordination strategy; single-pass sequential design; iterativ
 4. Martins, J. R. R. A., & Ning, A. (2021). *Engineering design optimization*. Cambridge University Press.
 
 5. Betts, J. T. (2010). *Practical methods for optimal control and estimation using nonlinear programming* (2nd ed.). Society for Industrial and Applied Mathematics. DOI: 10.1137/1.9780898718577
+
+6. Sundarrajan, A. K., & Herber, D. R. (2021). Towards a fair comparison between the nested and simultaneous control co-design methods using an active suspension case study. In *2021 American Control Conference (ACC)* (pp. 358–365).

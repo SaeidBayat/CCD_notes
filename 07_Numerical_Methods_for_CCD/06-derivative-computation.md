@@ -14,6 +14,8 @@ Large CCD problems typically require gradient-based optimization: objective grad
 
 is easy to implement but balances truncation against cancellation and may require one evaluation per column. Sparse coloring perturbs structurally independent columns together.
 
+Before coloring can be applied, the solver needs to know which functions depend on which variables. One practical dependency-detection technique evaluates each constraint or objective function once with a single input component set to `NaN`; IEEE floating-point arithmetic propagates `NaN` through every expression that actually depends on that component, so a single perturbed evaluation reveals an entire row of the first-derivative sparsity pattern. Repeating this for each input component (or exploiting problem structure to batch several at once) yields the full Jacobian sparsity pattern with a small number of extra function evaluations; squaring the resulting 0/1 pattern gives a conservative estimate of the Hessian sparsity. This dependency map is what lets sparse finite-differencing compute only the structurally nonzero derivative entries, and it is what makes a single transcription implementation usable with both quasi-Newton NLP solvers, which need only the gradient and constraint Jacobian, and full-Newton solvers, which additionally need the sparse Lagrangian Hessian.
+
 ## Complex-step differentiation
 
 For analytic code,

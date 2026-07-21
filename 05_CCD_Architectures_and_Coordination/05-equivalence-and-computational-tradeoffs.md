@@ -53,6 +53,23 @@ A team with separate plant and controls groups may adopt iterative or nested app
 
 A simpler architecture may be chosen because it is understandable, robust, and compatible with existing tools. Maximum performance may justify the added effort of simultaneous CCD.
 
+## Evidence from a controlled comparison
+
+Much of the folklore about which architecture is "faster" compares implementations that were not built with comparable care — a fast simultaneous run with hand-coded analytic derivatives against a nested run with a crude finite-difference outer loop, or the reverse. A more recent controlled study of an active-suspension CCD problem — a quarter-car model with two masses, four states, a controllable force actuator, and physically parameterized spring and damper design variables, solved by direct transcription — deliberately varied only the implementation choices (derivative method, mesh density, and solver tolerances) while holding the problem formulation and solver family fixed, to separate genuine architectural differences from implementation quality.
+
+Two results stand out.
+
+**Derivative method dominates the comparison.** With enough mesh points ($N_t\ge600$) and symbolic derivatives, simultaneous CCD was the fastest and most accurate strategy tested. But symbolic derivatives are a best case that many real dynamic models cannot supply. The complex-step method — nearly as accurate as symbolic differentiation — was on average about $10\times$ slower, and ordinary real-valued (central or forward) finite differences were a further $5$–$10\times$ slower than complex-step. Once the comparison is restricted to derivative methods that are actually available for a general nonlinear plant model, the ranking can flip: the nested strategy becomes competitive with, and can be faster than, simultaneous CCD by an order of magnitude or more.
+
+**Inner-loop infeasibility is common, not exotic.** Uniformly sampling candidate plant designs within their simple box bounds produced an infeasible inner-loop optimal control problem 44% of the time; requiring feasibility with respect to the full constraint set (not just the box bounds) reduced this to about 0.033%, but a naive nested implementation that does not anticipate this can fail outright — in this study, a previously published starting point turned out to be exactly one of the infeasible candidates. A hybrid scheme — one generation of a genetic algorithm to locate a plant design with a feasible inner problem, followed by a gradient-based optimizer — was one practical way to avoid this failure mode.
+
+```{admonition} Reading the folklore carefully
+:class: important
+"Nested is better" and "simultaneous is better" are both defensible conclusions from real published comparisons, because those comparisons typically differ in implementation quality, not just in architecture. A fair, implementation-controlled comparison found that the ranking flips depending on whether accurate derivatives are available — an implementation and modeling detail, not a property of the architecture itself.
+```
+
+This connects directly to the outer-loop feasibility constraint introduced for nested CCD: adding such a constraint is exactly the kind of implementation safeguard that keeps the nested strategy from failing on the large fraction of naively sampled plant candidates that would otherwise have no valid inner solution.
+
 :::{tip} Activity 5.6: Computational Benchmark of CCD Architectures
 :class: dropdown
 

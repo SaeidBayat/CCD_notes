@@ -13,7 +13,7 @@ Specialization, however, encourages a one-pass workflow:
 
 This workflow gives clear ownership, smaller models, and compatibility with established disciplinary tools. It may also be the only practical option after hardware is built. The difficulty is that freezing the plant can remove better system-level combinations before the final controller is known.
 
-```{figure} imgs/sequential-vs-ccd.svg
+```{figure} imgs/sequential-vs-ccd.png
 :alt: Sequential design compared with integrated control co-design.
 :width: 95%
 :align: center
@@ -32,6 +32,19 @@ The criticism of sequential design is not that it always fails. Fixing one desig
 
 Sequential design may be adequate when coupling is weak, the controller has little authority, one subsystem is fixed by regulation or legacy hardware, the plant barely affects the control problem, or the coupled model is too uncertain to justify added complexity.
 
+## Real consequences of ignoring coupling
+
+The failure mode is not hypothetical. Two documented cases illustrate what happens when a physical system is finalized without full consideration of its interaction with active behavior.
+
+When London's Millennium Bridge opened in June 2000, pedestrians crossing it excited unexpected lateral vibration. As the deck swayed, pedestrians unconsciously synchronized their footsteps to the motion to keep their balance, and that synchronized walking pumped more energy into the same lateral mode, amplifying the sway until the bridge had to be closed. The passive structural design had not accounted for how people—an uncontrolled but dynamically responsive part of the system—would interact with the deck's dynamics. The eventual fix retrofitted tuned mass and viscous dampers, an expensive redesign that earlier consideration of the coupled pedestrian-structure dynamics might have avoided or reduced.
+
+A second case comes from agricultural equipment. Combine harvesters must hold their header at a narrow height above the ground to cut crops cleanly without hitting the soil, and header-height control performance is a real limit on how fast a harvester can operate. In at least one documented case, engineers found that further performance gains could not be reached by improving the controller alone: the physical-system design had not been developed with the header-height control problem in mind, and the control-relevant dynamics could only be improved by redesigning the physical header and its linkage—that is, by revisiting plant decisions that had already been frozen.
+
+```{admonition} Key idea
+:class: important
+Both cases share the same structure: a physical design was finalized using assumptions about behavior that turned out to depend on the very control (or uncontrolled human) response the design was supposed to accommodate. Neither failure required exotic engineering—both arose from ordinary sequential design applied to a system whose plant and control behavior were, in fact, coupled.
+```
+
 ## What control co-design means
 
 ```{admonition} Definition
@@ -46,7 +59,22 @@ The definition contains four essential ideas:
 - **System-level:** objectives and constraints represent the mission and limitations of the complete system.
 - **Coordinated:** the problem may be solved simultaneously, through nested optimization, or through a managed iterative strategy.
 
-CCD is a specialized form of multidisciplinary design optimization for active dynamic systems. Realistic formulations may combine structures, fluids, electrical systems, thermal systems, economics, reliability, sensing, software, and manufacturing.
+CCD is a specialized instance of a broader field called **multidisciplinary dynamic system design optimization (MDSDO)**: design optimization for systems in which the evolution of state through time is a critical element of performance, multiple disciplines or energy domains must be integrated, and the specific properties of dynamic systems are exploited to improve performance and problem tractability. MDSDO is itself a branch of multidisciplinary design optimization (MDO), the broader field concerned with optimizing systems whose performance depends on interacting disciplines (structural, aerodynamic, electrical, thermal, economic, and so on). CCD adds one more ingredient on top of MDSDO: the explicit presence of an active *controller* as a first-class design object, not merely a fixed regulator applied after the fact. Realistic CCD formulations may combine structures, fluids, electrical systems, thermal systems, economics, reliability, sensing, software, and manufacturing—so a working command of MDO ideas transfers directly.
+
+## Three complementary methodologies
+
+CCD is often equated with the compact optimization statement introduced below, but that formal, mathematical style is only one of at least three complementary traditions engineers use to achieve integrated plant-control design:
+
+1. **Control-inspired paradigms.** Practicing control engineers use frequency- and time-domain reasoning—Bode and Nichols diagrams, root locus, bandwidth, resonance, disturbance rejection, actuator-sensor colocation—to propose new mechanisms, sensor and actuator placements, and control structures directly from physical insight. This is the oldest and most engineering-intuitive route to CCD; the Wright brothers and Charles Brush, profiled later in this chapter, practiced it without ever writing an optimization problem.
+2. **Co-optimization.** A formal mathematical methodology that poses plant and control decisions as variables in a single constrained optimization problem, typically nonlinear and often with dynamics enforced by an equality constraint. This is the most mature and most rigorously teachable of the three traditions, and it is the primary focus of this course starting with the mathematical statement below.
+3. **Co-simulation.** Multiscale, multiphysics, high- or mixed-fidelity simulation—sometimes combined with data-driven or machine-learning models—used to explore designs iteratively when a closed-form or tractable optimization formulation is not yet available. Co-simulation becomes essential once models grow too complex or too expensive to embed directly inside an optimizer, a theme this course returns to in the discussion of model fidelity and surrogates.
+
+These traditions are not mutually exclusive, and combining them tends to produce the most capable designs: control-inspired reasoning supplies engineering creativity and sanity checks, co-optimization supplies mathematical rigor and repeatability, and co-simulation supplies the ability to handle complexity that resists closed-form treatment. Two derived ideas sit at their intersections and are worth knowing by name even before they are developed later in the course: a **digital twin** couples co-simulation with real-time sensor data from the physical system, and **experimentally infused optimization** couples co-optimization with offline experimental data to reduce the uncertainty a numerical optimizer must otherwise absorb.
+
+```{admonition} Checkpoint
+:class: tip
+Every CCD study also depends on the same five inputs regardless of which methodology is used: system objectives, a pre-design of the relevant components, physics-based models, real data (lab or field), and representative case studies. Missing or weak inputs propagate into a weak result no matter how sophisticated the chosen methodology is.
+```
 
 ## A first mathematical statement
 
@@ -81,6 +109,8 @@ CCD is defined by integrated system design, not by a single numerical architectu
 - **Simultaneous:** optimize plant variables, control variables, and often state trajectories in one problem.
 
 All three attempt to account for plant-control coupling. A one-pass plant-then-controller workflow does not.
+
+The iterative-sequential strategy has a precise mathematical identity: repeatedly optimizing the plant with the controller held fixed, then the controller with the plant held fixed, and alternating until neither subproblem changes, is an instance of **block coordinate descent (BCD)**—a general optimization algorithm that partitions the decision variables into blocks and optimizes one block at a time. If each subproblem is solved to a unique optimum and both blocks use the same, fully consistent system-level objective, BCD is guaranteed to converge to the same solution as the simultaneous problem. Two caveats matter in practice. First, if a coupling model is missing—if the plant subproblem is not actually re-solved against the true system objective once control is included—the iteration is not BCD at all; it is the one-pass sequential workflow criticized above, dressed up as "iteration." Second, even genuine BCD can converge slowly or fail to converge cleanly when the plant-control cross-coupling is strong: the number of iterations required grows sharply as the interaction between the plant and control blocks strengthens, and for non-convex or weakly identified coupling, BCD can cycle rather than converge. This is the same mechanism you will meet in Activity 1.1: the cross term in $J(p,c)=4p^2+3c^2+4pc-\cdots$ is exactly the kind of plant-control interaction whose magnitude governs how many alternating passes are needed—and whether alternating is even a sound strategy at all.
 
 ## One system-level objective
 

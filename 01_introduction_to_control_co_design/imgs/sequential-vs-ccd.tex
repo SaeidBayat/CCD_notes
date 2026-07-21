@@ -1,0 +1,50 @@
+\documentclass[tikz, border=12pt]{standalone}
+\usepackage{amsmath}
+\usetikzlibrary{positioning, arrows.meta, calc}
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily,
+    node distance=8mm and 8mm,
+    seqbox/.style={rectangle, rounded corners=4pt, draw=blue!25!black, thick,
+        fill=blue!8, minimum width=5.2cm, minimum height=1.3cm,
+        text width=4.8cm, align=center, font=\bfseries, text=blue!20!black,
+        inner sep=6pt},
+    plantbox/.style={rectangle, rounded corners=4pt, draw=blue!45!black, thick,
+        fill=blue!7, minimum width=3.6cm, minimum height=1.5cm,
+        text width=3.3cm, align=center, font=\bfseries, text=blue!35!black,
+        inner sep=6pt},
+    ctrlbox/.style={rectangle, rounded corners=4pt, draw=orange!70!black, thick,
+        fill=orange!8, minimum width=3.6cm, minimum height=1.5cm,
+        text width=3.3cm, align=center, font=\bfseries, text=orange!55!black,
+        inner sep=6pt},
+    sharedbox/.style={rectangle, rounded corners=4pt, draw=green!35!black, thick,
+        fill=green!6, minimum width=7.6cm, minimum height=1.5cm,
+        text width=7.0cm, align=center, font=\bfseries, text=green!25!black,
+        inner sep=6pt},
+]
+
+% ===================== LEFT: Sequential design =====================
+\node[font=\bfseries\Large, text=blue!20!black] (ltitle) at (0,0) {Sequential design};
+
+\node[seqbox, below=10mm of ltitle] (s1) {1. Design the plant};
+\node[seqbox, below=10mm of s1] (s2) {2. Freeze the plant};
+\node[seqbox, below=10mm of s2] (s3) {3. Design the controller};
+
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (s1.south) -- (s2.north);
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (s2.south) -- (s3.north);
+
+% ===================== RIGHT: Control co-design =====================
+\node[font=\bfseries\Large, text=blue!20!black] (rtitle) at (10.5,0) {Control co-design};
+
+\node[plantbox, below=10mm of rtitle, xshift=-2.1cm] (plant) {Plant design};
+\node[ctrlbox, right=8mm of plant] (ctrl) {Control design};
+
+\coordinate (midtop) at ($(plant.south)!0.5!(ctrl.south)$);
+\node[sharedbox, below=12mm of midtop] (shared)
+    {Shared dynamics, objectives, and constraints};
+
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (plant.south) -- (shared.north -| plant);
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (ctrl.south) -- (shared.north -| ctrl);
+
+\end{tikzpicture}
+\end{document}

@@ -1,1 +1,152 @@
-<svg width="4175" height="1825" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" overflow="hidden"><g transform="translate(-73 -375)"><g><path d="M964.5 1338 1095 1338 1095 1349 964.5 1349ZM1089.5 1327 1122.5 1343.5 1089.5 1360Z" fill="#5A6573" fill-rule="nonzero" fill-opacity="1"/><path d="M4.35395-3.36052 261.551 329.87 252.844 336.591-4.35395 3.36052ZM266.899 318.794 274 355 240.775 338.958Z" fill="#5A6573" fill-rule="nonzero" fill-opacity="1" transform="matrix(1 0 0 -1 1858.5 1343.5)"/><path d="M1859.68 1339.92 2124.77 1649.04 2116.42 1656.2 1851.33 1347.08ZM2129.54 1637.71 2138.5 1673.5 2104.49 1659.19Z" fill="#5A6573" fill-rule="nonzero" fill-opacity="1"/><path d="M3080.6 1062.84 3309.3 1319.31 3301.09 1326.64 3072.4 1070.16ZM3313.85 1307.89 3323.5 1343.5 3289.22 1329.85Z" fill="#5A6573" fill-rule="nonzero" fill-opacity="1"/><path d="M4.30154-3.42735 234.165 285.065 225.562 291.92-4.30154 3.42735ZM239.34 273.909 247 310 213.531 294.473Z" fill="#5A6573" fill-rule="nonzero" fill-opacity="1" transform="matrix(1 0 0 -1 3076.5 1653.5)"/><path d="M608.5 415.552C608.5 397.298 623.298 382.5 641.552 382.5L3759.45 382.5C3777.7 382.5 3792.5 397.298 3792.5 415.552L3792.5 663.448C3792.5 681.702 3777.7 696.5 3759.45 696.5L641.552 696.5C623.298 696.5 608.5 681.702 608.5 663.448Z" stroke="#5B6675" stroke-width="9.16667" stroke-linecap="butt" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill="#FFFFFF" fill-rule="evenodd" fill-opacity="1"/><text fill="#5B6675" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="96" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 881.398 513)">Engineering design optimization replaces manual trial</text><text fill="#5B6675" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="96" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 3095.95 513)">-</text><text fill="#5B6675" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="96" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 3128.61 513)">and</text><text fill="#5B6675" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="96" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 3286.73 513)">-</text><text fill="#5B6675" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="96" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 3319.39 513)">error</text><text fill="#5B6675" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="96" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 1144.09 628)">with systematic search for the best feasible design.</text><path d="M116.5 1122.53C116.5 1104.29 131.287 1089.5 149.527 1089.5L924.473 1089.5C942.713 1089.5 957.5 1104.29 957.5 1122.53L957.5 1525.47C957.5 1543.71 942.713 1558.5 924.473 1558.5L149.527 1558.5C131.287 1558.5 116.5 1543.71 116.5 1525.47Z" stroke="#123E66" stroke-width="9.16667" stroke-linecap="butt" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill="#EAF3FA" fill-rule="evenodd" fill-opacity="1"/><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="105" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 140.067 1294)">Design variables</text><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="105" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 510.194 1421)">x</text><path d="M1142.5 1122.53C1142.5 1104.29 1157.29 1089.5 1175.53 1089.5L1818.47 1089.5C1836.71 1089.5 1851.5 1104.29 1851.5 1122.53L1851.5 1525.48C1851.5 1543.72 1836.71 1558.5 1818.47 1558.5L1175.53 1558.5C1157.29 1558.5 1142.5 1543.72 1142.5 1525.48Z" stroke="#5B6675" stroke-width="9.16667" stroke-linecap="butt" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill="#F5F6F8" fill-rule="evenodd" fill-opacity="1"/><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="101" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 1165.7 1295)">Analysis model</text><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="101" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 1305.47 1416)">r(x, y) = 0</text><path d="M2162.5 809.426C2162.5 791.242 2177.24 776.5 2195.43 776.5L3020.57 776.5C3038.76 776.5 3053.5 791.242 3053.5 809.426L3053.5 1148.57C3053.5 1166.76 3038.76 1181.5 3020.57 1181.5L2195.43 1181.5C2177.24 1181.5 2162.5 1166.76 2162.5 1148.57Z" stroke="#D97706" stroke-width="9.16667" stroke-linecap="butt" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill="#FFF7E8" fill-rule="evenodd" fill-opacity="1"/><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="105" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 2377.49 949)">Objective</text><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="105" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 2479.81 1076)">f(x, y)</text><path d="M2162.5 1544.51C2162.5 1526.28 2177.28 1511.5 2195.51 1511.5L3020.49 1511.5C3038.72 1511.5 3053.5 1526.28 3053.5 1544.51L3053.5 1884.49C3053.5 1902.72 3038.72 1917.5 3020.49 1917.5L2195.51 1917.5C2177.28 1917.5 2162.5 1902.72 2162.5 1884.49Z" stroke="#2E8B57" stroke-width="9.16667" stroke-linecap="butt" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill="#EAF7EF" fill-rule="evenodd" fill-opacity="1"/><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="101" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 2338 1686)">Constraints</text><text fill="#1F2933" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="101" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 2367.25 1807)">g ≤ 0,  h = 0</text><path d="M3333.5 1122.53C3333.5 1104.29 3348.29 1089.5 3366.53 1089.5L4208.47 1089.5C4226.71 1089.5 4241.5 1104.29 4241.5 1122.53L4241.5 1525.47C4241.5 1543.71 4226.71 1558.5 4208.47 1558.5L3366.53 1558.5C3348.29 1558.5 3333.5 1543.71 3333.5 1525.47Z" stroke="#123E66" stroke-width="9.16667" stroke-linecap="butt" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill="#FFFFFF" fill-rule="evenodd" fill-opacity="1"/><text fill="#123E66" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="119" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 3435.93 1290)">Optimization</text><text fill="#123E66" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="700" font-stretch="normal" font-size="119" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 3525.65 1433)">algorithm</text><path d="M1851.5 2066.42C1851.5 2048.24 1866.24 2033.5 1884.42 2033.5L2766.58 2033.5C2784.76 2033.5 2799.5 2048.24 2799.5 2066.42L2799.5 2158.58C2799.5 2176.76 2784.76 2191.5 2766.58 2191.5L1884.42 2191.5C1866.24 2191.5 1851.5 2176.76 1851.5 2158.58Z" stroke="#D97706" stroke-width="9.16667" stroke-linecap="butt" stroke-linejoin="round" stroke-miterlimit="10" stroke-opacity="1" fill="#FFFFFF" fill-rule="evenodd" fill-opacity="1"/><text fill="#D97706" fill-opacity="1" font-family="Aptos,Aptos_MSFontService,sans-serif" font-style="normal" font-variant="normal" font-weight="400" font-stretch="normal" font-size="69" text-anchor="start" direction="ltr" writing-mode="lr-tb" unicode-bidi="normal" text-decoration="none" transform="matrix(1 0 0 1 1950.15 2134)">update design and repeat</text><path d="M3794.66 1555 3794.66 2012.99 533.844 2012.99 533.844 1585.36 544.156 1585.36 544.156 2007.83 539 2002.68 3789.5 2002.68 3784.34 2007.83 3784.34 1555ZM523.531 1590.52 539 1559.58 554.469 1590.52Z" fill="#ED7D31" fill-rule="nonzero" fill-opacity="1"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" viewBox="0 0 4175 1825">
+  <!-- Generator: Adobe Illustrator 29.3.1, SVG Export Plug-In . SVG Version: 2.1.0 Build 151)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #5a6573;
+      }
+
+      .st1, .st2, .st3, .st4, .st5, .st6, .st7 {
+        fill-rule: evenodd;
+        stroke-linejoin: round;
+        stroke-width: 9.2px;
+      }
+
+      .st1, .st2, .st7 {
+        fill: #fff;
+      }
+
+      .st1, .st3 {
+        stroke: #123e66;
+      }
+
+      .st8, .st9, .st10, .st11, .st12, .st13, .st14 {
+        isolation: isolate;
+      }
+
+      .st8, .st9, .st13 {
+        font-family: Helvetica-Bold, Helvetica;
+        font-weight: 700;
+      }
+
+      .st8, .st11 {
+        font-size: 101px;
+      }
+
+      .st8, .st11, .st13 {
+        fill: #1f2933;
+      }
+
+      .st9 {
+        fill: #123e66;
+        font-size: 119px;
+      }
+
+      .st2, .st4 {
+        stroke: #d97706;
+      }
+
+      .st11, .st12, .st14 {
+        font-family: Aptos, Aptos;
+      }
+
+      .st15 {
+        fill: #ed7d31;
+      }
+
+      .st3 {
+        fill: #eaf3fa;
+      }
+
+      .st4 {
+        fill: #fff7e8;
+      }
+
+      .st5 {
+        fill: #f5f6f8;
+      }
+
+      .st5, .st7 {
+        stroke: #5b6675;
+      }
+
+      .st12 {
+        fill: #d97706;
+        font-size: 69px;
+      }
+
+      .st13 {
+        font-size: 105px;
+      }
+
+      .st14 {
+        fill: #5b6675;
+        font-size: 96px;
+      }
+
+      .st6 {
+        fill: #eaf7ef;
+        stroke: #2e8b57;
+      }
+    </style>
+  </defs>
+  <path class="st0" d="M876.8,971h130.5v11h-130.5v-11ZM1001.8,960l33,16.5-33,16.5v-33h0Z"/>
+  <path class="st0" d="M1775.1,979.9l257.2-333.2-8.7-6.7-257.2,333.2,8.7,6.7h0ZM2037.7,657.7l7.1-36.2-33.2,16,26.1,20.2Z"/>
+  <path class="st0" d="M1771.9,972.9l265.1,309.1-8.4,7.2-265.1-309.1,8.4-7.2h0ZM2041.8,1270.7l9,35.8-34-14.3,25.1-21.5h0Z"/>
+  <path class="st0" d="M2992.9,695.8l228.7,256.5-8.2,7.3-228.7-256.5,8.2-7.3ZM3226.1,940.9l9.6,35.6-34.3-13.7,24.6-22h0Z"/>
+  <path class="st0" d="M2993.1,1289.9l229.9-288.5-8.6-6.9-229.9,288.5,8.6,6.9ZM3228.1,1012.6l7.7-36.1-33.5,15.5,25.8,20.6Z"/>
+  <path class="st7" d="M520.8,48.6c0-18.3,14.8-33.1,33.1-33.1h3117.9c18.2,0,33.1,14.8,33.1,33.1v247.9c0,18.3-14.8,33.1-33.1,33.1H553.8c-18.3,0-33.1-14.8-33.1-33.1V48.6h0Z"/>
+  <g class="st10">
+    <text class="st14" transform="translate(793.6 146)"><tspan x="0" y="0">Engineering design optimization replaces manual trial</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st14" transform="translate(3040.9 146)"><tspan x="0" y="0">and</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st14" transform="translate(3231.6 146)"><tspan x="0" y="0">error</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st14" transform="translate(1056.3 261)"><tspan x="0" y="0">with systematic search for the best feasible design.</tspan></text>
+  </g>
+  <path class="st3" d="M28.8,755.5c0-18.2,14.8-33,33-33h774.9c18.2,0,33,14.8,33,33v402.9c0,18.2-14.8,33-33,33H61.8c-18.2,0-33-14.8-33-33v-402.9Z"/>
+  <g class="st10">
+    <text class="st13" transform="translate(28.8 927)"><tspan x="0" y="0">Design variables</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st13" transform="translate(422.4 1054)"><tspan x="0" y="0">x</tspan></text>
+  </g>
+  <path class="st5" d="M1054.8,755.5c0-18.2,14.8-33,33-33h642.9c18.2,0,33,14.8,33,33v402.9c0,18.2-14.8,33-33,33h-642.9c-18.2,0-33-14.8-33-33v-402.9Z"/>
+  <g class="st10">
+    <text class="st11" transform="translate(1078 928)"><tspan x="0" y="0">Analysis model</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st11" transform="translate(1217.7 1049)"><tspan x="0" y="0">r(x, y) = 0</tspan></text>
+  </g>
+  <path class="st4" d="M2074.8,442.4c0-18.2,14.7-32.9,32.9-32.9h825.1c18.2,0,32.9,14.7,32.9,32.9v339.1c0,18.2-14.7,32.9-32.9,32.9h-825.1c-18.2,0-32.9-14.7-32.9-32.9v-339.1h0Z"/>
+  <g class="st10">
+    <text class="st13" transform="translate(2289.7 582)"><tspan x="0" y="0">Objective</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st13" transform="translate(2392.1 709)"><tspan x="0" y="0">f(x, y)</tspan></text>
+  </g>
+  <path class="st6" d="M2074.8,1177.5c0-18.2,14.8-33,33-33h825c18.2,0,33,14.8,33,33v340c0,18.2-14.8,33-33,33h-825c-18.2,0-33-14.8-33-33v-340Z"/>
+  <g class="st10">
+    <text class="st8" transform="translate(2250.3 1319)"><tspan x="0" y="0">Constraints</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st8" transform="translate(2279.5 1440)"><tspan x="0" y="0" xml:space="preserve">g ≤ 0,  h = 0</tspan></text>
+  </g>
+  <path class="st1" d="M3245.8,755.5c0-18.2,14.8-33,33-33h841.9c18.2,0,33,14.8,33,33v402.9c0,18.2-14.8,33-33,33h-841.9c-18.2,0-33-14.8-33-33v-402.9h0Z"/>
+  <g class="st10">
+    <text class="st9" transform="translate(3348.2 923)"><tspan x="0" y="0">Optimization</tspan></text>
+  </g>
+  <g class="st10">
+    <text class="st9" transform="translate(3437.9 1066)"><tspan x="0" y="0">algorithm</tspan></text>
+  </g>
+  <path class="st2" d="M1763.8,1699.4c0-18.2,14.7-32.9,32.9-32.9h882.2c18.2,0,32.9,14.7,32.9,32.9v92.2c0,18.2-14.7,32.9-32.9,32.9h-882.2c-18.2,0-32.9-14.7-32.9-32.9v-92.2h0Z"/>
+  <g class="st10">
+    <text class="st12" transform="translate(1862.4 1767)"><tspan x="0" y="0">update design and repeat</tspan></text>
+  </g>
+  <path class="st15" d="M3706.9,1188v458H446.1v-427.6h10.3v422.5l-5.2-5.1h3250.5l-5.2,5.1v-452.8h10.4ZM435.8,1223.5l15.5-30.9,15.5,30.9h-31Z"/>
+</svg>

@@ -87,7 +87,7 @@ $$
 Second-order engineering models are commonly rewritten as systems of first-order state equations.
 ```
 
-### Worked example: state conversion
+### Example: state conversion
 
 Collect the two states in a vector:
 

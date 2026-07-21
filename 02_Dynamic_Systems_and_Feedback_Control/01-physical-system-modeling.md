@@ -29,6 +29,49 @@ Dynamic models are often built at different levels of fidelity:
 
 Conceptual and intermediate models build the understanding needed to use high-fidelity models responsibly.
 
+## Coupling across energy domains: multidisciplinary analysis
+
+Many CCD-relevant systems are not built from a single set of governing equations. A robotic system, for instance, couples mechanical dynamics with electrical actuator dynamics; a marine energy device couples hydrodynamics with the electrical or hydraulic dynamics of its power take-off. If each energy domain were modeled independently, the interaction between domains would be lost — an electric motor's rotor state could appear to change instantaneously, when in fact the mechanical load it drives constrains how fast it can actually respond.
+
+Suppose two energy domains, labeled $\alpha$ and $\beta$, each have their own state trajectory, $\boldsymbol\xi_\alpha(t)$ and $\boldsymbol\xi_\beta(t)$, governed by their own derivative functions:
+
+```{math}
+:label: eq-ch2-mda-alpha
+\dot{\boldsymbol\xi}_\alpha(t)=\mathbf{f}_\alpha\bigl(\boldsymbol\xi_\alpha(t),\boldsymbol\xi_\beta(t),\mathbf{u}_\alpha(t),t\bigr),
+```
+
+```{math}
+:label: eq-ch2-mda-beta
+\dot{\boldsymbol\xi}_\beta(t)=\mathbf{f}_\beta\bigl(\boldsymbol\xi_\alpha(t),\boldsymbol\xi_\beta(t),\mathbf{u}_\beta(t),t\bigr).
+```
+
+The two domains are coupled because $\dot{\boldsymbol\xi}_\alpha$ depends on $\boldsymbol\xi_\beta$ and $\dot{\boldsymbol\xi}_\beta$ depends on $\boldsymbol\xi_\alpha$. Building and solving this kind of coupled model — capturing how each energy domain affects the dynamics of the others — is called **multidisciplinary analysis (MDA)**. Once both domains are captured, the stacked state $\boldsymbol\xi=[\boldsymbol\xi_\alpha^T\ \boldsymbol\xi_\beta^T]^T$ and stacked input $\mathbf{u}=[\mathbf{u}_\alpha^T\ \mathbf{u}_\beta^T]^T$ recombine the two coupled equations into a single first-order model $\dot{\boldsymbol\xi}(t)=\mathbf{f}(\boldsymbol\xi(t),\mathbf{u}(t),t)$ of the same form used throughout this chapter. The DC motor of Activity 2.1 is exactly this construction: its electrical current equation and mechanical speed equation are coupled through the back-EMF term $K_e\omega$ and the torque term $K_ti$, and stacking $(\theta,\omega,i)$ into one state vector is an MDA step performed almost automatically.
+
+```{admonition} CCD connection
+:class: tip
+MDA is not optional bookkeeping. A control or plant design decision made using only one domain's equations, with the other domain's feedback path left out, is analyzing a different (and usually easier) system than the one that will actually be built.
+```
+
+### When the model is not a clean ODE: differential-algebraic equations
+
+Combining domains, or imposing a physical or design requirement as an equality among the states, is not always reducible to $\dot{\boldsymbol\xi}=\mathbf{f}(\boldsymbol\xi,\mathbf{u},t)$ without extra work. Sometimes a modeling assumption, a rigid physical constraint, or a path constraint that has become active removes a degree of freedom from the system and introduces an algebraic — not differential — relationship among the variables. The resulting model, in semi-explicit form, is
+
+```{math}
+:label: eq-ch2-dae
+\dot{\boldsymbol\xi}(t)=\mathbf{f}\bigl(\boldsymbol\xi(t),\boldsymbol\gamma(t),\mathbf{u}(t),t\bigr),
+\qquad
+\mathbf{0}=\mathbf{f}_a\bigl(\boldsymbol\xi(t),\boldsymbol\gamma(t),\mathbf{u}(t),t\bigr),
+```
+
+where $\boldsymbol\gamma(t)$ is an **algebraic variable**: unlike a state, its own time derivative never appears in the model, and its value at time $t$ is instead pinned down by the algebraic equation $\mathbf{f}_a(\cdot)=\mathbf{0}$. A system of this form is called a **differential-algebraic equation (DAE)**. If the algebraic equation can, at least locally, be solved for $\boldsymbol\gamma(t)$ — equivalently, if the Jacobian of $\mathbf f_a$ with respect to $\boldsymbol\gamma$ is nonsingular — the DAE is called **index-1**, where the index counts how many times the algebraic equation must be differentiated with respect to time before the whole system reduces to an ordinary differential equation. An index-1 DAE can, in principle, always be converted to the explicit state-space form used elsewhere in this chapter; the conversion is simply not free, and some solution methods work directly with the DAE instead of performing it.
+
+This situation is common, not exotic. A rigid mechanical constraint between two bodies, an incompressible fluid, or an inequality constraint (on stress, temperature, position, or actuator force) that has just become active can each remove a degree of freedom this way. In every one of these cases, some variable that used to be a free state must become an algebraic variable, satisfying a constraint rather than its own dynamics. In actively controlled systems, control inputs are normally treated as independent quantities, while the algebraic variables introduced by active constraints must still satisfy the underlying physics.
+
+```{admonition} CCD connection
+:class: important
+Whether a model reduces cleanly to $\dot{\mathbf x}=\mathbf f(\mathbf x,\mathbf u)$ or is naturally a DAE is itself a modeling decision with consequences for CCD. Direct-transcription optimization methods, used widely for combined plant-and-control design, can pose the differential and algebraic equations as equality constraints directly, without first eliminating $\boldsymbol\gamma(t)$ by hand — one reason DAE-aware formulations matter for later chapters on CCD architectures and numerical solution strategies.
+```
+
 ## A first example: mass–spring–damper system
 
 The mass–spring–damper system contains nearly every idea we need: inertia, restoring force, damping, actuation, disturbance response, and measurable output.

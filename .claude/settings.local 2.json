@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"from PIL import Image; im=Image.open\\('00_math_foundations/imgs/fig_chp0_1.png'\\); print\\(im.size, im.info\\)\"2)",
+      "Bash(npx myst *)",
+      "Bash(brew list *)",
+      "Read(//private/tmp/**)",
+      "Bash(lsof -iTCP -sTCP:LISTEN -P)",
+      "Bash(ps *)",
+      "Bash(python3 -c ' *)",
+      "Bash(pdftotext -layout \"Allison2014a.pdf\" -)",
+      "Bash(pdftotext -layout \"Towards_a_Fair_Comparison_between_the_Nested_and_Simultaneous_Control_Co-Design_Methods_using_an_Active_Suspension_Case_Study \\(2\\).pdf\" -)",
+      "Bash(mdls -name kMDItemNumberOfPages \"1-s2.0-S0306261926006033-main.pdf\")",
+      "Bash(echo \"exit: $?\")"
+    ]
+  }
+}

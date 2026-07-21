@@ -12,7 +12,7 @@ For each chapter:
 
 1. identify the physical and control decisions before reading the formulation;
 2. predict the important coupling mechanisms;
-3. reproduce the worked example in Python or MATLAB;
+3. reproduce the example in Python or MATLAB;
 4. check units, constraints, scaling, and numerical convergence;
 5. explain why the optimized design changed; and
 6. test the result under conditions that were not optimized.

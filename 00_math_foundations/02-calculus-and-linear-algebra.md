@@ -135,7 +135,7 @@ $$
 
 The **Hessian** of a scalar function is the matrix of its second partial derivatives. Jacobians describe the local sensitivity of vector equations; Hessians describe the local curvature of scalar objectives or constraints.
 
-### Worked example: gradient of a design objective
+### Example: gradient of a design objective
 
 Let
 

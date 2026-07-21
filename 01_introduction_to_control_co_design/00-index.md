@@ -15,13 +15,16 @@ Conventional design often treats these parts sequentially: design the physical s
 After completing this chapter, you should be able to:
 
 1. identify the plant, controller, sensors, actuators, states, outputs, and disturbances in an active system;
-2. distinguish sequential design from control co-design;
-3. explain plant-control coupling in physical and mathematical terms;
-4. explain why a sequential design can be feasible yet system-suboptimal;
-5. formulate a simple system-level objective containing plant and control decisions;
-6. recognize applications where CCD is likely to provide value;
-7. distinguish CCD from controller tuning or merely combining variables in one software model; and
-8. evaluate CCD claims with appropriate attention to uncertainty, implementation, and verification.
+2. distinguish architecture, plant, and control as three design domains, and distinguish physical/control architecture from the numerical CCD architectures (nested, simultaneous) introduced later;
+3. distinguish sequential design from control co-design;
+4. explain plant-control coupling in physical and mathematical terms;
+5. explain why a sequential design can be feasible yet system-suboptimal;
+6. formulate a simple system-level objective containing plant and control decisions;
+7. classify how a plant-design objective can represent, approximate, or ignore active control, and explain why that classification predicts sequential-design suboptimality;
+8. recognize applications where CCD is likely to provide value;
+9. distinguish CCD from controller tuning or merely combining variables in one software model;
+10. place CCD within the broader landscape of control-inspired, co-optimization, and co-simulation methodologies; and
+11. evaluate CCD claims with appropriate attention to uncertainty, implementation, and verification.
 
 ## Chapter roadmap
 

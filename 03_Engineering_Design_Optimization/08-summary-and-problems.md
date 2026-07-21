@@ -11,63 +11,29 @@ Optimization is valuable when its formulation, model, derivatives, scaling, conv
 
 ## Key terms
 
-Design variable; objective function; equality constraint; inequality constraint; bound; feasible design; infeasible design; active constraint; local optimum; global optimum; convexity; gradient; Hessian; line search; Newton method; quasi-Newton method; KKT conditions; Lagrange multiplier; scaling; conditioning; multidisciplinary design optimization; coupling variable; path constraint; boundary constraint.
+Design variable; objective function; equality constraint; inequality constraint; bound; feasible design; infeasible design; active constraint; local optimum; global optimum; convexity; gradient; Hessian; line search; Newton method; quasi-Newton method; KKT conditions; Lagrange multiplier; scaling; conditioning; finite differences; complex-step differentiation; algorithmic (automatic) differentiation; direct and adjoint sensitivity methods; multidisciplinary design optimization; coupling variable; multidisciplinary feasible (MDF); individual discipline feasible (IDF); analytical target cascading (ATC); gradient-free optimization; CMA-ES; genetic algorithm; particle swarm optimization; path constraint; boundary constraint.
 
-## Conceptual problems
+## Problems
 
-1. Explain the difference between engineering analysis and engineering design optimization.
-2. Why is the optimization algorithm not always the most important part of an optimization study?
-3. Give three examples each of continuous, integer, binary, and functional design variables.
-4. Explain the difference between a preference and a requirement. Which normally belongs in the objective and which in the constraints?
-5. Why does convergence not prove that a global optimum was found?
+1. **KKT interpretation of an engineering optimum.** Minimize $J(t,r)=\rho\pi r^2t+\alpha/t$ subject to $\sigma(t,r)=Fr/(2\pi r^2t)\le\sigma_y/S_f$, $r\le r_{\max}$, and $t\ge t_{\min}$. Derive every KKT point and classify the globally optimal pressure-vessel design as the parameters vary.
 
-## Formulation problems
+2. **Scaling and solver conditioning.** A design vector contains length in millimeters, stiffness in newtons per meter, mass in kilograms, and a dimensionless gain, while constraint residuals span eight orders of magnitude. Construct diagonal variable and residual scalings from characteristic physical values and derive how those scalings transform the gradient, Jacobian, Hessian, and KKT system condition number.
 
-6. Formulate a minimum-mass cantilever beam problem with width and height as variables, tip-deflection and stress limits, and geometric bounds.
-7. Formulate a battery-pack problem that minimizes mass while meeting energy, power, voltage, and temperature requirements.
-8. Formulate a wind-turbine blade problem that maximizes annual energy production subject to stress, deflection, fatigue, and manufacturability limits.
-9. Rewrite $\max_{\mathbf{x}}P(\mathbf{x})$ in minimization form.
-10. Convert $\sigma(\mathbf{x})\leq250$ MPa to a dimensionless $g(\mathbf{x})\leq0$ constraint.
+3. **Second-order optimality in a nonconvex design.** For $f(x,y)=(x^2-1)^2+\beta(y-x)^2$ subject to $x+y=1$ and $x\ge0$, derive all feasible stationary points and use the reduced Hessian to determine their local optimality as a function of $\beta>0$.
 
-## Feasible-space and optimality problems
+4. **Adjoint sensitivity of a multidisciplinary analysis.** Coupling variables satisfy $y_1=a_1(x,y_2)$ and $y_2=a_2(x,y_1)$, while $J=J(x,y_1,y_2)$. Derive an adjoint system that computes $dJ/dx$ with one linear solve independent of the number of design variables.
 
-11. Sketch the feasible region defined by $x_1+x_2\leq4$, $x_1\geq0$, and $x_2\geq0$.
-12. At $(x_1,x_2)=(1,2)$, classify $x_1+x_2-3\leq0$ and $x_1^2+x_2^2-10\leq0$ as active, inactive, or violated.
-13. Explain why a minimum-mass design often has active strength or stiffness constraints.
-14. Give an engineering example with a disconnected feasible set.
-15. Describe how Lagrange multipliers can help prioritize which requirement to relax.
+5. **MDF versus IDF equivalence.** For the two-discipline coupling model $y_1=x_1+\alpha y_2$ and $y_2=x_2+\beta y_1$, formulate multidisciplinary-feasible and individual-discipline-feasible optimization architectures and prove their local equivalence when $1-\alpha\beta\ne0$ and all consistency constraints are satisfied.
 
-## Gradient and algorithm problems
+6. **Pareto geometry.** Consider $f_1(x)=(x-1)^2$ and $f_2(x)=\gamma(x+1)^2$ on $x\in[-2,2]$. Derive the complete Pareto set and Pareto front, then characterize which Pareto points cannot be recovered by a strictly positive weighted-sum scalarization if a nonconvex perturbation $-\delta\cos(3\pi x)$ is added to both objectives.
 
-16. Compute the gradient and Hessian of $f(x_1,x_2)=3x_1^2+2x_1x_2+4x_2^2$.
-17. Starting from $(2,1)$, perform two gradient-descent iterations for Problem 16 with $\alpha=0.1$.
-18. Find the stationary point of $f(x_1,x_2)=x_1^2+2x_2^2-4x_1-8x_2$.
-19. Explain the difference between line-search and trust-region methods.
-20. Compare analytical derivatives, finite differences, complex step, and automatic differentiation.
+7. **Reliability-based design optimization.** A stress limit state is $g(A,F,Y)=Y-F/A$ with independent $F\sim\mathcal N(\mu_F,\sigma_F^2)$ and $Y\sim\mathcal N(\mu_Y,\sigma_Y^2)$. Derive a first-order reliability constraint for $\mathbb P[g\le0]\le10^{-4}$ and solve the minimum-area design including the sensitivity of the optimum to the target reliability index.
 
-## Scaling problems
+8. **Dynamic-system design optimization.** A thermal storage device follows $C(p)\dot T=-h(p)(T-T_a)+q(t)$ with $T(0)=T_0$. Formulate and solve for the design $p$ that minimizes material cost plus integrated temperature deviation while satisfying $T(t)\le T_{\max}$, using an adjoint to derive the continuous total derivative.
 
-21. A problem contains thickness $t\approx0.005$ m and cost $C\approx2\times10^6$ dollars. Propose a scaled variable and objective.
-22. Map $20\leq x\leq120$ to $[0,1]$.
-23. Explain why an absolute tolerance of $10^{-6}$ may be inappropriate for a force-balance equation measured in newtons.
-24. For $f=10^8x_1^2+x_2^2$, propose a coordinate scaling that balances curvature.
-25. Give an example of physical ill-conditioning that scaling cannot eliminate.
+9. **Trust-region SQP step.** For a nonlinear program with twice differentiable objective $f(x)$, equalities $c(x)=0$, and inequalities $g(x)\le0$, derive the exact trust-region SQP subproblem and a merit-function acceptance ratio that remains meaningful when the linearized constraints are inconsistent.
 
-## MDO and dynamic optimization problems
-
-26. Identify at least three disciplines and four coupling variables in electric-aircraft design.
-27. Explain why plant and control design form a multidisciplinary coupled problem.
-28. Write a dynamic objective that balances tracking error and control effort.
-29. Give four examples of path constraints and two examples of boundary constraints.
-30. For the mass–spring–damper CCD example, identify plant variables, controller variables, states, disturbances, objective terms, and constraints.
-
-## Computational and mini-project problems
-
-31. Use MATLAB or Python to solve Worked Example 3.2 from at least four starting points. Compare convergence histories.
-32. Implement gradient descent for a poorly scaled quadratic before and after variable scaling. Compare iteration counts.
-33. Solve the pressure-vessel formulation using reasonable numerical values. Report the optimum and active constraints.
-34. Choose a two-variable constrained problem and plot its feasible region, initial design, final design, and active constraints.
-35. Formulate and solve a small engineering optimization problem. Submit a 5–7 page report containing the mission, variables, model, objective, constraints, scaling, solver, initial guesses, convergence evidence, active constraints, and engineering interpretation.
+10. **Bilevel design sensitivity.** Let $\psi(p)=\min_c J(p,c)$ subject to $h(p,c)=0$ and $g(p,c)\le0$. Under LICQ, strict complementarity, and second-order sufficiency, derive $d\psi/dp$ from the lower-level Lagrangian and identify the precise regularity loss that makes the outer objective nonsmooth.
 
 ## References and further reading
 
@@ -80,3 +46,5 @@ Design variable; objective function; equality constraint; inequality constraint;
 4. Allison, J. T., & Herber, D. R. (2014). Multidisciplinary design optimization of dynamic engineering systems. *AIAA Journal, 52*(4), 691–710. DOI: 10.2514/1.J052182
 
 5. Herber, D. R., & Allison, J. T. (2019). Nested and simultaneous solution strategies for general combined plant and control design problems. *Journal of Mechanical Design, 141*(1), Article 011402. DOI: 10.1115/1.4040705
+
+6. Bayat, S., Peterson, C., Lee, Y. H., Iori, J., & Allison, J. T. (2026). Advancing wind turbines through control co-design: An integrative review. *Applied Energy, 416*, Article 127951. DOI: 10.1016/j.apenergy.2026.127951

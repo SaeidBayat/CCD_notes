@@ -25,6 +25,10 @@ Combining the pieces gives the broad formulation
 
 The objective measures performance. The differential equations encode physical behavior. Path constraints impose time-dependent engineering limits. Boundary constraints enforce endpoint requirements. Bounds restrict finite-dimensional plant and controller decisions.
 
+## Recovering passive design as a special case
+
+The general formulation above specializes naturally. If the controller is removed from the decision set entirely—no $\mathbf{x}_c$, no $\mathbf{u}(\cdot)$, and the dynamics are evaluated with $\mathbf{u}\equiv\mathbf{0}$—the same structure reduces to a **passive physical-system design** problem: minimize an objective built from $\Phi(\mathbf{x}(t_f),\mathbf{x}_p,t_f)$ (or a Lagrange or Bolza generalization of it) subject to $\dot{\mathbf{x}}(t)=\mathbf{f}(\mathbf{x}(t),\mathbf{x}_p,t)$ and the physical-constraint set $\mathbf{g}_p(\mathbf{x}(t),\mathbf{x}_p,t)\leq\mathbf{0}$ introduced earlier. Restoring $\mathbf{x}_c$ and $\mathbf{u}(\cdot)$ as decisions recovers the full simultaneous co-design problem above. The two formulations share the same dynamics structure, the same objective forms, and the same physical-constraint function; only the decision-variable set differs. Seeing passive design as a restriction of the general CCD formulation—rather than as a separately posed, unrelated problem—is what makes it meaningful to compare a passive-only design against a co-designed one on a common objective.
+
 ## Continuous-time and numerical formulations
 
 The continuous-time problem is infinite-dimensional because state and control trajectories are functions. Numerical solution requires a finite representation through parameterization, sampling, or transcription.

@@ -37,7 +37,7 @@ project:
         - file: 02_Dynamic_Systems_and_Feedback_Control/04-open-loop-and-closed-loop.md
         - file: 02_Dynamic_Systems_and_Feedback_Control/05-stability-and-feedback.md
         - file: 02_Dynamic_Systems_and_Feedback_Control/06-plant-design-and-dynamics.md
-        - file: 02_Dynamic_Systems_and_Feedback_Control/07-worked-examples.md
+        - file: 02_Dynamic_Systems_and_Feedback_Control/07-examples.md
         - file: 02_Dynamic_Systems_and_Feedback_Control/08-summary-and-problems.md
     - title: "Chapter 3: Engineering Design Optimization"
       children:
@@ -58,7 +58,7 @@ project:
         - file: 04_Mathematical_Formulation_of_CCD/03-path-and-boundary-constraints.md
         - file: 04_Mathematical_Formulation_of_CCD/04-objective-function-forms.md
         - file: 04_Mathematical_Formulation_of_CCD/05-general-continuous-time-formulation.md
-        - file: 04_Mathematical_Formulation_of_CCD/06-worked-examples.md
+        - file: 04_Mathematical_Formulation_of_CCD/06-examples.md
         - file: 04_Mathematical_Formulation_of_CCD/07-numerical-transition-and-mistakes.md
         - file: 04_Mathematical_Formulation_of_CCD/08-summary-and-problems.md
     - title: "Chapter 5: Control Co-Design Architectures and Coordination"
@@ -70,7 +70,7 @@ project:
         - file: 05_CCD_Architectures_and_Coordination/04-simultaneous-ccd.md
         - file: 05_CCD_Architectures_and_Coordination/05-equivalence-and-computational-tradeoffs.md
         - file: 05_CCD_Architectures_and_Coordination/06-choosing-an-architecture.md
-        - file: 05_CCD_Architectures_and_Coordination/07-worked-examples-and-comparison.md
+        - file: 05_CCD_Architectures_and_Coordination/07-examples-and-comparison.md
         - file: 05_CCD_Architectures_and_Coordination/08-summary-and-problems.md
     - title: "Chapter 6: Optimal Control and Closed-Loop Control Co-Design"
       children:
@@ -81,7 +81,7 @@ project:
         - file: 06_Optimal_Control_and_Closed_Loop_CCD/04-future-information-and-availability.md
         - file: 06_Optimal_Control_and_Closed_Loop_CCD/05-model-predictive-control.md
         - file: 06_Optimal_Control_and_Closed_Loop_CCD/06-from-oloc-to-implementable-control.md
-        - file: 06_Optimal_Control_and_Closed_Loop_CCD/07-worked-examples-and-comparison.md
+        - file: 06_Optimal_Control_and_Closed_Loop_CCD/07-examples-and-comparison.md
         - file: 06_Optimal_Control_and_Closed_Loop_CCD/08-summary-and-problems.md
     - title: "Chapter 7: Numerical Methods for Control Co-Design"
       children:
@@ -93,7 +93,7 @@ project:
         - file: 07_Numerical_Methods_for_CCD/05-quadrature-and-sparse-nlp.md
         - file: 07_Numerical_Methods_for_CCD/06-derivative-computation.md
         - file: 07_Numerical_Methods_for_CCD/07-scaling-refinement-and-verification.md
-        - file: 07_Numerical_Methods_for_CCD/08-worked-example-and-workflow.md
+        - file: 07_Numerical_Methods_for_CCD/08-example-and-workflow.md
         - file: 07_Numerical_Methods_for_CCD/09-summary-and-problems.md
     - title: "Chapter 8: Practical CCD Studies and Advanced Topics"
       children:

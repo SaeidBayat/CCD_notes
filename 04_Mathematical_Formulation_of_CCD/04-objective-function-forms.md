@@ -48,6 +48,17 @@ J=\Phi(\mathbf{x}(t_f),\mathbf{x}_p,\mathbf{x}_c,t_f)
 
 The forms are closely related. Lagrange and Mayer problems are special cases of Bolza. A Bolza problem can also be rewritten in Mayer form by introducing an auxiliary state. Keeping the conceptual distinction makes engineering formulations easier to interpret.
 
+### A more general terminal term
+
+Some CCD formulations let the terminal-cost term depend on the initial state as well as the final state,
+
+```{math}
+J=\mathcal{M}(\mathbf{x}(t_0),\mathbf{x}(t_f),\mathbf{x}_p,\mathbf{x}_c,t_0,t_f)
++\int_{t_0}^{t_f}L(\mathbf{x}(t),\mathbf{u}(t),\mathbf{x}_p,\mathbf{x}_c,t)\,dt.
+```
+
+This more general Mayer term $\mathcal{M}(\cdot)$ is useful whenever performance depends on how the state has changed between endpoints rather than on the terminal state alone—for example, a periodicity requirement, or an objective that rewards net displacement over a maneuver. The $\Phi(\mathbf{x}(t_f),\cdots)$ form used above is the common special case in which $\mathcal{M}(\cdot)$ does not depend on $\mathbf{x}(t_0)$.
+
 :::{tip} Activity 4.2: Conversion among Lagrange, Mayer, and Bolza Forms
 :class: dropdown
 

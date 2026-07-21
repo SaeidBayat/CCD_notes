@@ -26,6 +26,16 @@ Three useful categories are:
 2. **Estimated or predicted:** observer states, previews, and uncertain forecasts.
 3. **Unavailable exactly:** future disturbances, future sensor noise, and future modeling errors.
 
+## A formal information-horizon taxonomy
+
+A co-design framework developed for semi-active suspension design gives these three categories precise names and ties each to a recognizable class of problem:
+
+- **Complete horizon:** the control problem—whether OLOC or a closed-loop controller—is solved with complete information about the environment (exogenous inputs, disturbances, the physical model) over the entire time horizon. This is a strong assumption, but it is standard practice in offline optimization problems such as robotic-manipulator path planning and space-shuttle reentry trajectory design, where the full mission profile is known before the trajectory is ever computed.
+- **Instantaneous:** environment information is available only at the current instant. Closed-loop control for tracking and regulation is the textbook example. With only instantaneous information, achieving an acceptable level of performance over the *entire* horizon—for instance, satisfying a path constraint—can be genuinely difficult.
+- **Limited horizon:** the control problem is solved for only a small portion of the horizon, and that partial solution is recomputed at regular intervals during operation. Look-ahead control of wind turbines and fuel-optimal routing of hauling trucks or railways are representative examples. This is the category MPC belongs to: it is a limited-horizon strategy that can approach the performance of a complete-horizon solution while retaining the practicality of instantaneous information, making it a genuine middle ground rather than a compromise between two unrelated extremes.
+
+This taxonomy sharpens the three-part classification above: "available now" is instantaneous information; "estimated or predicted" is limited-horizon information, with the horizon length itself a design choice; and "unavailable exactly" is precisely what a complete-horizon OLOC study assumes away.
+
 ## Implications for CCD
 
 Plant decisions can change information availability. Sensor placement can improve observability; mechanical redesign can make important modes easier to measure; actuator selection changes authority; robust physical design can reduce sensitivity to uncertain disturbances.

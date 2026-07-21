@@ -33,6 +33,17 @@ For a linear time-invariant (LTI) system, this becomes
 
 *The state-space viewpoint separates internal dynamic variables from control inputs, disturbances, and measured outputs.*
 
+## When the model does not start in this form
+
+The explicit state-space forms in {eq}`eq-ch2-general-state-space` and {eq}`eq-ch2-lti-state-space` assume that every derivative $\dot{\mathbf{x}}(t)$ can be written directly as a function of the states, inputs, and disturbances. That assumption is convenient, but it is not automatic. As introduced in the previous section, coupling two energy domains through multidisciplinary analysis, or activating a path constraint on stress, position, or actuator force, can introduce an algebraic variable $\boldsymbol\gamma(t)$ tied to the states and inputs through an algebraic equation rather than a differential one, producing an index-1 differential-algebraic equation (DAE) instead of a plain ODE.
+
+Getting from a DAE to the state-space form used in this chapter requires eliminating $\boldsymbol\gamma(t)$ — solving the algebraic constraint for $\boldsymbol\gamma(t)$ in terms of $\boldsymbol\xi(t)$ and $\mathbf u(t)$, then substituting the result back into the differential equation. For an index-1 DAE this elimination is always possible in principle, but it can be algebraically involved, and it must be redone whenever the constraint that generated $\boldsymbol\gamma(t)$ changes (for example, when a different inequality constraint becomes the active one). Some numerical and optimization methods used later in this course work with the DAE directly rather than performing this elimination, which is one reason the distinction between an ODE model and a DAE model matters beyond bookkeeping.
+
+```{admonition} Key idea
+:class: tip
+State-space representation is the destination, not always the starting point. A physically derived model may arrive as a DAE; deriving the $A$, $B$, $C$, $D$ matrices (or the nonlinear $\mathbf f(\cdot)$, $\mathbf h(\cdot)$) implicitly assumes that elimination step has already been done.
+```
+
 ## Converting the mass–spring–damper model
 
 Start from {eq}`eq-ch2-msd-second-order` and define
@@ -74,7 +85,7 @@ If the output includes displacement and velocity, then $\mathbf{y}=[x_1\;x_2]^T$
 
 The plant design variables $m$, $c$, and $k$ appear directly in the system and input matrices. This is why state-space models are so useful for CCD: changing design variables changes the matrices.
 
-## Worked example: a DC motor
+## Example: a DC motor
 
 Let $\theta$ be shaft angle, $\omega=\dot{\theta}$ shaft speed, and $i$ armature current. A basic armature-controlled DC motor model is
 

@@ -28,6 +28,8 @@ These are physical design tradeoffs, not merely abstract parameter changes.
 
 ## Examples from CCD application areas
 
+CCD ideas of this kind extend well beyond the four areas developed below — they have been applied to systems as varied as chemical reactors, aircraft, underwater vehicles, wastewater treatment plants, bicycles, motorcycles, and composite smart antennas. The coupling principle is the same in every case: a controller can only reshape the dynamic pathways that the plant provides.
+
 ### Vehicles
 
 Spring and damper selection strongly affect ride comfort and road holding. A soft suspension may improve isolation but require aggressive actuation. A stiff suspension may reduce large motions but worsen comfort. The value of active control depends on the passive design.
@@ -39,6 +41,8 @@ Link lengths, structural stiffness, inertia distribution, and actuator placement
 ### Wind turbines
 
 Tower flexibility, blade mass distribution, and drivetrain inertia influence rotor-speed dynamics and structural loading. Blade-pitch and torque controllers must be matched to those dynamics. If a redesign changes dominant modes, the controller tuning must also change.
+
+A commercial direct-drive, variable-speed, pitch-controlled 1.65 MW wind turbine illustrates the point concretely. Redesigning the pitch controller to co-design rotor-speed regulation together with active tower-vibration damping produced not only smooth, robust rotor-speed control, but also a significant reduction in tower vibration and the mechanical fatigue it causes. Because the controller was absorbing loads that would otherwise have to be carried structurally, the manufacturer could design a tower considerably cheaper than a competitor's while also improving reliability and maintenance characteristics. The plant that is genuinely cheapest is not the one designed in isolation — it is the one designed knowing how much of the load-carrying job the controller will take on.
 
 ### Marine energy systems
 

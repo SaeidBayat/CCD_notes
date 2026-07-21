@@ -1,0 +1,53 @@
+\documentclass[tikz, border=12pt]{standalone}
+\usepackage{amsmath}
+\usetikzlibrary{positioning, arrows.meta, calc}
+\begin{document}
+\begin{tikzpicture}[
+    font=\sffamily,
+    node distance=16mm and 14mm,
+    block/.style={rectangle, rounded corners=4pt, draw=blue!30!black, thick,
+        fill=blue!6, minimum width=2.6cm, minimum height=1.8cm,
+        text width=2.3cm, align=center, font=\bfseries, text=blue!25!black,
+        inner sep=6pt},
+    callout/.style={rectangle, rounded corners=4pt, draw=orange!70!black, thick,
+        fill=orange!6, text width=2.6cm, align=center, font=\small,
+        text=orange!55!black, inner sep=6pt},
+    sig/.style={font=\itshape\small, text=black!65},
+]
+
+% ---- Main forward chain, left to right ----
+\node[block] (env) {Environment and disturbances};
+\node[block, right=of env] (plant) {Physical plant};
+\node[block, right=of plant] (sensors) {Sensors};
+\node[block, right=of sensors] (ctrl) {Controller};
+\node[block, right=22mm of ctrl] (act) {Actuator};
+
+% ---- Forward-path arrows ----
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (env.east) -- (plant.west)
+    node[midway, sig, above] {$d(t)$};
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (plant.east) -- (sensors.west)
+    node[midway, sig, above] {$\xi(t)$};
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (sensors.east) -- (ctrl.west)
+    node[midway, sig, above] {$y(t)$};
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black] (ctrl.east) -- (act.west)
+    node[midway, sig, above] {command};
+
+% ---- Feedback path: Actuator -> down -> left -> up into Physical plant ----
+\coordinate (actbot) at ($(act.south) + (0,-10mm)$);
+\coordinate (plantbot) at ($(plant.south) + (0,-10mm)$);
+\draw[-{Stealth[length=3mm]}, thick, gray!60!black]
+    (act.south) -- (actbot) -- (plantbot) -- (plant.south)
+    node[pos=0.5, sig, below=1mm] {};
+\node[sig] at ($(plantbot)!0.55!(actbot)$) [below] {$u(t)$};
+
+% ---- Design-variable callouts ----
+\node[callout, above=10mm of plant] (xp)
+    {Plant design variables $x_p$};
+\draw[-{Stealth[length=2.5mm]}, thick, orange!70!black] (xp.south) -- (plant.north);
+
+\node[callout, above=10mm of ctrl] (xc)
+    {Control design variables $x_c$};
+\draw[-{Stealth[length=2.5mm]}, thick, orange!70!black] (xc.south) -- (ctrl.north);
+
+\end{tikzpicture}
+\end{document}

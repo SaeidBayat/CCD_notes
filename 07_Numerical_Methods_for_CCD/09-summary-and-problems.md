@@ -6,65 +6,29 @@ Shooting optimizes control parameters and simulates states, but may be ill-condi
 
 ## Key terms
 
-Time discretization; mesh; control parameterization; direct shooting; multiple shooting; direct transcription; collocation; defect; quadrature; Euler forward; trapezoidal rule; Hermite–Simpson; pseudospectral method; sparse NLP; Jacobian sparsity; automatic differentiation; complex step; mesh refinement; warm start; continuation; independent simulation.
+Time discretization; mesh; control parameterization; direct shooting; multiple shooting; direct transcription; collocation; defect; quadrature; Euler forward; trapezoidal rule; Hermite–Simpson; zero-order hold; pseudospectral method; Legendre–Gauss (LG), Legendre–Gauss–Radau (LGR), and Legendre–Gauss–Lobatto (LGL) points; differentiation matrix; static parameters; sparse NLP; Jacobian sparsity; $hp$-adaptive mesh refinement; automatic differentiation; complex step; dependency detection; mesh refinement; warm start; continuation; independent simulation.
 
-## Conceptual problems
+## Problems
 
-1. Why is continuous optimal control infinite-dimensional?
-2. Distinguish sequential and simultaneous direct methods.
-3. Why can a transcription with thousands of variables remain manageable?
-4. What is the physical meaning of a defect?
-5. Why does node feasibility not guarantee continuous path feasibility?
+1. **Single-shooting sensitivity and conditioning.** For $\dot x=f(x,u(t;c),p)$ with terminal residual $r=x(T)-x_T$, derive the exact Jacobian $\partial r/\partial(p,c)$ from variational equations and show why its norm can grow exponentially with the horizon for unstable dynamics.
 
-## Time-discretization problems
+2. **Multiple-shooting Jacobian.** Partition $[0,T]$ into $N$ shooting intervals with independent initial states $s_i$. Derive the continuity constraints and their block-bidiagonal Jacobian, then prove how this structure limits sensitivity growth relative to single shooting.
 
-6. Construct a uniform 20-interval mesh on $[0,10]$.
-7. Propose a nonuniform mesh for a fast initial transient.
-8. Estimate variables for 12 states, 4 controls, 200 intervals, 8 plant variables, and 6 controller parameters.
-9. When is piecewise-constant control more physical than piecewise-linear control?
-10. Why can a global polynomial struggle with bang–bang control?
+3. **Hermite--Simpson transcription.** Transcribe $\min\Phi(x_N)+\int_0^T L(x,u,p)dt$ subject to $\dot x=f(x,u,p)$ using Hermite--Simpson collocation, deriving the midpoint state, midpoint dynamics, defect equation, and Simpson quadrature contribution for one generic interval.
 
-## Shooting problems
+4. **Legendre--Gauss--Radau collocation.** On one mesh interval, derive the LGR differentiation matrix and quadrature weights from the Lagrange basis, then express the state defects and endpoint update in a form suitable for a sparse nonlinear program.
 
-11. Formulate direct shooting for $\dot{x}=ax+bu$ with five constant-control intervals.
-12. Why are tight terminal constraints difficult for single shooting?
-13. Derive state sensitivity for $\dot{x}=f(x,q,t)$ with respect to $q$.
-14. Write continuity constraints for three-segment multiple shooting.
-15. Compare single- and multiple-shooting decisions.
+5. **Sparse KKT complexity.** A direct transcription has $n_x$ states, $n_u$ controls, $n_p$ global plant variables, and $N$ intervals. Derive the asymptotic nonzero counts of the constraint Jacobian and KKT matrix and compare time-ordered sparse factorization with dense factorization.
 
-## Defect problems
+6. **Derivative verification.** For a collocation NLP residual $F(z)$, derive truncation and roundoff error models for forward, central, complex-step, and algorithmic derivatives, then prescribe a numerical test that distinguishes a coding error from finite-difference noise.
 
-16. Derive the Euler defect for $\dot{x}=-2x+u$.
-17. Derive the trapezoidal defect for the same system.
-18. Write the vector trapezoidal defect for $\dot{\mathbf{x}}=A\mathbf{x}+B\mathbf{u}$.
-19. Write Hermite–Simpson midpoint and defect formulas.
-20. Why are implicit formulas convenient in transcription?
+7. **Goal-oriented mesh refinement.** Given collocation defects $d_i(t)$ and an adjoint $\lambda(t)$ for the objective, derive an adjoint-weighted local error indicator and a mesh-refinement rule that targets objective error rather than state error alone.
 
-## Sparse-NLP and derivative problems
+8. **hp-adaptive decision.** Suppose the estimated local error behaves as $C_ph^{p+1}$ for a smooth solution but only $C_sh^\nu$ near a nonsmooth control switch. Construct an hp-adaptive rule that chooses polynomial enrichment or interval subdivision from observed coefficient decay and justify its asymptotic behavior.
 
-21. Sketch trapezoidal-defect Jacobian sparsity for six intervals with one state and control.
-22. Explain sparse finite-difference coloring.
-23. Compare forward finite differences and complex step.
-24. Derive Euler-defect Jacobian blocks with respect to $x_k$, $x_{k+1}$, and $u_k$.
-25. When is reverse-mode AD attractive?
+9. **Post-solution optimality audit.** For a transcribed CCD nonlinear program, define a single normalized verification metric combining primal feasibility, dual feasibility, complementarity, mesh defect, and objective stability under refinement, with scaling that prevents any physical unit from dominating the audit.
 
-## Mesh and verification problems
-
-26. Define objective and design convergence metrics for refinement.
-27. Distinguish $h$-, $p$-, and $hp$-refinement.
-28. List five checks after solver success.
-29. Describe independent simulation for a transcription result.
-30. Why are multiple starts still needed after mesh convergence?
-
-## Computational and mini-project problems
-
-31. Implement Euler and trapezoidal integration for $\dot{x}=-x$, $x(0)=1$, and verify their orders.
-32. Solve a minimum-effort double-integrator transfer using shooting.
-33. Solve the same problem using trapezoidal transcription and compare.
-34. Refine at least four meshes and plot objective error, terminal error, and maximum defect.
-35. Verify a hand-coded Jacobian using complex step.
-36. Compare two numerical methods on the same small CCD formulation and tolerances.
-37. Solve a nonlinear CCD problem with plant variables and a control trajectory, documenting formulation, scaling, mesh, transcription, derivatives, solver, refinement, independent simulation, and interpretation.
+10. **Numerical convergence study.** For $\min\int_0^1(x^2+10^{-2}u^2)dt$ subject to $\dot x=-px+u$, $x(0)=1$, $x(1)=0$, $0.1\le p\le3$, and $|u|\le2$, design a reproducible comparison of trapezoidal, Hermite--Simpson, and LGR transcription that estimates each method's observed convergence order and separates discretization error from NLP termination error.
 
 ## References and further reading
 
@@ -78,10 +42,12 @@ Time discretization; mesh; control parameterization; direct shooting; multiple s
 
 5. Rao, A. V. (2009). A survey of numerical methods for optimal control. *Advances in the Astronautical Sciences, 135*, 497–528.
 
-6. Patterson, M. A., & Rao, A. V. (2014). GPOPS-II: A MATLAB software for solving multiple-phase optimal control problems using hp-adaptive Gaussian quadrature collocation methods. *ACM Transactions on Mathematical Software, 41*(1), Article 1, 1–37. DOI: 10.1145/2558904
+6. Garg, D., Patterson, M., Hager, W. W., Rao, A. V., Benson, D. A., & Huntington, G. T. (2010). A unified framework for the numerical solution of optimal control problems using pseudospectral methods. *Automatica, 46*(11), 1843–1851. DOI: 10.1016/j.automatica.2010.06.048
 
-7. Nocedal, J., & Wright, S. J. (2006). *Numerical optimization* (2nd ed.). Springer. DOI: 10.1007/978-0-387-40065-5
+7. Patterson, M. A., & Rao, A. V. (2014). GPOPS-II: A MATLAB software for solving multiple-phase optimal control problems using hp-adaptive Gaussian quadrature collocation methods. *ACM Transactions on Mathematical Software, 41*(1), Article 1, 1–37. DOI: 10.1145/2558904
 
-8. Allison, J. T., & Herber, D. R. (2014). Multidisciplinary design optimization of dynamic engineering systems. *AIAA Journal, 52*(4), 691–710. DOI: 10.2514/1.J052182
+8. Nocedal, J., & Wright, S. J. (2006). *Numerical optimization* (2nd ed.). Springer. DOI: 10.1007/978-0-387-40065-5
 
-9. Herber, D. R., & Allison, J. T. (2019). Nested and simultaneous solution strategies for general combined plant and control design problems. *Journal of Mechanical Design, 141*(1), Article 011402. DOI: 10.1115/1.4040705
+9. Allison, J. T., & Herber, D. R. (2014). Multidisciplinary design optimization of dynamic engineering systems. *AIAA Journal, 52*(4), 691–710. DOI: 10.2514/1.J052182
+
+10. Herber, D. R., & Allison, J. T. (2019). Nested and simultaneous solution strategies for general combined plant and control design problems. *Journal of Mechanical Design, 141*(1), Article 011402. DOI: 10.1115/1.4040705
